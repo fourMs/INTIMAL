@@ -29,12 +29,14 @@ def show(text, result, expected):
 t1 = Term("man", ["bloke", "dude", "guy", "lad", "male", "man"])
 t2 = Term("boy", ["boy", "kid", "lad", "male"])
 t3 = Term("woman", ["lady", "woman"])
+t4 = Term("man", ["adult_male", "gentleman's_gentleman", "man", "valet"])
 
 f1 = Fragment("A1", 10, 20, "Parent", "Category", ["just", "another", "guy"])
 f2 = Fragment("A1", 40, 50, "Parent", "Category", ["yet", "another", t2])
 f3 = Fragment("A2", 10, 20, "Parent", "Category")
 f4 = Fragment("A2", 10, 20, "Parent", "Different category")
 f5 = Fragment("A1", 40, 50, "Parent", "Category", ["just", "another", t1])
+f6 = Fragment("A3", 100, 200, "P", "C", ["discretion", "of", "the", "gentleman's", "gentleman"])
 
 # Test cases.
 
@@ -59,6 +61,8 @@ def test_contains():
     show("%r in %r" % (t1, f2), t1 in f2, True)
     show("%r in %r" % (t2, f2), t2 in f2, True)
     show("%r in %r" % (t3, f2), t3 in f2, False)
+
+    show("%r in %r" % (t4, f6), t4 in f6, True)
 
 def test_mapping():
     d = {}
