@@ -52,6 +52,9 @@ class Category:
 	def __str__(self):
 		return "%s-%s" % self.as_tuple()
 
+	def __unicode__(self):
+		return str(self)
+
 	def as_tuple(self):
 		return (self.parent, self.category)
 
@@ -184,6 +187,37 @@ class Fragment:
 	def label(self):
 		return "%s:%s-%s" % (self.source, self.start, self.end)
 
+class Term:
+
+	"A word or term used in text."
+
+	def __init__(self, word, forms=None):
+		self.word = word
+		self.forms = forms or set([word])
+
+	def __repr__(self):
+		return "Term(%r)" % self.word
+
+	def __str__(self):
+		return self.word
+
+	def __unicode__(self):
+		return self.word
+
+	def __cmp__(self, other):
+		if isinstance(other, Term):
+			if self.forms.intersection(other.forms):
+				return 0
+		return cmp(self.word, other.word)
+
+	def __hash__(self):
+		return hash(self.word)
+
+	def __nonzero__(self):
+		return bool(self.word)
+
+# XML node processing.
+
 def textContent(n):
 	l = []
 	for t in n.childNodes:
@@ -214,7 +248,7 @@ def _normalise_accents(s):
 	return unicodedata.normalize("NFC",
 		unicodedata.normalize("NFD", s).replace(u"\u0300", u"\u0301"))
 
-normalise_accents = lambda l: map(_normalise_accents, l)
+normalise_accents = lambda l: map(_normalise_accents, map(unicode, l))
 
 punctuation = ",;.:?!"
 
@@ -276,10 +310,10 @@ def map_to_synonyms(words):
 		s = set()
 		for synset in wn.synsets(word, lang="spa"):
 			for synonym in synset.lemma_names(lang="spa"):
-				s.add(word)
-		l.append(s)
+				s.add(synonym)
+		l.append(Term(word, s))
 
-	return words
+	return l
 
 # Simple grouping of words into terms.
 
@@ -674,7 +708,7 @@ def show_frequencies(frequencies, filename):
 	finally:
 		out.close()
 
-def show_related_fragments(connections, filename, shown_relations=5):
+def get_related_fragments(connections):
 
 	"""
 	Using 'connections', show for each fragment the related fragments via the
@@ -702,15 +736,22 @@ def show_related_fragments(connections, filename, shown_relations=5):
 			for relation in relations:
 				d[fragment].append((measure, relation, similarity))
 
-	# Show each fragment with related fragments in descending order of
-	# similarity.
+	# NOTE: Sort fragments in descending order of similarity.
 
-	l = d.items()
-	l.sort()
+	return d.items()
+	#l.sort(key=lambda i: i[1][0], reverse=True)
+	#return l
+
+def show_related_fragments(related, filename, shown_relations=5):
+
+	"""
+	Show the 'related' fragments: for each fragment, show the related fragments
+	via the	connections, writing the results to 'filename'.
+	"""
 
 	out = codecs.open(filename, "w", encoding="utf-8")
 	try:
-		for fragment, relations in l:
+		for fragment, relations in related:
 
 			# Show the related fragments in descending order of similarity.
 
@@ -894,7 +935,7 @@ if __name__ == "__main__":
 	# Part-of-speech tagging to select certain types of words (nouns and verbs).
 	# Normalisation involving stemming, synonyms and semantic equivalences.
 
-	processes = [group_words, only_words, normalise_accents, lower, no_stop_words] #, stem_words]
+	processes = [group_words, only_words, map_to_synonyms, normalise_accents, lower, no_stop_words] #, stem_words]
 
 	# Obtain only words, not punctuation.
 
@@ -941,7 +982,8 @@ if __name__ == "__main__":
 
 	show_connections(connections, connectionsfn)
 
-	show_related_fragments(connections, relationsfn)
+	related = get_related_fragments(connections)
+	show_related_fragments(related, relationsfn)
 
 	# Produce a graph where each fragment is a node and the similarity (where
 	# non-zero) is an edge linking the fragments.
