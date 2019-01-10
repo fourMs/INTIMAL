@@ -19,8 +19,11 @@ others.
 #from networkx.drawing.nx_pydot import write_dot
 
 from collections import defaultdict
+from math import log
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
+from os import mkdir
+from os.path import isdir, join
 from xml.dom.minidom import parse
 import bisect
 import codecs
@@ -60,19 +63,19 @@ class Connection:
 
 	"A connection between two fragments."
 
-	def __init__(self, overlap, fragments):
+	def __init__(self, similarity, fragments):
 
 		"""
-		Initialise a connection with the given 'overlap' and 'fragments'
+		Initialise a connection with the given 'similarity' and 'fragments'
 		involved.
 		"""
 
-		self.overlap = overlap
+		self.similarity = similarity
 		self.fragments = fragments
 
 	def __cmp__(self, other):
-		key = self.measure(), self.overlap
-		other_key = other.measure(), other.overlap
+		key = self.measure(), self.similarity
+		other_key = other.measure(), other.similarity
 		if key < other_key:
 			return -1
 		elif key > other_key:
@@ -80,8 +83,33 @@ class Connection:
 		else:
 			return 0
 
+	def __hash__(self):
+		return hash(tuple(map(hash, self.fragments)))
+
+	def __repr__(self):
+		return "Connection(%r, %r)" % self.as_tuple()
+
+	def as_tuple(self):
+		return (self.similarity, self.fragments)
+
+	def label(self):
+		return self.measure()
+	
+	def measure(self):
+		m = 0
+		for term, measure in self.similarity:
+			m += measure
+		return m
+
+	def relations(self):
+		l = []
+		for i, fragment in enumerate(self.fragments):
+			l.append((fragment, self.fragments[:i] + self.fragments[i+1:]))
+		return l
+
+	# For NetworkX, support node access.
+
 	def __getitem__(self, item):
-		# For NetworkX, support node access.
 		if item in (0, 1, -3, -2):
 			return self.fragments[:2][item]
 		elif item in (2, -1):
@@ -89,42 +117,25 @@ class Connection:
 		else:
 			raise IndexError, item
 
-	def __hash__(self):
-		return hash(tuple(map(hash, self.fragments)))
-
 	def __len__(self):
 		# For NetworkX, pretend to be a tuple of the form
 		# (node1, node2, data)
 		return 3
 
-	def __repr__(self):
-		return "Connection(%r, %r)" % self.as_tuple()
-
-	def as_tuple(self):
-		return (self.overlap, self.fragments)
-
-	def label(self):
-		return self.measure()
-	
-	def measure(self):
-		m = 0
-		for term, measure in self.overlap:
-			m += measure
-		return m
-
 class Fragment:
 
 	"A fragment of text from a transcript."
 	
-	def __init__(self, start, end, parent, category, words=None, text=None):
+	def __init__(self, source, start, end, parent, category, words=None, text=None):
 	
 		"""
-		Initialise a fragment with the given 'start' and 'end' timings, the
-		nominated 'parent' and leaf 'category', and a collection of
+		Initialise a fragment from 'source' with the given 'start' and 'end'
+		timings, the nominated 'parent' and leaf 'category', and a collection of
 		corresponding 'words'. Any original 'text' words may be set or instead
 		committed later using the 'commit_text' method.
 		"""
-		
+
+		self.source = source
 		self.start = start
 		self.end = end
 		self.parent = parent
@@ -144,19 +155,25 @@ class Fragment:
 			return 0
 
 	def __hash__(self):
-		return hash((self.start, self.end, self.parent, self.category))
+		return hash((self.source, self.start, self.end, self.parent, self.category))
 	
 	def __repr__(self):
-		return "Fragment(%r, %r, %r, %r, %r, %r)" % self.as_tuple()
+		return "Fragment(%r, %r, %r, %r, %r, %r, %r)" % self.as_tuple()
 
 	def as_tuple(self):
-		return (self.start, self.end, self.parent, self.category, self.words, self.text)
+		return (self.source, self.start, self.end, self.parent, self.category, self.words, self.text)
 
 	def commit_text(self):
-		self.text = self.words
+		self.text = " ".join(self.words)
 
-	def overlap(self, other):
-		return intersection(self.words, other.words)
+	def similarity(self, other, idf=None):
+		return similarity(self.word_frequencies(), other.word_frequencies(), idf)
+
+	def word_frequencies(self):
+		d = defaultdict(lambda: 0)
+		for word in self.words:
+			d[word] += 1
+		return d
 
 	# Graph methods.
 
@@ -223,7 +240,7 @@ def only_words(words):
 #"la", "las", "les", "lo", "los", "más", "me", "mi", "mí", "muy", "no", "o",
 #"por", "porque", "que", "se", "si", "un", "una", "uno", "y", "yo"])
 
-stop_words = [u"da", u"si", u"u"]
+stop_words = [u"da", u"entonces", u"si", u"u"]
 
 def no_stop_words(words):
 	l = []
@@ -243,6 +260,8 @@ def stem_words(words):
 	for word in words:
 		l.append(stemmer.stem(word))
 	return l
+
+# Simple grouping of words into terms.
 
 def group_words(words):
 
@@ -324,9 +343,9 @@ def group_quantities(words):
 
 # Fragment retrieval.
 
-def get_categorised_fragments(tiersdoc):
+def get_categorised_fragments(tiersdoc, source):
 
-	"Using the 'tiersdoc' return a sorted list of fragments."
+	"Using the 'tiersdoc' return a sorted list of fragments from 'source'."
 
 	fragments = []
 
@@ -344,15 +363,15 @@ def get_categorised_fragments(tiersdoc):
 			# The category is textual content within a subnode.
 			
 			for category in span.getElementsByTagName("v"):
-				fragments.append(Fragment(start, end, parent, textContent(category)))
+				fragments.append(Fragment(source, start, end, parent, textContent(category)))
 				break
 
 	fragments.sort()
 	return fragments
 
-def populate_fragments(fragments, textdoc):
+def populate_fragments(fragments, textdoc, source):
 
-	"Populate the 'fragments' using information from 'textdoc'."
+	"Populate the 'fragments' using information from 'textdoc' for 'source'."
 
 	for span in textdoc.getElementsByTagName("span"):
 		start = float(span.getAttribute("start"))
@@ -361,7 +380,7 @@ def populate_fragments(fragments, textdoc):
 		# The word is textual content within a subnode.
 		
 		for word in span.getElementsByTagName("v"):
-			temp = Fragment(start, end, None, None, [textContent(word)])
+			temp = Fragment(source, start, end, None, None, [textContent(word)])
 			break
 		else:
 			continue
@@ -387,19 +406,20 @@ def commit_text(fragments):
 
 # Fragment processing.
 
-def compare_fragments(fragments):
+def compare_fragments(fragments, idf=None):
 
 	"""
 	Compare 'fragments' with each other, returning a list of connections
-	sorted by the similarity measure.
+	sorted by the similarity measure. If 'idf' is given, use this inverse
+	document frequency distribution to scale term weights.
 	"""
 
 	connections = []
 
 	for f1, f2 in itertools.combinations(fragments, 2):
-		overlap = f1.overlap(f2)
-		if overlap:
-			connections.append(Connection(overlap, (f1, f2)))
+		similarity = f1.similarity(f2, idf)
+		if similarity:
+			connections.append(Connection(similarity, (f1, f2)))
 
 	connections.sort()
 	return connections
@@ -446,30 +466,77 @@ def get_fragment_terms(fragments):
 		d[fragment] = fragment.words
 	return d
 
-# Term frequency calculations.
+# Fragment similarity calculations.
 
-def frequencies(l):
+def similarity(f1, f2, idf=None):
+
+	"""
+	Return similarity details for words/terms found in both 'f1' and 'f2',
+	these being frequency distributions for two fragments. If 'idf' is given,
+	use this inverse document frequency distribution to scale term weights.
+	"""
+
+	t1 = 1 # sum_values(f1)
+	t2 = 1 # sum_values(f2)
+	
 	d = {}
-	for i in set(l):
-		d[i] = l.count(i)
+	for key, value in f1.items():
+		if f2.has_key(key):
+			idf_key = idf and idf[key] or 1
+			d[key] = (float(value) / t1 + float(f2[key]) / t2) * idf_key
+	return d.items()
+
+def sum_values(d):
+	t = 0
+	for value in d.values():
+		t += value
+	return t
+
+def word_document_frequencies(fragments):
+
+	"Return document frequencies for words from the 'fragments'."
+
+	d = defaultdict(lambda: 0)
+	for fragment in fragments:
+		for word in fragment.word_frequencies().keys():
+			d[word] += 1
 	return d
 
-def intersection(l1, l2):
+def word_frequencies(fragments):
 
-	# NOTE: This should consider word importance.
+	"Merge word frequencies from the given 'fragments'."
 
-	f = frequencies(l1 + l2)
-	l = []
-	for i in set(l1).intersection(l2):
-		l.append((i, f[i]))
-	return l
+	d = defaultdict(lambda: 0)
+	for fragment in fragments:
+		for word, occurrences in fragment.word_frequencies().items():
+			d[word] += occurrences
+	return d
+
+def inverse_document_frequencies(frequencies, numdocs):
+
+	"Return the inverse document frequencies for 'frequencies' given 'numdocs'."
+
+	d = {}
+	for word, freq in frequencies.items():
+		d[word] = log(float(numdocs) / (1 + freq), 10)
+	return d
+
+# Comparison functions.
+
+def cmp_value_lengths(a, b):
+	acat = len(a[1])
+	bcat = len(b[1])
+	return cmp(acat, bcat)
+
+def cmp_values(a, b):
+	return cmp(a[1], b[1])
 
 # Output conversion.
 
 def show_category_terms(category_terms, filename):
-	out = codecs.open(filename, "w", encoding="utf-8")
 	l = category_terms.items()
 	l.sort()
+	out = codecs.open(filename, "w", encoding="utf-8")
 	try:
 		for category, terms in l:
 			terms = list(set(terms))
@@ -481,15 +548,19 @@ def show_category_terms(category_terms, filename):
 	finally:
 		out.close()
 
-def cmp_term_entities(a, b):
-	acat = len(a[1])
-	bcat = len(b[1])
-	return cmp(acat, bcat)
-
 def show_common_terms(common_terms, filename):
-	out = codecs.open(filename, "w", encoding="utf-8")
+
+	"""
+	Show 'common_terms' in 'filename', this illustrating each term together with
+	the entities (categories or fragments) in which it appears.
+	"""
+
+	# Sort the terms and entities by increasing number of entities.
+
 	l = common_terms.items()
-	l.sort(cmp=cmp_term_entities)
+	l.sort(cmp=cmp_value_lengths)
+
+	out = codecs.open(filename, "w", encoding="utf-8")
 	try:
 		for term, entities in l:
 			print >>out, term, ",".join(map(lambda e: e.label(), entities))
@@ -497,10 +568,16 @@ def show_common_terms(common_terms, filename):
 		out.close()
 
 def show_connections(connections, filename):
+	connections.sort(key=lambda x: x.measure())
 	out = codecs.open(filename, "w", encoding="utf-8")
 	try:
 		for connection in connections:
-			print >>out, connection
+			for term, weight in connection.similarity:
+				print >>out, term, weight,
+			print >>out
+			for fragment in connection.fragments:
+				print >>out, fragment.text
+			print >>out
 	finally:
 		out.close()
 
@@ -512,11 +589,130 @@ def show_fragments(fragments, filename):
 	finally:
 		out.close()
 
+def show_frequencies(frequencies, filename):
+	l = frequencies.items()
+	l.sort(cmp=cmp_values)
+	out = codecs.open(filename, "w", encoding="utf-8")
+	try:
+		for word, occurrences in l:
+			print >>out, word, occurrences
+	finally:
+		out.close()
+
+def show_related_fragments(connections, filename):
+
+	"""
+	Using 'connections', show for each fragment the related fragments via the
+	connections, writing the results to 'filename'.
+	"""
+
+	d = defaultdict(list)
+	for connection in connections:
+		measure = connection.measure()
+		for fragment, relations in connection.relations():
+			for relation in relations:
+				d[fragment].append((measure, relation))
+
+	# Show each fragment with related fragments in descending order of
+	# similarity.
+
+	l = d.items()
+	l.sort()
+
+	out = codecs.open(filename, "w", encoding="utf-8")
+	try:
+		for fragment, relations in l:
+			relations.sort(reverse=True)
+			print >>out, fragment.text
+			for measure, relation in relations:
+				print >>out, measure, relation.text
+			print >>out
+	finally:
+		out.close()
+
 def to_text(i):
 	if isinstance(i, (list, tuple)):
 		return " ".join(map(to_text, i))
 	else:
 		return unicode(i).encode("utf-8")
+
+graph_template = """\
+graph fragments {
+	node [shape=ellipse];
+	%s
+	%s
+}
+"""
+
+node_template = """\
+	%s [label="%s"];
+"""
+
+edge_template = """\
+	%s -- %s [label="%s",len=%s];
+"""
+
+def write_graph(fragments, connections, filename):
+	out = codecs.open(filename, "w", encoding="utf-8")
+	try:
+		nodes = []
+		for fragment in fragments:
+			nodes.append(node_template % (id(fragment), fragment.label()))
+
+		edges = []
+		for connection in connections:
+			edges.append(edge_template % (id(connection[0]), id(connection[1]), connection.label(), connection.label()))
+
+		print >>out, graph_template % ("".join(nodes), "".join(edges))
+	finally:
+		out.close()
+
+def ensure_directory(name):
+	if not isdir(name):
+		mkdir(name)
+
+# Define the forms of filenames providing data.
+
+datatypes = ["Text", "Tiers"]
+
+def get_input_details(filename):
+	for datatype in datatypes:
+		if datatype in filename:
+			return (datatype, filename.rsplit("_", 1)[0])
+	return None
+
+def get_input_filenames(args):
+	d = defaultdict(set)
+	for arg in args:
+		details = get_input_details(arg)
+		if details:
+			datatype, basename = details
+			d[basename].add((datatype, arg))
+	l = []
+	for basename, filenames in d.items():
+		if len(filenames) == len(datatypes):
+			lf = list(filenames)
+			lf.sort()
+			lf.insert(0, basename)
+			l.append(lf)
+	return l
+
+helptext = """\
+Need an output directory name plus a collection of text and tiers filenames for
+reading. The output directory will be populated with files containing the
+following:
+
+ * fragments
+ * connections
+ * category terms (terms found in each category)
+ * common category terms (categories associated with each term)
+ * common fragment terms (fragments associated with each term)
+ * term frequencies
+ * term document frequencies
+ * term inverse document frequencies
+ * fragments and related fragments
+ * illustration graphs
+"""
 
 # Main program.
 
@@ -525,35 +721,48 @@ if __name__ == "__main__":
 	# Obtain filenames.
 
 	try:
-		textfn, tiersfn, fragmentsfn, connectionsfn, termsfn, ctermsfn, ftermsfn = sys.argv[1:8]
-	except ValueError:
-		print >>sys.stderr, """\
-	Need a text file and a tiers file for reading, plus filenames for the
-	fragments, connections, category terms, common category terms and common
-	fragment terms.
-	"""
+		outdir = sys.argv[1]
+		filenames = sys.argv[2:]
+	except (IndexError, ValueError):
+		print >>sys.stderr, helptext
 		sys.exit(1)
+	
+	# Derive filenames for output files.
+	
+	ensure_directory(outdir)
+	
+	fragmentsfn = join(outdir, "fragments.txt")
+	connectionsfn = join(outdir, "connections.txt")
+	termsfn = join(outdir, "terms.txt")
+	ctermsfn = join(outdir, "term_categories.txt")
+	ftermsfn = join(outdir, "term_fragments.txt")
+	termfreqfn = join(outdir, "term_frequencies.txt")
+	termdocfreqfn = join(outdir, "term_doc_frequencies.txt")
+	terminvdocfreqfn = join(outdir, "term_inv_doc_frequencies.txt")
+	relationsfn = join(outdir, "relations.txt")
+	dotfn = join(outdir, "graph.dot")
 
 	# For each fragment defined by the tiers, collect corresponding words, producing
 	# fragment objects.
 
-	textdoc = parse(textfn)
-	tiersdoc = parse(tiersfn)
+	fragments = []
 
-	fragments = get_categorised_fragments(tiersdoc)
-	populate_fragments(fragments, textdoc)
+	for source, (_datatype, textfn), (_datatype, tiersfn) in get_input_filenames(filenames):
+		print tiersfn, textfn
+		textdoc = parse(textfn)
+		tiersdoc = parse(tiersfn)
+
+		current_fragments = get_categorised_fragments(tiersdoc, source)
+		populate_fragments(current_fragments, textdoc, source)
+
+		fragments += current_fragments
 
 	# NOTE: Should find a way of preserving capitalisation for proper nouns and not
 	# NOTE: discarding articles/prepositions that feature in informative terms.
 	# NOTE: Maybe chains of capitalised words that also include "padding" can be
 	# NOTE: consolidated into single terms.
 
-	process_fragments(fragments, [group_words, only_words])
 	commit_text(fragments)
-
-	# Emit the fragments for inspection.
-
-	show_fragments(fragments, fragmentsfn)
 
 	# Perform some processes on the words:
 	# Filtering of stop words.
@@ -561,33 +770,54 @@ if __name__ == "__main__":
 	# Part-of-speech tagging to select certain types of words (nouns and verbs).
 	# Normalisation involving stemming, synonyms and semantic equivalences.
 
-	processes = [normalise_accents, lower, no_stop_words] #, stem_words]
+	processes = [group_words, only_words, normalise_accents, lower, no_stop_words] #, stem_words]
 
 	# Obtain only words, not punctuation.
 
 	process_fragments(fragments, processes)
+
+	# Emit the fragments for inspection.
+
+	show_fragments(fragments, fragmentsfn)
 
 	# Get terms used by each category for inspection.
 
 	category_terms = get_category_terms(fragments)
 	show_category_terms(category_terms, termsfn)
 
+	# Get common terms (common between categories).
+
 	common_category_terms = get_common_terms(category_terms)
 	show_common_terms(common_category_terms, ctermsfn)
+
+	# Get common terms (common between fragments).
 
 	fragment_terms = get_fragment_terms(fragments)
 
 	common_fragment_terms = get_common_terms(fragment_terms)
 	show_common_terms(common_fragment_terms, ftermsfn)
 
+	# Get term/word frequencies.
+
+	frequencies = word_frequencies(fragments)
+	show_frequencies(frequencies, termfreqfn)
+
+	doc_frequencies = word_document_frequencies(fragments)
+	show_frequencies(doc_frequencies, termdocfreqfn)
+
+	inv_doc_frequencies = inverse_document_frequencies(doc_frequencies, len(fragments))
+	show_frequencies(inv_doc_frequencies, terminvdocfreqfn)
+
 	# Determine fragment similarity by taking the processed words and comparing
 	# fragments.
 
-	connections = compare_fragments(fragments)
+	connections = compare_fragments(fragments, inv_doc_frequencies)
 
 	# Emit the connections for inspection.
 
 	show_connections(connections, connectionsfn)
+
+	show_related_fragments(connections, relationsfn)
 
 	# Produce a graph where each fragment is a node and the similarity (where
 	# non-zero) is an edge linking the fragments.
@@ -599,28 +829,4 @@ if __name__ == "__main__":
 	#networkx.draw(graph, pos=pos)
 	#write_dot(graph, "xxx.dot")
 
-	template = """\
-	graph fragments {
-		node [shape=ellipse];
-		%s
-		%s
-	}
-	"""
-
-	node_template = """\
-		%s [label="%s"];
-	"""
-
-	edge_template = """\
-		%s -- %s [label="%s",len=%s];
-	"""
-
-	nodes = []
-	for fragment in fragments:
-		nodes.append(node_template % (id(fragment), fragment.label()))
-
-	edges = []
-	for connection in connections:
-		edges.append(edge_template % (id(connection[0]), id(connection[1]), connection.label(), connection.label()))
-
-	print template % ("".join(nodes), "".join(edges))
+	write_graph(fragments, connections, dotfn)
