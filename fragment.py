@@ -15,8 +15,12 @@ similarity may be pulled apart by the relationships such fragments have with
 others.
 """
 
-#import networkx
-#from networkx.drawing.nx_pydot import write_dot
+from inputs import get_categorised_fragments, populate_fragments
+
+from objects import Category, Fragment, Term, \
+					commit_text, compare_fragments, \
+					get_category_terms, get_fragment_terms, \
+					word_document_frequencies, word_frequencies
 
 from collections import defaultdict
 from math import log
@@ -26,203 +30,9 @@ from nltk.stem.snowball import SnowballStemmer
 from os import mkdir
 from os.path import isdir, join
 from xml.dom.minidom import parse
-import bisect
 import codecs
-import itertools
 import sys
 import unicodedata
-
-class Category:
-
-	"A complete category description."
-
-	def __init__(self, parent, category):
-		self.parent = parent
-		self.category = category
-
-	def __cmp__(self, other):
-		return cmp(self.as_tuple(), other.as_tuple())
-		
-	def __hash__(self):
-		return hash(self.as_tuple())
-
-	def __repr__(self):
-		return "Category(%r, %r)" % self.as_tuple()
-	
-	def __str__(self):
-		return "%s-%s" % self.as_tuple()
-
-	def __unicode__(self):
-		return str(self)
-
-	def as_tuple(self):
-		return (self.parent, self.category)
-
-	# Graph methods.
-
-	def label(self):
-		return str(self)
-
-class Connection:
-
-	"A connection between two fragments."
-
-	def __init__(self, similarity, fragments):
-
-		"""
-		Initialise a connection with the given 'similarity' and 'fragments'
-		involved.
-		"""
-
-		self.similarity = similarity
-		self.fragments = fragments
-
-	def __cmp__(self, other):
-		key = self.measure(), self.similarity
-		other_key = other.measure(), other.similarity
-		if key < other_key:
-			return -1
-		elif key > other_key:
-			return 1
-		else:
-			return 0
-
-	def __hash__(self):
-		return hash(tuple(map(hash, self.fragments)))
-
-	def __repr__(self):
-		return "Connection(%r, %r)" % self.as_tuple()
-
-	def as_tuple(self):
-		return (self.similarity, self.fragments)
-
-	def label(self):
-		return self.measure()
-	
-	def measure(self):
-		m = 0
-		for term, measure in self.similarity:
-			m += measure
-		return m
-
-	def relations(self):
-		l = []
-		for i, fragment in enumerate(self.fragments):
-			l.append((fragment, self.fragments[:i] + self.fragments[i+1:]))
-		return l
-
-	# For NetworkX, support node access.
-
-	def __getitem__(self, item):
-		if item in (0, 1, -3, -2):
-			return self.fragments[:2][item]
-		elif item in (2, -1):
-			return {"weight" : self.measure()}
-		else:
-			raise IndexError, item
-
-	def __len__(self):
-		# For NetworkX, pretend to be a tuple of the form
-		# (node1, node2, data)
-		return 3
-
-class Fragment:
-
-	"A fragment of text from a transcript."
-	
-	def __init__(self, source, start, end, parent, category, words=None, text=None):
-	
-		"""
-		Initialise a fragment from 'source' with the given 'start' and 'end'
-		timings, the nominated 'parent' and leaf 'category', and a collection of
-		corresponding 'words'. Any original 'text' words may be set or instead
-		committed later using the 'commit_text' method.
-		"""
-
-		self.source = source
-		self.start = start
-		self.end = end
-		self.parent = parent
-		self.category = category
-		self.words = words or []
-		self.text = text
-
-	def __cmp__(self, other):
-
-		"Compare this fragment to 'other'."
-		
-		if self.start < other.start:
-			return -1
-		elif self.start > other.start:
-			return 1
-		else:
-			return 0
-
-	def __hash__(self):
-		return hash((self.source, self.start, self.end, self.parent, self.category))
-
-	def __nonzero__(self):
-		return bool(self.words)
-
-	def __repr__(self):
-		return "Fragment(%r, %r, %r, %r, %r, %r, %r)" % self.as_tuple()
-
-	def as_tuple(self):
-		return (self.source, self.start, self.end, self.parent, self.category, self.words, self.text)
-
-	def commit_text(self):
-		self.text = " ".join(self.words)
-
-	def similarity(self, other, idf=None):
-		return similarity(self.word_frequencies(), other.word_frequencies(), idf)
-
-	def word_frequencies(self):
-		d = defaultdict(lambda: 0)
-		for word in self.words:
-			d[word] += 1
-		return d
-
-	# Graph methods.
-
-	def label(self):
-		return "%s:%s-%s" % (self.source, self.start, self.end)
-
-class Term:
-
-	"A word or term used in text."
-
-	def __init__(self, word, forms=None):
-		self.word = word
-		self.forms = forms or set([word])
-
-	def __repr__(self):
-		return "Term(%r)" % self.word
-
-	def __str__(self):
-		return self.word
-
-	def __unicode__(self):
-		return self.word
-
-	def __cmp__(self, other):
-		if isinstance(other, Term):
-			if self.forms.intersection(other.forms):
-				return 0
-		return cmp(self.word, other.word)
-
-	def __hash__(self):
-		return hash(self.word)
-
-	def __nonzero__(self):
-		return bool(self.word)
-
-# XML node processing.
-
-def textContent(n):
-	l = []
-	for t in n.childNodes:
-		l.append(t.nodeValue)
-	return "".join(l)
 
 # Word processing.
 
@@ -278,7 +88,7 @@ def only_words(words):
 #"la", "las", "les", "lo", "los", "más", "me", "mi", "mí", "muy", "no", "o",
 #"por", "porque", "que", "se", "si", "un", "una", "uno", "y", "yo"])
 
-stop_words = [u"da", u"entonces", u"si", u"u"]
+stop_words = [u"ahí", u"da", u"entonces", u"si", u"u"]
 
 def no_stop_words(words):
 	l = []
@@ -395,88 +205,7 @@ def group_quantities(words):
 		l.append(" ".join(term))
 	return l
 
-# Fragment retrieval.
-
-def get_categorised_fragments(tiersdoc, source):
-
-	"Using the 'tiersdoc' return a sorted list of fragments from 'source'."
-
-	fragments = []
-
-	# For each tier, get spans defining categorised fragments.
-
-	for tier in tiersdoc.getElementsByTagName("TIER"):
-		parent = tier.getAttribute("columns")
-		
-		# For each span, obtain the start and end timings plus the category.
-
-		for span in tier.getElementsByTagName("span"):
-			start = float(span.getAttribute("start"))
-			end = float(span.getAttribute("end"))
-			
-			# The category is textual content within a subnode.
-			
-			for category in span.getElementsByTagName("v"):
-				fragments.append(Fragment(source, start, end, parent, textContent(category)))
-				break
-
-	fragments.sort()
-	return fragments
-
-def populate_fragments(fragments, textdoc, source):
-
-	"Populate the 'fragments' using information from 'textdoc' for 'source'."
-
-	for span in textdoc.getElementsByTagName("span"):
-		start = float(span.getAttribute("start"))
-		end = float(span.getAttribute("end"))
-		
-		# The word is textual content within a subnode.
-		
-		for word in span.getElementsByTagName("v"):
-			temp = Fragment(source, start, end, None, None, [textContent(word)])
-			break
-		else:
-			continue
-
-		# Find the appropriate fragment.
-
-		i = bisect.bisect_right(fragments, temp)
-		
-		if i > 0:
-			i -= 1
-			
-		f = fragments[i]
-		
-		if f.end > temp.start >= f.start:
-			f.words += temp.words
-
-def commit_text(fragments):
-
-	"Preserve the original text in the 'fragments'."
-
-	for fragment in fragments:
-		fragment.commit_text()
-
 # Fragment processing.
-
-def compare_fragments(fragments, idf=None):
-
-	"""
-	Compare 'fragments' with each other, returning a list of connections
-	sorted by the similarity measure. If 'idf' is given, use this inverse
-	document frequency distribution to scale term weights.
-	"""
-
-	connections = []
-
-	for f1, f2 in itertools.combinations(fragments, 2):
-		similarity = f1.similarity(f2, idf)
-		if similarity:
-			connections.append(Connection(similarity, (f1, f2)))
-
-	connections.sort(key=lambda c: c.measure())
-	return connections
 
 def discard_empty_fragments(fragments):
 
@@ -512,16 +241,6 @@ def process_fragments(fragments, processes):
 
 # Term catalogues.
 
-def get_category_terms(fragments):
-
-	"Return a dictionary mapping categories to terms."
-
-	d = defaultdict(list)
-	for fragment in fragments:
-		for word in fragment.words:
-			d[Category(fragment.parent, fragment.category)].append(word)
-	return d
-
 def get_common_terms(entity_terms):
 
 	"Return a distribution mapping terms to common entities."
@@ -530,71 +249,6 @@ def get_common_terms(entity_terms):
 	for entity, terms in entity_terms.items():
 		for term in terms:
 			d[term].add(entity)
-	return d
-
-def get_fragment_terms(fragments):
-
-	"Return a dictionary mapping fragments to terms."
-
-	d = {}
-	for fragment in fragments:
-		d[fragment] = fragment.words
-	return d
-
-# Fragment similarity calculations.
-
-def similarity(f1, f2, idf=None):
-
-	"""
-	Return similarity details for words/terms found in both 'f1' and 'f2',
-	these being frequency distributions for two fragments. If 'idf' is given,
-	use this inverse document frequency distribution to scale term weights.
-	"""
-
-	# Total frequencies can be used to scale each term in order to measure its
-	# prevalence in a fragment.
-
-	total1 = sum_values(f1)
-	total2 = sum_values(f2)
-	
-	d = {}
-	for term, freq in f1.items():
-		if f2.has_key(term):
-			idf_for_term = idf and idf[term] or 1
-			#d[term] = (float(freq) / total1 + float(f2[term]) / total2) * idf_for_term
-			d[term] = scaled_frequency_idf(freq, f2[term], total1, total2, idf_for_term)
-	return d.items()
-
-def absolute_frequency_idf(freq1, freq2, idf):
-	return float(freq1 + freq2) / idf
-
-def scaled_frequency_idf(freq1, freq2, total1, total2, idf):
-	return float(freq1 + freq2) / (total1 + total2) * idf
-
-def sum_values(d):
-	t = 0
-	for value in d.values():
-		t += value
-	return t
-
-def word_document_frequencies(fragments):
-
-	"Return document frequencies for words from the 'fragments'."
-
-	d = defaultdict(lambda: 0)
-	for fragment in fragments:
-		for word in fragment.word_frequencies().keys():
-			d[word] += 1
-	return d
-
-def word_frequencies(fragments):
-
-	"Merge word frequencies from the given 'fragments'."
-
-	d = defaultdict(lambda: 0)
-	for fragment in fragments:
-		for word, occurrences in fragment.word_frequencies().items():
-			d[word] += occurrences
 	return d
 
 def inverse_document_frequencies(frequencies, numdocs):
@@ -987,12 +641,5 @@ if __name__ == "__main__":
 
 	# Produce a graph where each fragment is a node and the similarity (where
 	# non-zero) is an edge linking the fragments.
-
-	#graph = networkx.Graph()
-	#graph.add_nodes_from(fragments)
-	#graph.add_edges_from(connections)
-	#pos = networkx.nx_pydot.graphviz_layout(graph)
-	#networkx.draw(graph, pos=pos)
-	#write_dot(graph, "xxx.dot")
 
 	write_graph(fragments, connections, dotfn)
