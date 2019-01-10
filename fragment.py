@@ -21,6 +21,7 @@ others.
 from collections import defaultdict
 from math import log
 from nltk.corpus import stopwords
+from nltk.corpus import wordnet as wn
 from nltk.stem.snowball import SnowballStemmer
 from os import mkdir
 from os.path import isdir, join
@@ -156,7 +157,10 @@ class Fragment:
 
 	def __hash__(self):
 		return hash((self.source, self.start, self.end, self.parent, self.category))
-	
+
+	def __nonzero__(self):
+		return bool(self.words)
+
 	def __repr__(self):
 		return "Fragment(%r, %r, %r, %r, %r, %r, %r)" % self.as_tuple()
 
@@ -178,7 +182,7 @@ class Fragment:
 	# Graph methods.
 
 	def label(self):
-		return "%s-%s" % (self.start, self.end)
+		return "%s:%s-%s" % (self.source, self.start, self.end)
 
 def textContent(n):
 	l = []
@@ -260,6 +264,22 @@ def stem_words(words):
 	for word in words:
 		l.append(stemmer.stem(word))
 	return l
+
+# Mapping via WordNet.
+
+def map_to_synonyms(words):
+
+	"Map 'words' to synonyms for normalisation."
+
+	l = []
+	for word in words:
+		s = set()
+		for synset in wn.synsets(word, lang="spa"):
+			for synonym in synset.lemma_names(lang="spa"):
+				s.add(word)
+		l.append(s)
+
+	return words
 
 # Simple grouping of words into terms.
 
@@ -421,8 +441,29 @@ def compare_fragments(fragments, idf=None):
 		if similarity:
 			connections.append(Connection(similarity, (f1, f2)))
 
-	connections.sort()
+	connections.sort(key=lambda c: c.measure())
 	return connections
+
+def discard_empty_fragments(fragments):
+
+	"Return a list of non-empty instances from 'fragments'."
+
+	l = []
+	for fragment in fragments:
+		if fragment:
+			l.append(fragment)
+	return l
+
+def get_all_words(fragments):
+
+	"Return a sorted list of unique words."
+
+	s = set()
+	for fragment in fragments:
+		s.update(fragment.words)
+	l = list(s)
+	l.sort()
+	return l
 
 def process_fragments(fragments, processes):
 
@@ -476,15 +517,25 @@ def similarity(f1, f2, idf=None):
 	use this inverse document frequency distribution to scale term weights.
 	"""
 
-	t1 = 1 # sum_values(f1)
-	t2 = 1 # sum_values(f2)
+	# Total frequencies can be used to scale each term in order to measure its
+	# prevalence in a fragment.
+
+	total1 = sum_values(f1)
+	total2 = sum_values(f2)
 	
 	d = {}
-	for key, value in f1.items():
-		if f2.has_key(key):
-			idf_key = idf and idf[key] or 1
-			d[key] = (float(value) / t1 + float(f2[key]) / t2) * idf_key
+	for term, freq in f1.items():
+		if f2.has_key(term):
+			idf_for_term = idf and idf[term] or 1
+			#d[term] = (float(freq) / total1 + float(f2[term]) / total2) * idf_for_term
+			d[term] = scaled_frequency_idf(freq, f2[term], total1, total2, idf_for_term)
 	return d.items()
+
+def absolute_frequency_idf(freq1, freq2, idf):
+	return float(freq1 + freq2) / idf
+
+def scaled_frequency_idf(freq1, freq2, total1, total2, idf):
+	return float(freq1 + freq2) / (total1 + total2) * idf
 
 def sum_values(d):
 	t = 0
@@ -533,7 +584,22 @@ def cmp_values(a, b):
 
 # Output conversion.
 
+def show_all_words(words, filename):
+	out = codecs.open(filename, "w", encoding="utf-8")
+	try:
+		for word in words:
+			print >>out, word
+	finally:
+		out.close()
+
 def show_category_terms(category_terms, filename):
+
+	"""
+	Show the 'category_terms' mapping in 'filename', with each correspondence in
+	the mapping being formatted as the category followed by each distinct term
+	associated with the category.
+	"""
+
 	l = category_terms.items()
 	l.sort()
 	out = codecs.open(filename, "w", encoding="utf-8")
@@ -568,6 +634,9 @@ def show_common_terms(common_terms, filename):
 		out.close()
 
 def show_connections(connections, filename):
+
+	"Write a report of 'connections' to 'filename'."
+
 	connections.sort(key=lambda x: x.measure())
 	out = codecs.open(filename, "w", encoding="utf-8")
 	try:
@@ -582,6 +651,9 @@ def show_connections(connections, filename):
 		out.close()
 
 def show_fragments(fragments, filename):
+
+	"Write the textual representation of 'fragments' to 'filename'."
+
 	out = codecs.open(filename, "w", encoding="utf-8")
 	try:
 		for fragment in fragments:
@@ -590,6 +662,9 @@ def show_fragments(fragments, filename):
 		out.close()
 
 def show_frequencies(frequencies, filename):
+
+	"Write the mapping of term 'frequencies' to 'filename'."
+
 	l = frequencies.items()
 	l.sort(cmp=cmp_values)
 	out = codecs.open(filename, "w", encoding="utf-8")
@@ -599,19 +674,33 @@ def show_frequencies(frequencies, filename):
 	finally:
 		out.close()
 
-def show_related_fragments(connections, filename):
+def show_related_fragments(connections, filename, shown_relations=5):
 
 	"""
 	Using 'connections', show for each fragment the related fragments via the
 	connections, writing the results to 'filename'.
 	"""
 
+	# Visit all connections and collect for each fragment all the related
+	# fragments together with the similarity details between the principal
+	# fragment and each related fragment.
+
 	d = defaultdict(list)
 	for connection in connections:
+
+		# The computed measure is used to rank the related fragments. General
+		# similarity details are also included in the data for eventual output.
+
 		measure = connection.measure()
+		similarity = connection.similarity
+
+		# Obtain related fragments for this connection. There should only be
+		# one, but the connection supports relationships between more than two
+		# fragments in general.
+
 		for fragment, relations in connection.relations():
 			for relation in relations:
-				d[fragment].append((measure, relation))
+				d[fragment].append((measure, relation, similarity))
 
 	# Show each fragment with related fragments in descending order of
 	# similarity.
@@ -622,10 +711,34 @@ def show_related_fragments(connections, filename):
 	out = codecs.open(filename, "w", encoding="utf-8")
 	try:
 		for fragment, relations in l:
+
+			# Show the related fragments in descending order of similarity.
+
 			relations.sort(reverse=True)
-			print >>out, fragment.text
-			for measure, relation in relations:
-				print >>out, measure, relation.text
+
+			# Show the principal fragment details.
+
+			print >>out, "  Id:", fragment.source, fragment.start, fragment.end
+			print >>out, "Text:", fragment.text
+			print >>out
+
+			# For each related fragment, show details including the similarity
+			# information.
+
+			for measure, relation, similarity in relations[:shown_relations]:
+
+				print >>out, "  Id:", relation.source, relation.start, relation.end
+				print >>out, " Sim: %.2f" % measure,
+				for term, score in similarity:
+					print >>out, "%s (%.2f)" % (term, score),
+				print >>out
+				print >>out, "Text:", relation.text
+				print >>out
+
+			if len(relations) > shown_relations:
+				print >>out, "%d related fragments not shown." % (len(relations) - shown_relations)
+
+			print >>out, "----"
 			print >>out
 	finally:
 		out.close()
@@ -704,6 +817,7 @@ following:
 
  * fragments
  * connections
+ * all words from fragments
  * category terms (terms found in each category)
  * common category terms (categories associated with each term)
  * common fragment terms (fragments associated with each term)
@@ -733,6 +847,7 @@ if __name__ == "__main__":
 	
 	fragmentsfn = join(outdir, "fragments.txt")
 	connectionsfn = join(outdir, "connections.txt")
+	wordsfn = join(outdir, "words.txt")
 	termsfn = join(outdir, "terms.txt")
 	ctermsfn = join(outdir, "term_categories.txt")
 	ftermsfn = join(outdir, "term_fragments.txt")
@@ -757,12 +872,21 @@ if __name__ == "__main__":
 
 		fragments += current_fragments
 
+	# Discard empty fragments.
+
+	fragments = discard_empty_fragments(fragments)
+
 	# NOTE: Should find a way of preserving capitalisation for proper nouns and not
 	# NOTE: discarding articles/prepositions that feature in informative terms.
 	# NOTE: Maybe chains of capitalised words that also include "padding" can be
 	# NOTE: consolidated into single terms.
 
 	commit_text(fragments)
+
+	# Output words.
+
+	all_words = get_all_words(fragments)
+	show_all_words(all_words, wordsfn)
 
 	# Perform some processes on the words:
 	# Filtering of stop words.
