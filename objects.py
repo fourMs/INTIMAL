@@ -272,12 +272,15 @@ class Term:
         for word in fragment.words:
             if self.intersection(word):
                 return self
+
         # Split up this term to search distinct words.
+
         for form in self.forms:
             if "_" not in form:
                 continue
             if match_tokens(form.split("_"), fragment.original_words()):
                 return self
+
         return None
 
 def match_tokens(tokens, words):
