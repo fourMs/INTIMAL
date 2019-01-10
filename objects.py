@@ -232,7 +232,7 @@ class Term:
 
     def __init__(self, word, forms=None):
         self.word = word
-        self.forms = forms or set([word])
+        self.forms = set(forms) or set([word])
 
     def __repr__(self):
         return "Term(%r)" % self.word
@@ -246,7 +246,10 @@ class Term:
     def __cmp__(self, other):
         if self.intersection(other):
             return 0
-        return cmp(self.word, other.word)
+        if isinstance(other, Term):
+            return cmp(self.word, other.word)
+        else:
+            return cmp(self.word, other)
 
     def __nonzero__(self):
         return bool(self.forms)
