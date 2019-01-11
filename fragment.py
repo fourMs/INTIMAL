@@ -22,6 +22,9 @@ from objects import Category, Fragment, \
                     get_category_terms, get_fragment_terms, \
                     word_document_frequencies, word_frequencies
 
+from analysis import process_fragment_tokens, \
+                     lower_word, stem_word
+
 from grouping import group_words
 
 from stopwords import no_stop_words
@@ -81,7 +84,7 @@ def get_common_terms(entity_terms):
     d = defaultdict(set)
     for entity, terms in entity_terms.items():
         for term in terms:
-            d[term].add(entity)
+            d[unicode(term)].add(entity)
     return d
 
 def inverse_document_frequencies(frequencies, numdocs):
@@ -126,7 +129,7 @@ def show_category_terms(category_terms, filename):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for category, terms in l:
-            terms = list(set(terms))
+            terms = list(set(map(lambda t: unicode(t), terms)))
             terms.sort()
             print >>out, category
             for term in terms:
@@ -398,17 +401,15 @@ if __name__ == "__main__":
 
     fragments = discard_empty_fragments(fragments)
 
-    # NOTE: Should find a way of preserving capitalisation for proper nouns and not
-    # NOTE: discarding articles/prepositions that feature in informative terms.
-    # NOTE: Maybe chains of capitalised words that also include "padding" can be
-    # NOTE: consolidated into single terms.
-
-    commit_text(fragments)
-
     # Output words.
 
     all_words = get_all_words(fragments)
     show_all_words(all_words, wordsfn)
+
+    # Tidy up the data.
+
+    process_fragments(fragments, [normalise_accents])
+    commit_text(fragments)
 
     # Perform some processes on the words:
     # Filtering of stop words.
@@ -416,11 +417,11 @@ if __name__ == "__main__":
     # Part-of-speech tagging to select certain types of words (nouns and verbs).
     # Normalisation involving stemming, synonyms and semantic equivalences.
 
-    processes = [group_words, only_words, map_to_synonyms, normalise_accents, lower, no_stop_words] #, stem_words]
+    process_fragment_tokens(fragments, [stem_word, lower_word])
 
-    # Obtain only words, not punctuation.
+    word_processes = [group_words, only_words, no_stop_words, map_to_synonyms]
 
-    process_fragments(fragments, processes)
+    process_fragments(fragments, word_processes)
 
     # Emit the fragments for inspection.
 
