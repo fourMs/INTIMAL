@@ -32,21 +32,11 @@ from text import lower, normalise_accents, remove_punctuation, only_words
 
 from collections import defaultdict
 from math import log
-from nltk.stem.snowball import SnowballStemmer
 from os import mkdir
 from os.path import isdir, join
 from xml.dom.minidom import parse
 import codecs
 import sys
-
-# Stemming using NLTK.
-
-def stem_words(words):
-    stemmer = SnowballStemmer("spanish")
-    l = []
-    for word in words:
-        l.append(stemmer.stem(word))
-    return l
 
 # Fragment processing.
 
@@ -188,7 +178,7 @@ def show_fragments(fragments, filename):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for fragment in fragments:
-            print >>out, fragment # "\t".join(map(to_text, fragment.as_tuple()))
+            print >>out, fragment
     finally:
         out.close()
 
@@ -280,12 +270,6 @@ def show_related_fragments(related, filename, shown_relations=5):
             print >>out
     finally:
         out.close()
-
-def to_text(i):
-    if isinstance(i, (list, tuple)):
-        return " ".join(map(to_text, i))
-    else:
-        return unicode(i).encode("utf-8")
 
 graph_template = """\
 graph fragments {

@@ -7,6 +7,8 @@ Elementary text handling.
 
 import unicodedata
 
+# Word processing functions.
+
 def lower(words):
 
     "Convert 'words' to lower case unless a multi-word term."
@@ -54,5 +56,16 @@ def only_words(words):
         if word:
             l.append(word)
     return l
+
+# General text operations.
+
+def to_text(i):
+
+    "Return instance 'i' in textual form."
+
+    if isinstance(i, (list, tuple)):
+        return " ".join(map(to_text, i))
+    else:
+        return unicode(i).encode("utf-8")
 
 # vim: tabstop=4 expandtab shiftwidth=4
