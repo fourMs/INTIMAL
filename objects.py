@@ -63,13 +63,7 @@ class Connection:
 
         key = self.measure(), self.similarity
         other_key = other.measure(), other.similarity
-
-        if key < other_key:
-            return -1
-        elif key > other_key:
-            return 1
-        else:
-            return 0
+        return cmp(key, other_key)
 
     def __hash__(self):
 
