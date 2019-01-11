@@ -7,6 +7,7 @@ Textual abstractions.
 
 from collections import defaultdict
 from itertools import combinations
+from text import is_punctuation
 
 class Category:
 
@@ -174,7 +175,7 @@ class Fragment:
 
         "Define the textual summary of the fragment."
 
-        self.text = " ".join(self.words)
+        self.text = text_from_words(self.words)
 
     def original_words(self):
 
@@ -320,6 +321,22 @@ def sum_values(d):
     for value in d.values():
         t += value
     return t
+
+def text_from_words(words):
+
+    "Join 'words' in order to produce a reasonable text string."
+
+    if not words:
+        return ""
+
+    l = [words[0]]
+
+    for word in words[1:]:
+        if not is_punctuation(word):
+            l.append(" ")
+        l.append(word)
+
+    return "".join(l)
 
 # Fragment collection operations.
 
