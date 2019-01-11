@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+# -*- coding: utf-8
+
+"""
+Text/linguistic analysis.
+"""
+
+import spacy
+
+nlp = None
+
+def ensure_nlp(lang="es"):
+    global nlp
+    if not nlp:
+        nlp = spacy.load(lang)
+
+def get_tokens(s, lang="es"):
+    ensure_nlp(lang)
+    return nlp(s)
+
+def process_tokens(s, ops, lang="es"):
+    l = []
+    for token in get_tokens(s, lang):
+        t = token
+        for op in ops:
+            t = op(t)
+            if not t:
+                break
+        else:
+            l.append(t)
+    return l
+
+# Processing functions.
+
+def lower_word(t):
+
+    "Apply lower casing to the token in 't' if not a proper noun."
+
+    token, result = t
+
+    if token.pos_ not in ("PROPN",):
+        return (token, result.lower())
+    else:
+        return t
+
+def stem_word(t):
+
+    "Stem the token in 't' if it is a verb."
+
+    token, result = t
+
+    if token.pos_ == "VERB":
+        return (token, token.lemma_)
+    else:
+        return t
+
+# Internal functions for setting up and finalising results.
+
+def init_result(token):
+    return (token, token.text)
+
+def complete_result(t):
+    token, result = t
+    return result
+
+# Fragment processing.
+
+def process_fragment_tokens(fragments, ops):
+
+    "Process the 'fragments' using the given 'ops'."
+
+    for fragment in fragments:
+        fragment.words = process_tokens(fragment.get_text(), [init_result] + ops + [complete_result])
+
+# vim: tabstop=4 expandtab shiftwidth=4

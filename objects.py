@@ -177,6 +177,12 @@ class Fragment:
 
         self.text = text_from_words(self.words)
 
+    def get_text(self):
+
+        "Return a recomputed textual summary from the words."
+
+        return text_from_words(self.words)
+
     def original_words(self):
 
         "Return the originally-specified words for the terms in this fragment."
