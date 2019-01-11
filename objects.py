@@ -205,6 +205,8 @@ class Fragment:
         d = defaultdict(lambda: 0)
         for word in self.intersection(other):
             d[unicode(word)] += 1
+        for word in other.intersection(self):
+            d[unicode(word)] += 1
         return scale_similarity(d.items(), word_frequencies([self, other]), idf)
 
     def word_frequencies(self):
