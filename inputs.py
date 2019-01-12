@@ -5,7 +5,7 @@
 Fragment retrieval.
 """
 
-from objects import Fragment
+from objects import Category, Fragment
 import bisect
 
 # XML node processing.
@@ -38,7 +38,9 @@ def get_categorised_fragments(tiersdoc, source):
             # The category is textual content within a subnode.
 
             for category in span.getElementsByTagName("v"):
-                fragments.append(Fragment(source, start, end, parent, textContent(category)))
+                fragments.append(
+                    Fragment(source, start, end,
+                             Category(parent, textContent(category))))
                 break
 
     fragments.sort()
@@ -55,7 +57,7 @@ def populate_fragments(fragments, textdoc, source):
         # The word is textual content within a subnode.
 
         for word in span.getElementsByTagName("v"):
-            temp = Fragment(source, start, end, None, None, [textContent(word)])
+            temp = Fragment(source, start, end, None, [textContent(word)])
             break
         else:
             continue

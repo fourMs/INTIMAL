@@ -112,19 +112,18 @@ class Fragment:
 
     "A fragment of text from a transcript."
 
-    def __init__(self, source, start, end, parent, category, words=None, text=None):
+    def __init__(self, source, start, end, category, words=None, text=None):
 
         """
         Initialise a fragment from 'source' with the given 'start' and 'end'
-        timings, the nominated 'parent' and leaf 'category', and a collection of
-        corresponding 'words'. Any original 'text' words may be set or instead
-        committed later using the 'commit_text' method.
+        timings, the nominated 'category', and a collection of corresponding
+        'words'. Any original 'text' may be set or instead committed later using
+        the 'commit_text' method.
         """
 
         self.source = source
         self.start = start
         self.end = end
-        self.parent = parent
         self.category = category
         self.words = words or []
         self.text = text
@@ -153,7 +152,7 @@ class Fragment:
 
         "Permit the fragment to be used as a dictionary key."
 
-        return hash((self.source, self.start, self.end, self.parent, self.category))
+        return hash((self.source, self.start, self.end, self.category))
 
     def __nonzero__(self):
 
@@ -162,10 +161,10 @@ class Fragment:
         return bool(self.words)
 
     def __repr__(self):
-        return "Fragment(%r, %r, %r, %r, %r, %r, %r)" % self.as_tuple()
+        return "Fragment(%r, %r, %r, %r, %r, %r)" % self.as_tuple()
 
     def as_tuple(self):
-        return (self.source, self.start, self.end, self.parent, self.category, self.words, self.text)
+        return (self.source, self.start, self.end, self.category, self.words, self.text)
 
     def commit_text(self):
 
@@ -363,7 +362,7 @@ def get_category_terms(fragments):
 
     for fragment in fragments:
         for word in fragment.words:
-            d[Category(fragment.parent, fragment.category)].append(word)
+            d[fragment.category].append(word)
 
     return d
 
