@@ -232,12 +232,18 @@ class Term:
         return self.word
 
     def __cmp__(self, other):
+
+        "Compare this term to 'other'."
+
+        # Try and find an intersection of the forms defined for this term and
+        # for the other object. If there is an intersection, return equality.
+
         if self.intersection(other):
             return 0
-        if isinstance(other, Term):
-            return cmp(self.word, other.word)
-        else:
-            return cmp(self.word, other)
+
+        # Without an intersection, just compare this term as a plain word.
+
+        return cmp(self.word, other)
 
     def __nonzero__(self):
         return bool(self.forms)
@@ -246,9 +252,14 @@ class Term:
 
         "Provide the intersection of forms in this and the 'other' word or term."
 
+        # With another term, obtain the intersection of the terms' forms.
+
         if isinstance(other, Term):
             return self.forms.intersection(other.forms)
-        elif other in self.forms:
+
+        # Otherwise, look for the other object in this term's forms.
+
+        if other in self.forms:
             return [other]
         else:
             return []
