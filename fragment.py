@@ -25,6 +25,8 @@ from objects import Category, Fragment, \
 from analysis import process_fragment_tokens, \
                      lower_word, stem_word
 
+from graph import write_graph
+
 from grouping import group_words
 
 from stopwords import no_stop_words
@@ -226,11 +228,7 @@ def get_related_fragments(connections):
             for relation in relations:
                 d[fragment].append((measure, relation, similarity))
 
-    # NOTE: Sort fragments in descending order of similarity.
-
     return d.items()
-    #l.sort(key=lambda i: i[1][0], reverse=True)
-    #return l
 
 def show_related_fragments(related, filename, shown_relations=5):
 
@@ -271,37 +269,6 @@ def show_related_fragments(related, filename, shown_relations=5):
 
             print >>out, "----"
             print >>out
-    finally:
-        out.close()
-
-graph_template = """\
-graph fragments {
-    node [shape=ellipse];
-    %s
-    %s
-}
-"""
-
-node_template = """\
-    %s [label="%s"];
-"""
-
-edge_template = """\
-    %s -- %s [label="%s",len=%s];
-"""
-
-def write_graph(fragments, connections, filename):
-    out = codecs.open(filename, "w", encoding="utf-8")
-    try:
-        nodes = []
-        for fragment in fragments:
-            nodes.append(node_template % (id(fragment), fragment.label()))
-
-        edges = []
-        for connection in connections:
-            edges.append(edge_template % (id(connection[0]), id(connection[1]), connection.label(), connection.label()))
-
-        print >>out, graph_template % ("".join(nodes), "".join(edges))
     finally:
         out.close()
 
