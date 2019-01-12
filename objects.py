@@ -304,9 +304,11 @@ def scale_similarity(commonfreq, allfreq, idf=None):
 
     total = sum(allfreq.values())
     d = {}
+
     for term, freq in commonfreq:
         idf_for_term = idf and idf[term] or 1
         d[term] = float(freq) / total * idf_for_term
+
     return d.items()
 
 def text_from_words(words):
@@ -358,9 +360,11 @@ def get_category_terms(fragments):
     "Return a dictionary mapping categories to terms."
 
     d = defaultdict(list)
+
     for fragment in fragments:
         for word in fragment.words:
             d[Category(fragment.parent, fragment.category)].append(word)
+
     return d
 
 def get_fragment_relations(fragments):
@@ -395,8 +399,10 @@ def get_fragment_terms(fragments):
     "Return a dictionary mapping fragments to terms."
 
     d = {}
+
     for fragment in fragments:
         d[fragment] = fragment.words
+
     return d
 
 def word_document_frequencies(fragments):
@@ -404,9 +410,11 @@ def word_document_frequencies(fragments):
     "Return document frequencies for words from the 'fragments'."
 
     d = defaultdict(lambda: 0)
+
     for fragment in fragments:
         for word in fragment.word_frequencies().keys():
             d[word] += 1
+
     return d
 
 def word_frequencies(fragments):
@@ -414,9 +422,11 @@ def word_frequencies(fragments):
     "Merge word frequencies from the given 'fragments'."
 
     d = defaultdict(lambda: 0)
+
     for fragment in fragments:
         for word, occurrences in fragment.word_frequencies().items():
             d[word] += occurrences
+
     return d
 
 # Connection-related operations.
@@ -434,6 +444,7 @@ def get_related_fragments(connections):
     # fragment and each related fragment.
 
     d = defaultdict(list)
+
     for connection in connections:
 
         # The computed measure is used to rank the related fragments. General
