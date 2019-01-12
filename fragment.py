@@ -20,6 +20,7 @@ from inputs import get_categorised_fragments, populate_fragments
 from objects import Category, Fragment, \
                     commit_text, compare_fragments, \
                     get_category_terms, get_fragment_terms, \
+                    get_related_fragments, \
                     word_document_frequencies, word_frequencies
 
 from analysis import process_fragment_tokens, \
@@ -202,37 +203,6 @@ def show_frequencies(frequencies, filename):
             print >>out, word, occurrences
     finally:
         out.close()
-
-def get_related_fragments(connections):
-
-    """
-    Using 'connections', obtain the fragments related to each fragment,
-    returning a mapping from fragments to (measure, related fragment,
-    similarity), where similarity is the full similarity result.
-    """
-
-    # Visit all connections and collect for each fragment all the related
-    # fragments together with the similarity details between the principal
-    # fragment and each related fragment.
-
-    d = defaultdict(list)
-    for connection in connections:
-
-        # The computed measure is used to rank the related fragments. General
-        # similarity details are also included in the data for eventual output.
-
-        measure = connection.measure()
-        similarity = connection.similarity
-
-        # Obtain related fragments for this connection. There should only be
-        # one, but the connection supports relationships between more than two
-        # fragments in general.
-
-        for fragment, relations in connection.relations():
-            for relation in relations:
-                d[fragment].append((measure, relation, similarity))
-
-    return d
 
 def show_related_fragments(related, filename, shown_relations=5):
 
