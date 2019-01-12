@@ -255,25 +255,51 @@ def ensure_directory(name):
 datatypes = ["Text", "Tiers"]
 
 def get_input_details(filename):
+
+    """
+    Return for 'filename' a tuple of the form (data type, basename). If the
+    filename does not identify one of the recognised data types, return None.
+    """
+
     for datatype in datatypes:
         if datatype in filename:
             return (datatype, filename.rsplit("_", 1)[0])
+
     return None
 
 def get_input_filenames(args):
+
+    """
+    Process the filenames in 'args', identifying groups of filenames to be
+    processed together. The result is a mapping from each filename prefix to the
+    corresponding group. The group is a mapping from each data type to the
+    corresponding filename providing the data.
+    """
+
     d = defaultdict(set)
+
+    # Produce a mapping from prefix to (data type, filename).
+
     for arg in args:
         details = get_input_details(arg)
+
+        # The filename must show signs of providing a recognised data type.
+
         if details:
-            datatype, basename = details
-            d[basename].add((datatype, arg))
+            datatype, prefix = details
+            d[prefix].add((datatype, arg))
+
+    # Generate a list of (prefix, filename mapping) entries.
+
     l = []
-    for basename, filenames in d.items():
+
+    for prefix, filenames in d.items():
+
+        # All the required data types must be supported by the files.
+
         if len(filenames) == len(datatypes):
-            lf = list(filenames)
-            lf.sort()
-            lf.insert(0, basename)
-            l.append(lf)
+            l.append((prefix, dict(filenames)))
+
     return l
 
 helptext = """\
@@ -328,7 +354,10 @@ if __name__ == "__main__":
 
     fragments = []
 
-    for source, (_datatype, textfn), (_datatype, tiersfn) in get_input_filenames(filenames):
+    for source, source_filenames in get_input_filenames(filenames):
+        textfn = source_filenames["Text"]
+        tiersfn = source_filenames["Tiers"]
+
         print tiersfn, textfn
         textdoc = parse(textfn)
         tiersdoc = parse(tiersfn)
