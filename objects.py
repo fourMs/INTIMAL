@@ -302,18 +302,12 @@ def scale_similarity(commonfreq, allfreq, idf=None):
     measures scaled using 'idf'.
     """
 
-    total = sum_values(allfreq)
+    total = sum(allfreq.values())
     d = {}
     for term, freq in commonfreq:
         idf_for_term = idf and idf[term] or 1
         d[term] = float(freq) / total * idf_for_term
     return d.items()
-
-def sum_values(d):
-    t = 0
-    for value in d.values():
-        t += value
-    return t
 
 def text_from_words(words):
 
