@@ -42,7 +42,7 @@ class Category:
 
 class Connection:
 
-    "A connection between two textual fragments."
+    "A connection between textual fragments."
 
     def __init__(self, similarity, fragments):
 
@@ -98,10 +98,7 @@ class Connection:
         form (fragment, related fragments) for each fragment.
         """
 
-        l = []
-        for i, fragment in enumerate(self.fragments):
-            l.append((fragment, self.fragments[:i] + self.fragments[i+1:]))
-        return l
+        return get_fragment_relations(self.fragments)
 
     # Graph methods.
 
@@ -202,17 +199,6 @@ class Fragment:
             if word in other:
                 l.append(word)
         return l
-
-    def similarity(self, other, idf=None):
-
-        "Return the similarity of this and the 'other' fragment."
-
-        d = defaultdict(lambda: 0)
-        for word in self.intersection(other):
-            d[unicode(word)] += 1
-        for word in other.intersection(self):
-            d[unicode(word)] += 1
-        return scale_similarity(d.items(), word_frequencies([self, other]), idf)
 
     def word_frequencies(self):
 
@@ -365,9 +351,10 @@ def compare_fragments(fragments, idf=None):
     connections = []
 
     for f1, f2 in combinations(fragments, 2):
-        similarity = f1.similarity(f2, idf)
+        t = (f1, f2)
+        similarity = get_fragment_similarity(t, idf)
         if similarity:
-            connections.append(Connection(similarity, (f1, f2)))
+            connections.append(Connection(similarity, t))
 
     connections.sort(key=lambda c: c.measure())
     return connections
@@ -381,6 +368,33 @@ def get_category_terms(fragments):
         for word in fragment.words:
             d[Category(fragment.parent, fragment.category)].append(word)
     return d
+
+def get_fragment_relations(fragments):
+
+    """
+    Return the relations for each fragment in the given 'fragments' collection,
+    using the form (fragment, related fragments) for each fragment.
+    """
+
+    l = []
+
+    for i, fragment in enumerate(fragments):
+        l.append((fragment, fragments[:i] + fragments[i+1:]))
+
+    return l
+
+def get_fragment_similarity(fragments, idf=None):
+
+    "Return the similarity of the given 'fragments'."
+
+    d = defaultdict(lambda: 0)
+
+    for fragment, related in get_fragment_relations(fragments):
+        for other in related:
+            for word in fragment.intersection(other):
+                d[unicode(word)] += 1
+
+    return scale_similarity(d.items(), word_frequencies(fragments), idf)
 
 def get_fragment_terms(fragments):
 
