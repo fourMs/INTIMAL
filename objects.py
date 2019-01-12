@@ -97,21 +97,6 @@ class Connection:
     def label(self):
         return self.measure()
 
-    # For NetworkX, support node access.
-
-    def __getitem__(self, item):
-        if item in (0, 1, -3, -2):
-            return self.fragments[:2][item]
-        elif item in (2, -1):
-            return {"weight" : self.measure()}
-        else:
-            raise IndexError, item
-
-    def __len__(self):
-        # For NetworkX, pretend to be a tuple of the form
-        # (node1, node2, data)
-        return 3
-
 class Fragment:
 
     "A fragment of text from a transcript."

@@ -43,7 +43,10 @@ def write_graph(fragments, connections, filename):
 
         edges = []
         for connection in connections:
-            edges.append(edge_template % (id(connection[0]), id(connection[1]), connection.label(), connection.label()))
+            edges.append(edge_template % (id(connection.fragments[0]),
+                                          id(connection.fragments[1]),
+                                          connection.label(),
+                                          connection.label()))
 
         # Produce a graph description, combining the node and edge definitions.
 
