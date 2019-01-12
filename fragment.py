@@ -111,6 +111,9 @@ def cmp_values(a, b):
 # Output conversion.
 
 def show_all_words(words, filename):
+
+    "Show 'words' in 'filename'."
+
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for word in words:
@@ -203,8 +206,9 @@ def show_frequencies(frequencies, filename):
 def get_related_fragments(connections):
 
     """
-    Using 'connections', show for each fragment the related fragments via the
-    connections, writing the results to 'filename'.
+    Using 'connections', obtain the fragments related to each fragment,
+    returning a mapping from fragments to (measure, related fragment,
+    similarity), where similarity is the full similarity result.
     """
 
     # Visit all connections and collect for each fragment all the related
@@ -228,7 +232,7 @@ def get_related_fragments(connections):
             for relation in relations:
                 d[fragment].append((measure, relation, similarity))
 
-    return d.items()
+    return d
 
 def show_related_fragments(related, filename, shown_relations=5):
 
@@ -239,7 +243,7 @@ def show_related_fragments(related, filename, shown_relations=5):
 
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
-        for fragment, relations in related:
+        for fragment, relations in related.items():
 
             # Show the related fragments in descending order of similarity.
 
