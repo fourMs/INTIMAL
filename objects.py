@@ -81,12 +81,23 @@ class Connection:
     # Fragment detail methods.
 
     def measure(self):
+
+        """
+        Return an overall similarity measure using the full similarity details.
+        """
+
         m = 0
         for term, measure in self.similarity:
             m += measure
         return m
 
     def relations(self):
+
+        """
+        Return the relations for each fragment in this connection, using the
+        form (fragment, related fragments) for each fragment.
+        """
+
         l = []
         for i, fragment in enumerate(self.fragments):
             l.append((fragment, self.fragments[:i] + self.fragments[i+1:]))
@@ -95,6 +106,9 @@ class Connection:
     # Graph methods.
 
     def label(self):
+
+        "Return a graph label, this being the overall similarity measure."
+
         return self.measure()
 
 class Fragment:
