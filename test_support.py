@@ -22,5 +22,7 @@ def show(text, result, expected):
     if verbose:
         print text,
         print result, expected
+    else:
+        print
 
 # vim: tabstop=4 expandtab shiftwidth=4
