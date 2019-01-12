@@ -21,6 +21,7 @@ from objects import Category, Fragment, \
                     commit_text, compare_fragments, \
                     get_category_terms, get_fragment_terms, \
                     get_related_fragments, \
+                    inverse_document_frequencies, \
                     word_document_frequencies, word_frequencies
 
 from analysis import process_fragment_tokens, \
@@ -37,7 +38,6 @@ from synonyms import map_to_synonyms
 from text import lower, normalise_accents, remove_punctuation, only_words
 
 from collections import defaultdict
-from math import log
 from os import mkdir
 from os.path import isdir, join
 from xml.dom.minidom import parse
@@ -93,17 +93,6 @@ def get_common_terms(entity_terms):
     for entity, terms in entity_terms.items():
         for term in terms:
             d[unicode(term)].add(entity)
-
-    return d
-
-def inverse_document_frequencies(frequencies, numdocs):
-
-    "Return the inverse document frequencies for 'frequencies' given 'numdocs'."
-
-    d = {}
-
-    for word, freq in frequencies.items():
-        d[word] = log(float(numdocs) / (1 + freq), 10)
 
     return d
 

@@ -7,6 +7,7 @@ Textual abstractions.
 
 from collections import defaultdict
 from itertools import combinations
+from math import log
 from text import is_punctuation
 
 class Category:
@@ -401,6 +402,17 @@ def get_fragment_terms(fragments):
 
     for fragment in fragments:
         d[fragment] = fragment.words
+
+    return d
+
+def inverse_document_frequencies(frequencies, numdocs):
+
+    "Return the inverse document frequencies for 'frequencies' given 'numdocs'."
+
+    d = {}
+
+    for word, freq in frequencies.items():
+        d[word] = log(float(numdocs) / (1 + freq), 10)
 
     return d
 
