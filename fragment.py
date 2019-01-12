@@ -51,9 +51,11 @@ def discard_empty_fragments(fragments):
     "Return a list of non-empty instances from 'fragments'."
 
     l = []
+
     for fragment in fragments:
         if fragment:
             l.append(fragment)
+
     return l
 
 def get_all_words(fragments):
@@ -61,8 +63,10 @@ def get_all_words(fragments):
     "Return a sorted list of unique words."
 
     s = set()
+
     for fragment in fragments:
         s.update(fragment.words)
+
     l = list(s)
     l.sort()
     return l
@@ -85,9 +89,11 @@ def get_common_terms(entity_terms):
     "Return a distribution mapping terms to common entities."
 
     d = defaultdict(set)
+
     for entity, terms in entity_terms.items():
         for term in terms:
             d[unicode(term)].add(entity)
+
     return d
 
 def inverse_document_frequencies(frequencies, numdocs):
@@ -95,8 +101,10 @@ def inverse_document_frequencies(frequencies, numdocs):
     "Return the inverse document frequencies for 'frequencies' given 'numdocs'."
 
     d = {}
+
     for word, freq in frequencies.items():
         d[word] = log(float(numdocs) / (1 + freq), 10)
+
     return d
 
 # Comparison functions.
