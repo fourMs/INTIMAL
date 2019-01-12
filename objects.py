@@ -87,10 +87,7 @@ class Connection:
         Return an overall similarity measure using the full similarity details.
         """
 
-        m = 0
-        for term, measure in self.similarity:
-            m += measure
-        return m
+        return sum(self.similarity.values())
 
     def relations(self):
 
@@ -200,11 +197,17 @@ class Fragment:
                 l.append(word)
         return l
 
+    def union(self, other):
+
+        "Provide the union of terms in this and the 'other' fragment."
+
+        return self.words + other.words
+
     def word_frequencies(self):
 
         "Return a mapping of original words to frequencies."
 
-        d = defaultdict(lambda: 0)
+        d = CountingDict()
         for word in self.original_words():
             d[word] += 1
         return d
@@ -282,6 +285,19 @@ class Term:
 
         return None
 
+class CountingDict(defaultdict):
+
+    "A simple counting dictionary."
+
+    def __init__(self):
+        defaultdict.__init__(self, lambda: 0)
+
+    def __repr__(self):
+        l = []
+        for key, value in self.items():
+            l.append("%r: %r" % (key, value))
+        return "{%s}" % ", ".join(l)
+
 def match_tokens(tokens, words):
 
     "Match the given 'tokens' consecutively in the collection of 'words'."
@@ -316,11 +332,15 @@ def scale_similarity(commonfreq, allfreq, idf=None):
     total = sum(allfreq.values())
     d = {}
 
-    for term, freq in commonfreq:
+    for term, freq in commonfreq.items():
+
+        # Convert the term to a suitable form for the IDF mapping.
+
+        word = unicode(term)
         idf_for_term = idf and idf[term] or 1
         d[term] = float(freq) / total * idf_for_term
 
-    return d.items()
+    return d
 
 def text_from_words(words):
 
@@ -396,14 +416,19 @@ def get_fragment_similarity(fragments, idf=None):
 
     "Return the similarity of the given 'fragments'."
 
-    d = defaultdict(lambda: 0)
+    d = CountingDict()
+
+    # For each fragment, get the occurrences of terms in related fragments.
 
     for fragment, related in get_fragment_relations(fragments):
         for other in related:
             for word in fragment.intersection(other):
+
+                # Employ the original word in any mapping.
+
                 d[unicode(word)] += 1
 
-    return scale_similarity(d.items(), word_frequencies(fragments), idf)
+    return scale_similarity(d, word_frequencies(fragments), idf)
 
 def get_fragment_terms(fragments):
 
@@ -431,7 +456,7 @@ def word_document_frequencies(fragments):
 
     "Return document frequencies for words from the 'fragments'."
 
-    d = defaultdict(lambda: 0)
+    d = CountingDict()
 
     for fragment in fragments:
         for word in fragment.word_frequencies().keys():
@@ -443,7 +468,7 @@ def word_frequencies(fragments):
 
     "Merge word frequencies from the given 'fragments'."
 
-    d = defaultdict(lambda: 0)
+    d = CountingDict()
 
     for fragment in fragments:
         for word, occurrences in fragment.word_frequencies().items():
