@@ -425,7 +425,7 @@ if __name__ == "__main__":
     # Determine fragment similarity by taking the processed words and comparing
     # fragments.
 
-    connections = compare_fragments(fragments, inv_doc_frequencies)
+    connections = compare_fragments(fragments, idf=inv_doc_frequencies)
 
     # Emit the connections for inspection.
 

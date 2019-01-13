@@ -320,16 +320,18 @@ def match_tokens(tokens, words):
 
     return False
 
-def scale_similarity(commonfreq, allfreq, idf=None):
+def scale_similarity(commonfreq, total=None, idf=None):
 
     """
     Using 'commonfreq' being a mapping from terms common to two fragments to
-    their frequencies, and 'allfreq' being a mapping of terms from both
-    fragments to their frequencies, return a list mapping terms to similarity
-    measures scaled using 'idf'.
+    their frequencies, and 'total' being the total frequency of terms in the
+    fragments, return a list mapping terms to similarity measures scaled using
+    'idf'.
     """
 
-    total = sum(allfreq.values())
+    if not total:
+        total = 1
+
     d = {}
 
     for term, freq in commonfreq.items():
@@ -367,19 +369,24 @@ def commit_text(fragments):
     for fragment in fragments:
         fragment.commit_text()
 
-def compare_fragments(fragments, idf=None):
+def compare_fragments(fragments, wf=False, idf=None):
 
     """
     Compare 'fragments' with each other, returning a list of connections
-    sorted by the similarity measure. If 'idf' is given, use this inverse
-    document frequency distribution to scale term weights.
+    sorted by the similarity measure.
+
+    If 'wf' is a true value, use the word frequency distribution of each pair of
+    fragments to scale term weights.
+
+    If 'idf' is given, use this inverse document frequency distribution to scale
+    term weights.
     """
 
     connections = []
 
     for f1, f2 in combinations(fragments, 2):
         t = (f1, f2)
-        similarity = get_fragment_similarity(t, idf)
+        similarity = get_fragment_similarity(t, wf, idf)
         if similarity:
             connections.append(Connection(similarity, t))
 
@@ -412,7 +419,7 @@ def get_fragment_relations(fragments):
 
     return l
 
-def get_fragment_similarity(fragments, idf=None):
+def get_fragment_similarity(fragments, wf=False, idf=None):
 
     "Return the similarity of the given 'fragments'."
 
@@ -428,7 +435,7 @@ def get_fragment_similarity(fragments, idf=None):
 
                 d[unicode(word)] += 1
 
-    return scale_similarity(d, word_frequencies(fragments), idf)
+    return scale_similarity(d, wf and sum(word_frequencies(fragments).values()) or None, idf)
 
 def get_fragment_terms(fragments):
 

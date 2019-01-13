@@ -8,7 +8,8 @@ Test similarity computation.
 from test_support import set_verbose, show
 from objects import Category, Fragment, \
                     compare_fragments, get_fragment_similarity, \
-                    word_frequencies
+                    inverse_document_frequencies, \
+                    word_document_frequencies, word_frequencies
 from text import only_words
 import re
 import sys
@@ -57,9 +58,25 @@ for i, sentence in enumerate(sentences):
     words = map(lambda s: s.lower(), words)
     fragments.append(Fragment(source, i, i+1, category, words, sentence))
 
+# Obtain statistics.
+
+wdf = word_document_frequencies(fragments)
+idf = inverse_document_frequencies(wdf, len(fragments))
+
 # Prepare connections for testing.
 
-connections = compare_fragments(fragments)
+connections = compare_fragments(fragments, idf=idf)
+
+
+
+# Diagnostics.
+
+def show_connections():
+    for c in connections:
+        print c.similarity
+        for f in c.fragments:
+            print f.text
+        print
 
 
 
@@ -106,11 +123,21 @@ def test_similarity():
          get_fragment_similarity([fragments[2], fragments[-2]]),
          {u"el" : 7, u"pobre" : 2, u"pollo" : 2})
 
+    show("get_fragment_similarity([%r, %r], True)" % (fragments[0], fragments[2]),
+         get_fragment_similarity([fragments[0], fragments[2]], True),
+         {u"pollo" : 2.0 / 19})
+
 def test_frequencies():
     show("word_frequencies([%r, %r])" % (fragments[0], fragments[2]),
          word_frequencies([fragments[0], fragments[2]]),
          {u"un" : 3, u"día" : 1, u"pollo" : 2, u"entra" : 1, u"en" : 1,
           u"bosque" : 1, u"el" : 2, u"pobre" : 1, u"cree" : 1, u"que" : 1,
+          u"cielo" : 1, u"ha" : 1, u"caído" : 1, u"sobre" : 1, u"él" : 1})
+
+    show("word_document_frequencies([%r, %r])" % (fragments[0], fragments[2]),
+         word_document_frequencies([fragments[0], fragments[2]]),
+         {u"un" : 1, u"día" : 1, u"pollo" : 2, u"entra" : 1, u"en" : 1,
+          u"bosque" : 1, u"el" : 1, u"pobre" : 1, u"cree" : 1, u"que" : 1,
           u"cielo" : 1, u"ha" : 1, u"caído" : 1, u"sobre" : 1, u"él" : 1})
 
 
