@@ -3,6 +3,9 @@
 
 """
 Simple grouping of words into terms.
+
+An alternative approach to this may involve using named entity recognition in
+toolkits such as spaCy.
 """
 
 def group_words(words):

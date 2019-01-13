@@ -3,6 +3,14 @@
 
 """
 Text/linguistic analysis.
+
+Currently, this uses the spaCy toolkit:
+
+https://spacy.io/
+
+Another potentially-useful toolkit is Polyglot:
+
+https://pypi.org/project/polyglot/
 """
 
 import spacy
@@ -66,9 +74,17 @@ def stem_word(t):
 # Internal functions for setting up and finalising results.
 
 def init_result(token):
+
+    """
+    Return a tuple containing 'token' and the initial result involving 'token'.
+    """
+
     return (token, token.text)
 
 def complete_result(t):
+
+    "Return the eventual result from 't', this being (token, result)."
+
     token, result = t
     return result
 

@@ -3,14 +3,14 @@
 
 """
 Stop word filtering.
+
+An alternative approach would involve part-of-speech tagging and the elimination
+of words having particular roles.
 """
 
 from nltk.corpus import stopwords
 
 # Provisional stop words.
-# NOTE: Should be in a file, but really should be provided by NLTK or similar.
-# NOTE: Moreover, these stop words would be better filtered out using
-# NOTE: part-of-speech tagging.
 
 stop_words = [u"ahí", u"da", u"entonces", u"si", u"u"]
 
