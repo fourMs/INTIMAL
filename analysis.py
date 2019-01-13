@@ -10,15 +10,24 @@ import spacy
 nlp = None
 
 def ensure_nlp(lang="es"):
+
+    "Ensure that the language model for 'lang' is loaded."
+
     global nlp
     if not nlp:
         nlp = spacy.load(lang)
 
 def get_tokens(s, lang="es"):
+
+    "Return tokens for 's'."
+
     ensure_nlp(lang)
     return nlp(s)
 
 def process_tokens(s, ops, lang="es"):
+
+    "Process the tokens found by tokenising 's' with the given 'ops'."
+
     l = []
     for token in get_tokens(s, lang):
         t = token
