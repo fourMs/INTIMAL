@@ -9,6 +9,7 @@ from collections import defaultdict
 from itertools import combinations
 from math import log
 from text import is_punctuation
+from utils import CountingDict, get_relations
 
 class Category:
 
@@ -96,7 +97,7 @@ class Connection:
         form (fragment, related fragments) for each fragment.
         """
 
-        return get_fragment_relations(self.fragments)
+        return get_relations(self.fragments)
 
     # Graph methods.
 
@@ -288,19 +289,6 @@ class Term:
 
         return None
 
-class CountingDict(defaultdict):
-
-    "A simple counting dictionary."
-
-    def __init__(self):
-        defaultdict.__init__(self, lambda: 0)
-
-    def __repr__(self):
-        l = []
-        for key, value in self.items():
-            l.append("%r: %r" % (key, value))
-        return "{%s}" % ", ".join(l)
-
 def match_tokens(tokens, words):
 
     "Match the given 'tokens' consecutively in the collection of 'words'."
@@ -404,20 +392,6 @@ def get_category_terms(fragments):
 
     return d
 
-def get_fragment_relations(fragments):
-
-    """
-    Return the relations for each fragment in the given 'fragments' collection,
-    using the form (fragment, related fragments) for each fragment.
-    """
-
-    l = []
-
-    for i, fragment in enumerate(fragments):
-        l.append((fragment, fragments[:i] + fragments[i+1:]))
-
-    return l
-
 def get_fragment_similarity(fragments, wf=False, idf=None):
 
     "Return the similarity of the given 'fragments'."
@@ -426,7 +400,7 @@ def get_fragment_similarity(fragments, wf=False, idf=None):
 
     # For each fragment, get the occurrences of terms in related fragments.
 
-    for fragment, related in get_fragment_relations(fragments):
+    for fragment, related in get_relations(fragments):
         for other in related:
             for word in fragment.intersection(other):
                 d[word] += 1
