@@ -6,7 +6,7 @@ Test the fragment abstraction.
 """
 
 from test_support import set_verbose, show
-from objects import Fragment, Term
+from objects import Category, Fragment, Term
 import sys
 
 # Test data.
@@ -16,12 +16,16 @@ t2 = Term("boy", ["boy", "kid", "lad", "male"])
 t3 = Term("woman", ["lady", "woman"])
 t4 = Term("man", ["adult_male", "gentleman's_gentleman", "man", "valet"])
 
-f1 = Fragment("A1", 10, 20, "Parent", "Category", ["just", "another", "guy"])
-f2 = Fragment("A1", 40, 50, "Parent", "Category", ["yet", "another", t2])
-f3 = Fragment("A2", 10, 20, "Parent", "Category")
-f4 = Fragment("A2", 10, 20, "Parent", "Different category")
-f5 = Fragment("A1", 40, 50, "Parent", "Category", ["just", "another", t1])
-f6 = Fragment("A3", 100, 200, "P", "C", ["discretion", "of", "the", "gentleman's", "gentleman"])
+cat1 = Category("Parent", "Category")
+cat2 = Category("Parent", "Different category")
+cat3 = Category("P", "C")
+
+f1 = Fragment("A1", 10, 20, cat1, ["just", "another", "guy"])
+f2 = Fragment("A1", 40, 50, cat1, ["yet", "another", t2])
+f3 = Fragment("A2", 10, 20, cat1)
+f4 = Fragment("A2", 10, 20, cat2)
+f5 = Fragment("A1", 40, 50, cat1, ["just", "another", t1])
+f6 = Fragment("A3", 100, 200, cat3, ["discretion", "of", "the", "gentleman's", "gentleman"])
 
 # Test cases.
 
