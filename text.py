@@ -59,6 +59,51 @@ def only_words(words):
 
 # General text operations.
 
+def match_tokens(tokens, words):
+
+    "Match the given 'tokens' consecutively in the collection of 'words'."
+
+    to_test = []
+
+    # First, find places where the first token matches.
+
+    for i, word in enumerate(words):
+        if tokens[0] == word:
+            to_test.append(i)
+
+    # Then, investigate each of the possible matches.
+
+    for i in to_test:
+        to_match = tokens[1:]
+
+        # For each subsequent word, match the next token.
+
+        for word in words[i+1:]:
+            if word == to_match[0]:
+                del to_match[0]
+                if not to_match:
+                    return True
+            else:
+                break
+
+    return False
+
+def text_from_words(words):
+
+    "Join 'words' in order to produce a reasonable text string."
+
+    if not words:
+        return ""
+
+    l = [words[0]]
+
+    for word in words[1:]:
+        if not is_punctuation(word):
+            l.append(" ")
+        l.append(word)
+
+    return "".join(l)
+
 def to_text(i):
 
     "Return instance 'i' in textual form."
