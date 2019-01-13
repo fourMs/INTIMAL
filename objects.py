@@ -225,6 +225,9 @@ class Term:
         self.word = word
         self.forms = set(forms) or set([word])
 
+    def __hash__(self):
+        return hash(self.word)
+
     def __repr__(self):
         return "Term(%r)" % self.word
 
@@ -335,10 +338,6 @@ def scale_similarity(commonfreq, total=None, idf=None):
     d = {}
 
     for term, freq in commonfreq.items():
-
-        # Convert the term to a suitable form for the IDF mapping.
-
-        word = unicode(term)
         idf_for_term = idf and idf[term] or 1
         d[term] = float(freq) / total * idf_for_term
 
@@ -430,10 +429,7 @@ def get_fragment_similarity(fragments, wf=False, idf=None):
     for fragment, related in get_fragment_relations(fragments):
         for other in related:
             for word in fragment.intersection(other):
-
-                # Employ the original word in any mapping.
-
-                d[unicode(word)] += 1
+                d[word] += 1
 
     return scale_similarity(d, wf and sum(word_frequencies(fragments).values()) or None, idf)
 

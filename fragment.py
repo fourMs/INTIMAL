@@ -169,7 +169,7 @@ def show_connections(connections, filename):
     try:
         for connection in connections:
             for term, weight in connection.similarity.items():
-                print >>out, term, weight,
+                print >>out, unicode(term), weight,
             print >>out
             for fragment in connection.fragments:
                 print >>out, fragment.text
@@ -230,7 +230,7 @@ def show_related_fragments(related, filename, shown_relations=5):
                 print >>out, "  Id:", relation.source, relation.start, relation.end
                 print >>out, " Sim: %.2f" % measure,
                 for term, score in similarity.items():
-                    print >>out, "%s (%.2f)" % (term, score),
+                    print >>out, "%s (%.2f)" % (unicode(term), score),
                 print >>out
                 print >>out, "Text:", relation.text
                 print >>out
