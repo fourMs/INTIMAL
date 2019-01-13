@@ -10,6 +10,7 @@ from itertools import combinations
 from math import log
 from text import is_punctuation
 from utils import CountingDict, get_relations
+from vectors import combine_term_vectors, get_term_vector_similarity
 
 class Category:
 
@@ -88,7 +89,8 @@ class Connection:
         Return an overall similarity measure using the full similarity details.
         """
 
-        return sum(self.similarity.values())
+        vectors = map(lambda f: f.term_vector(), self.fragments)
+        return get_term_vector_similarity(vectors, self.similarity)
 
     def relations(self):
 
@@ -198,11 +200,18 @@ class Fragment:
                 l.append(word)
         return l
 
-    def union(self, other):
+    def term_vector(self):
 
-        "Provide the union of terms in this and the 'other' fragment."
+        """
+        Return a term vector for the fragment. If 'scaled' is given as a true
+        value, scale the term frequencies by the number of terms to a
+        proportional value.
+        """
 
-        return self.words + other.words
+        d = CountingDict()
+        for word in self.words:
+            d[word] += 1
+        return d
 
     def word_frequencies(self):
 
@@ -311,26 +320,6 @@ def match_tokens(tokens, words):
 
     return False
 
-def scale_similarity(commonfreq, total=None, idf=None):
-
-    """
-    Using 'commonfreq' being a mapping from terms common to two fragments to
-    their frequencies, and 'total' being the total frequency of terms in the
-    fragments, return a list mapping terms to similarity measures scaled using
-    'idf'.
-    """
-
-    if not total:
-        total = 1
-
-    d = {}
-
-    for term, freq in commonfreq.items():
-        idf_for_term = idf and idf[term] or 1
-        d[term] = float(freq) / total * idf_for_term
-
-    return d
-
 def text_from_words(words):
 
     "Join 'words' in order to produce a reasonable text string."
@@ -356,14 +345,11 @@ def commit_text(fragments):
     for fragment in fragments:
         fragment.commit_text()
 
-def compare_fragments(fragments, wf=False, idf=None):
+def compare_fragments(fragments, idf=None):
 
     """
     Compare 'fragments' with each other, returning a list of connections
     sorted by the similarity measure.
-
-    If 'wf' is a true value, use the word frequency distribution of each pair of
-    fragments to scale term weights.
 
     If 'idf' is given, use this inverse document frequency distribution to scale
     term weights.
@@ -373,7 +359,10 @@ def compare_fragments(fragments, wf=False, idf=None):
 
     for f1, f2 in combinations(fragments, 2):
         t = (f1, f2)
-        similarity = get_fragment_similarity(t, wf, idf)
+        similarity = get_fragment_similarity(t, idf)
+
+        # Only record connections when some similarity exists.
+
         if similarity:
             connections.append(Connection(similarity, t))
 
@@ -392,20 +381,16 @@ def get_category_terms(fragments):
 
     return d
 
-def get_fragment_similarity(fragments, wf=False, idf=None):
+def get_fragment_similarity(fragments, idf=None):
 
-    "Return the similarity of the given 'fragments'."
+    """
+    Obtain term vectors from 'fragments' and combine them to give an indication
+    of similarity. Where 'idf' is given, use the inverse document frequency
+    distribution to scale term weights.
+    """
 
-    d = CountingDict()
-
-    # For each fragment, get the occurrences of terms in related fragments.
-
-    for fragment, related in get_relations(fragments):
-        for other in related:
-            for word in fragment.intersection(other):
-                d[word] += 1
-
-    return scale_similarity(d, wf and sum(word_frequencies(fragments).values()) or None, idf)
+    tv = map(lambda f: f.term_vector(), fragments)
+    return combine_term_vectors(tv, idf)
 
 def get_fragment_terms(fragments):
 

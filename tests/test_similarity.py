@@ -73,7 +73,7 @@ connections = compare_fragments(fragments, idf=idf)
 
 def show_connections():
     for c in connections:
-        print c.similarity
+        print c.measure(), c.similarity
         for f in c.fragments:
             print f.text
         print
@@ -104,28 +104,18 @@ def test_intersection():
          fragments[-2].intersection(fragments[2]),
          [u"el", u"pobre", u"pollo", u"el", u"el", u"el", u"el"])
 
-def test_union():
-    show("%r.union(%r)" % (fragments[0], fragments[2]),
-         fragments[0].union(fragments[2]),
-         [u"un", u"día", u"un", u"pollo", u"entra", u"en", u"un", u"bosque",
-          u"el", u"pobre", u"pollo", u"cree", u"que", u"el", u"cielo", u"ha", u"caído", u"sobre", u"él"])
-
 def test_similarity():
     show("get_fragment_similarity([%r, %r])" % (fragments[0], fragments[2]),
          get_fragment_similarity([fragments[0], fragments[2]]),
-         {u"pollo" : 2})
+         {u"pollo" : 1})
 
     show("get_fragment_similarity([%r, %r])" % (fragments[0], fragments[-2]),
          get_fragment_similarity([fragments[0], fragments[-2]]),
-         {u"pollo" : 2})
+         {u"pollo" : 1})
 
     show("get_fragment_similarity([%r, %r])" % (fragments[2], fragments[-2]),
          get_fragment_similarity([fragments[2], fragments[-2]]),
-         {u"el" : 7, u"pobre" : 2, u"pollo" : 2})
-
-    show("get_fragment_similarity([%r, %r], True)" % (fragments[0], fragments[2]),
-         get_fragment_similarity([fragments[0], fragments[2]], True),
-         {u"pollo" : 2.0 / 19})
+         {u"el" : 10, u"pobre" : 1, u"pollo" : 1})
 
 def test_frequencies():
     show("word_frequencies([%r, %r])" % (fragments[0], fragments[2]),
@@ -144,7 +134,6 @@ def test_frequencies():
 
 def main():
     test_intersection()
-    test_union()
     test_similarity()
     test_frequencies()
 
