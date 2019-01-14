@@ -33,7 +33,7 @@ def _normalise_accents(s):
 
 normalise_accents = lambda l: map(_normalise_accents, map(unicode, l))
 
-punctuation = ",;.:?!"
+punctuation = "-,;.:?!"
 
 def is_punctuation(s):
     for c in s:
@@ -52,8 +52,7 @@ def only_words(words):
 
     l = []
     for word in words:
-        word = remove_punctuation(word).strip()
-        if word:
+        if remove_punctuation(word).strip():
             l.append(word)
     return l
 
