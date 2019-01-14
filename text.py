@@ -92,16 +92,16 @@ def text_from_words(words):
     "Join 'words' in order to produce a reasonable text string."
 
     if not words:
-        return ""
+        return u""
 
     l = [words[0]]
 
     for word in words[1:]:
         if not is_punctuation(word):
-            l.append(" ")
+            l.append(u" ")
         l.append(word)
 
-    return "".join(l)
+    return u"".join(l)
 
 def to_text(i):
 
