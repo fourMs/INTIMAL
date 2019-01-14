@@ -15,13 +15,18 @@ def map_to_synonyms(words, lang="spa"):
 
     "Map 'words' to synonyms for normalisation."
 
+    # NOTE: Could use part-of-speech information to filter synsets.
+
     l = []
     for word in words:
-        s = set()
+        senses = set()
+
         for synset in wn.synsets(word, lang=lang):
-            for synonym in synset.lemma_names(lang=lang):
-                s.add(synonym)
-        l.append(Term(word, s))
+            senses.add(synset.name())
+
+        # Create a term with the senses found for the word.
+
+        l.append(Term(word, senses))
 
     return l
 

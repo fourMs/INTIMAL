@@ -11,21 +11,21 @@ import sys
 
 # Test data.
 
-t1 = Term("man", ["bloke", "dude", "guy", "lad", "male", "man"])
-t2 = Term("boy", ["boy", "kid", "lad", "male"])
-t3 = Term("woman", ["lady", "woman"])
-t4 = Term("man", ["adult_male", "gentleman's_gentleman", "man", "valet"])
+t1 = Term(u"hombre",  set([u'homo.n.02', u'man.n.03', u'man.n.01', u'husband.n.01', u'world.n.08', u'man.n.08']))
+t2 = Term(u"niño",  set([u'male_child.n.01', u'cub.n.02', u'child.n.03', u'child.n.01']))
+t3 = Term(u"mujer", set([u'woman.n.01']))
+t4 = Term(u"esposo", set([u'husband.n.01']))
 
 cat1 = Category("Parent", "Category")
 cat2 = Category("Parent", "Different category")
 cat3 = Category("P", "C")
 
-f1 = Fragment("A1", 10, 20, cat1, ["just", "another", "guy"])
-f2 = Fragment("A1", 40, 50, cat1, ["yet", "another", t2])
+f1 = Fragment("A1", 10, 20, cat1, [u"un", u"hombre"])
+f2 = Fragment("A1", 40, 50, cat1, [u"un", t2])
 f3 = Fragment("A2", 10, 20, cat1)
 f4 = Fragment("A2", 10, 20, cat2)
-f5 = Fragment("A1", 40, 50, cat1, ["just", "another", t1])
-f6 = Fragment("A3", 100, 200, cat3, ["discretion", "of", "the", "gentleman's", "gentleman"])
+f5 = Fragment("A1", 40, 50, cat1, [u"un", t1])
+f6 = Fragment("A3", 100, 200, cat3, [u"un", t4])
 
 # Test cases.
 
@@ -47,10 +47,13 @@ def test_contains():
     show("%r in %r" % (t2, f1), t2 in f1, False)
     show("%r in %r" % (t3, f1), t3 in f1, False)
 
-    show("%r in %r" % (t1, f2), t1 in f2, True)
+    show("%r in %r" % (t1, f2), t1 in f2, False)
     show("%r in %r" % (t2, f2), t2 in f2, True)
     show("%r in %r" % (t3, f2), t3 in f2, False)
 
+    show("%r in %r" % (t4, f1), t4 in f1, False)
+    show("%r in %r" % (t4, f2), t4 in f2, False)
+    show("%r in %r" % (t4, f5), t4 in f5, True)
     show("%r in %r" % (t4, f6), t4 in f6, True)
 
 def test_mapping():
@@ -71,9 +74,10 @@ def test_truth():
     show("bool(%r)" % f4, bool(f4), False)
 
 def test_intersection():
-    show("%r.intersection(%r)" % (f1, f2), f1.intersection(f2), ["another"])
+    show("%r.intersection(%r)" % (f1, f2), f1.intersection(f2), [u"un"])
     show("%r.intersection(%r)" % (f1, f3), f1.intersection(f3), [])
-    show("%r.intersection(%r)" % (f5, f2), f5.intersection(f2), ["another", t1])
+    show("%r.intersection(%r)" % (f5, f2), f5.intersection(f2), [u"un"])
+    show("%r.intersection(%r)" % (f5, f6), f5.intersection(f6), [u"un", t1])
 
 def main():
     test_comparison()

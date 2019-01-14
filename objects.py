@@ -144,10 +144,7 @@ class Fragment:
 
         "Match 'other' to the terms in this fragment."
 
-        if isinstance(other, Term):
-            return other.search(self)
-        else:
-            return other in self.words and other or None
+        return other in self.words and other or None
 
     def __hash__(self):
 
@@ -200,27 +197,16 @@ class Fragment:
                 l.append(word)
         return l
 
-    def term_vector(self):
+    def word_frequencies(self):
 
-        """
-        Return a term vector for the fragment. If 'scaled' is given as a true
-        value, scale the term frequencies by the number of terms to a
-        proportional value.
-        """
+        "Return a mapping of words to frequencies."
 
         d = CountingDict()
         for word in self.words:
             d[word] += 1
         return d
 
-    def word_frequencies(self):
-
-        "Return a mapping of original words to frequencies."
-
-        d = CountingDict()
-        for word in self.original_words():
-            d[word] += 1
-        return d
+    term_vector = word_frequencies
 
     # Graph methods.
 
@@ -231,72 +217,36 @@ class Term:
 
     "A word or term used in text."
 
-    def __init__(self, word, forms=None):
+    def __init__(self, word, senses=None):
         self.word = word
-        self.forms = set(forms) or set([word])
+        self.senses = senses or set([word])
 
     def __hash__(self):
         return hash(self.word)
 
     def __repr__(self):
-        return "Term(%r)" % self.word
+        return "Term(%r, %r)" % (self.word, self.senses)
 
     def __str__(self):
-        return self.word
+        return unicode(self)
 
     def __unicode__(self):
-        return self.word
+        return u"%s/%s" % (self.word, "/".join(self.senses))
 
     def __cmp__(self, other):
 
         "Compare this term to 'other'."
 
-        # Try and find an intersection of the forms defined for this term and
-        # for the other object. If there is an intersection, return equality.
-
-        if self.intersection(other):
-            return 0
-
-        # Without an intersection, just compare this term as a plain word.
+        if isinstance(other, Term):
+            if self.senses.intersection(other.senses):
+                return 0
+            else:
+                other = other.word
 
         return cmp(self.word, other)
 
     def __nonzero__(self):
-        return bool(self.forms)
-
-    def intersection(self, other):
-
-        "Provide the intersection of forms in this and the 'other' word or term."
-
-        # With another term, obtain the intersection of the terms' forms.
-
-        if isinstance(other, Term):
-            return self.forms.intersection(other.forms)
-
-        # Otherwise, look for the other object in this term's forms.
-
-        if other in self.forms:
-            return [other]
-        else:
-            return []
-
-    def search(self, fragment):
-
-        "Search for this term in 'fragment', returning this term if found."
-
-        for word in fragment.words:
-            if self.intersection(word):
-                return self
-
-        # Split up this term to search distinct words.
-
-        for form in self.forms:
-            if "_" not in form:
-                continue
-            if match_tokens(form.split("_"), fragment.original_words()):
-                return self
-
-        return None
+        return bool(self.word)
 
 # Fragment collection operations.
 

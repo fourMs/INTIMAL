@@ -17,7 +17,7 @@ others.
 
 from inputs import get_categorised_fragments, populate_fragments
 
-from objects import Category, Fragment, \
+from objects import Category, Fragment, Term, \
                     commit_text, compare_fragments, \
                     get_category_terms, get_fragment_terms, \
                     get_related_fragments, \
@@ -196,10 +196,16 @@ def show_frequencies(frequencies, filename):
     l.sort(cmp=cmp_values)
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
-        for word, occurrences in l:
-            print >>out, word, occurrences
+        for term, occurrences in l:
+            print >>out, unicode(term), occurrences
     finally:
         out.close()
+
+def short_term(term):
+    if isinstance(term, Term):
+        return term.word
+    else:
+        return term
 
 def show_related_fragments(related, filename, shown_relations=5):
 
@@ -229,8 +235,10 @@ def show_related_fragments(related, filename, shown_relations=5):
 
                 print >>out, "  Id:", relation.source, relation.start, relation.end
                 print >>out, " Sim: %.2f" % measure,
+
                 for term, score in similarity.items():
-                    print >>out, "%s (%.2f)" % (unicode(term), score),
+                    print >>out, "%s (%.2f)" % (short_term(term), score),
+
                 print >>out
                 print >>out, "Text:", relation.text
                 print >>out
