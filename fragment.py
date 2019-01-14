@@ -25,15 +25,13 @@ from objects import Category, Fragment, Term, \
                     word_document_frequencies, word_frequencies
 
 from analysis import process_fragment_tokens, \
-                     lower_word, stem_word
+                     lower_word, map_to_synonyms, stem_word
 
 from graph import write_graph
 
 from grouping import group_words
 
 from stopwords import no_stop_words
-
-from synonyms import map_to_synonyms
 
 from text import lower, normalise_accents, remove_punctuation, only_words
 
@@ -394,9 +392,9 @@ if __name__ == "__main__":
 
     process_fragment_tokens(fragments, [stem_word, lower_word])
 
-    word_processes = [group_words, only_words, no_stop_words, map_to_synonyms]
+    process_fragments(fragments, [group_words, only_words, no_stop_words])
 
-    process_fragments(fragments, word_processes)
+    process_fragment_tokens(fragments, [map_to_synonyms])
 
     # Emit the fragments for inspection.
 
