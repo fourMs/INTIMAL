@@ -13,6 +13,7 @@ Another potentially-useful toolkit is Polyglot:
 https://pypi.org/project/polyglot/
 """
 
+from objects import Term
 import spacy
 
 nlp = None
@@ -86,7 +87,7 @@ def complete_result(t):
     "Return the eventual result from 't', this being (token, result)."
 
     token, result = t
-    return result
+    return Term(result, token.pos_)
 
 # Fragment processing.
 

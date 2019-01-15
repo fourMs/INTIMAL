@@ -215,6 +215,29 @@ class Fragment:
     def label(self):
         return "%s:%s-%s" % (self.source, self.start, self.end)
 
+class Term:
+
+    "A simple tagged term."
+
+    def __init__(self, word, tag=None):
+        self.word = word
+        self.tag = tag
+
+    def __cmp__(self, other):
+        return cmp(unicode(self), unicode(other))
+
+    def __hash__(self):
+        return hash(unicode(self))
+
+    def __repr__(self):
+        return "Term(%r, %r)" % (self.word, self.tag)
+
+    def __str__(self):
+        return unicode(self)
+
+    def __unicode__(self):
+        return self.word
+
 # Fragment collection operations.
 
 def commit_text(fragments):

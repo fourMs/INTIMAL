@@ -8,6 +8,8 @@ An alternative approach to this may involve using named entity recognition in
 toolkits such as spaCy.
 """
 
+from objects import Term
+
 def group_words(terms):
 
     "Group 'terms' into entities."
@@ -28,11 +30,12 @@ def group_names(terms):
     filler = []
 
     for term in terms:
+        tag = isinstance(term, Term) and term.tag or None
         word = unicode(term)
 
         # Add title-cased words, incorporating any filler words.
 
-        if word.istitle():
+        if tag == "PROPN" or not tag and word.istitle():
             if filler:
                 entity += filler
                 filler = []
@@ -40,7 +43,7 @@ def group_names(terms):
 
         # Queue up filler words.
 
-        elif entity and word in filler_words:
+        elif entity and (tag in ("ADP", "DET") or not tag and word in filler_words):
             filler.append(word)
 
         # Handle other words.

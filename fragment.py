@@ -134,7 +134,7 @@ def show_category_terms(category_terms, filename):
             terms.sort()
             print >>out, category
             for term in terms:
-                print >>out, term
+                print >>out, unicode(term)
             print >>out
     finally:
         out.close()
@@ -154,7 +154,7 @@ def show_common_terms(common_terms, filename):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for term, entities in l:
-            print >>out, term, ",".join(map(lambda e: e.label(), entities))
+            print >>out, unicode(term), ",".join(map(lambda e: e.label(), entities))
     finally:
         out.close()
 
@@ -167,7 +167,7 @@ def show_connections(connections, filename):
     try:
         for connection in connections:
             for term, weight in connection.similarity.items():
-                print >>out, term, weight,
+                print >>out, unicode(term), weight,
             print >>out
             for fragment in connection.fragments:
                 print >>out, fragment.text
@@ -195,7 +195,7 @@ def show_frequencies(frequencies, filename):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for term, occurrences in l:
-            print >>out, term, occurrences
+            print >>out, unicode(term), occurrences
     finally:
         out.close()
 
@@ -229,7 +229,7 @@ def show_related_fragments(related, filename, shown_relations=5):
                 print >>out, " Sim: %.2f" % measure,
 
                 for term, score in similarity.items():
-                    print >>out, "%s (%.2f)" % (term, score),
+                    print >>out, "%s (%.2f)" % (unicode(term), score),
 
                 print >>out
                 print >>out, "Text:", relation.text
