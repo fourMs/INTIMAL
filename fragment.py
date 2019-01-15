@@ -35,6 +35,8 @@ from stopwords import no_stop_words
 
 from text import lower, normalise_accents, remove_punctuation, only_words
 
+from utils import cmp_value_lengths, cmp_values
+
 from collections import defaultdict
 from os import mkdir
 from os.path import isdir, join
@@ -93,16 +95,6 @@ def get_common_terms(entity_terms):
             d[term].add(entity)
 
     return d
-
-# Comparison functions.
-
-def cmp_value_lengths(a, b):
-    acat = len(a[1])
-    bcat = len(b[1])
-    return cmp(acat, bcat)
-
-def cmp_values(a, b):
-    return cmp(a[1], b[1])
 
 # Output conversion.
 

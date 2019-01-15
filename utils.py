@@ -22,6 +22,18 @@ class CountingDict(defaultdict):
             l.append("%r: %r" % (key, value))
         return "{%s}" % ", ".join(l)
 
+# Comparison functions.
+
+def cmp_value_lengths(a, b):
+    acat = len(a[1])
+    bcat = len(b[1])
+    return cmp(acat, bcat)
+
+def cmp_values(a, b):
+    return cmp(a[1], b[1])
+
+# Permutation functions.
+
 def get_relations(values):
 
     """
@@ -35,6 +47,8 @@ def get_relations(values):
         l.append((value, values[:i] + values[i+1:]))
 
     return l
+
+# Collection functions.
 
 def only_one(l):
 
