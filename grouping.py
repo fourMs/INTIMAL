@@ -30,9 +30,9 @@ def group_names(terms):
     for term in terms:
         word = unicode(term)
 
-        # Add upper-cased words, incorporating any filler words.
+        # Add title-cased words, incorporating any filler words.
 
-        if word.isupper() or word.istitle():
+        if word.istitle():
             if filler:
                 entity += filler
                 filler = []
