@@ -9,7 +9,7 @@ from collections import defaultdict
 from itertools import combinations
 from math import log
 from text import is_punctuation, match_tokens, text_from_words
-from utils import CountingDict, get_relations
+from utils import CountingDict, get_relations, only_one
 from vectors import combine_term_vectors, get_term_vector_similarity
 
 class Category:
@@ -202,8 +202,18 @@ class Fragment:
         "Return a mapping of words to frequencies."
 
         d = CountingDict()
+
         for word in self.words:
-            d[word] += 1
+
+            # Expand terms to distinguish between individual word senses.
+
+            if isinstance(word, Term):
+                senses = word.expand()
+                for sense in senses:
+                    d[sense] += 1.0 / len(senses)
+            else:
+                d[word] += 1
+
         return d
 
     term_vector = word_frequencies
@@ -219,10 +229,10 @@ class Term:
 
     def __init__(self, word, senses=None):
         self.word = word
-        self.senses = senses or set([word])
+        self.senses = set(senses or [word])
 
     def __hash__(self):
-        return hash(self.word)
+        return hash((self.word, only_one(self.senses)))
 
     def __repr__(self):
         return "Term(%r, %r)" % (self.word, self.senses)
@@ -247,6 +257,18 @@ class Term:
 
     def __nonzero__(self):
         return bool(self.word)
+
+    def expand(self):
+
+        "Expand the term to a collection of distinct word sense terms."
+
+        if len(self.senses) == 1:
+            return [self]
+
+        l = []
+        for sense in self.senses:
+            l.append(Term(self.word, [sense]))
+        return l
 
 # Fragment collection operations.
 

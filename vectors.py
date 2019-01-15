@@ -39,15 +39,8 @@ def combine_term_vectors(vectors, idf=None):
 
     for vector, others in get_relations(vectors):
         for other in others:
-
-            # Since terms may be considered equal generally but not for use as
-            # dictionary keys, explicitly search for each term in each
-            # collection.
-
-            other_terms = other.keys()
-
             for term, value in vector.items():
-                if term in other_terms:
+                if other.has_key(term):
 
                     # Scale the term weight if requested.
 

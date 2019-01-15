@@ -36,4 +36,20 @@ def get_relations(values):
 
     return l
 
+def only_one(l):
+
+    """
+    Return the only element in 'l' if it only has one element. Otherwise, return
+    None.
+    """
+
+    if len(l) == 1:
+
+        # Handle sets as well as lists.
+
+        for i in l:
+            return i
+
+    return None
+
 # vim: tabstop=4 expandtab shiftwidth=4
