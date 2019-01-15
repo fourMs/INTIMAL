@@ -6,15 +6,15 @@ Test the fragment abstraction.
 """
 
 from test_support import set_verbose, show
-from objects import Category, Fragment, Term
+from objects import Category, Fragment
 import sys
 
 # Test data.
 
-t1 = Term(u"hombre",  set([u'homo.n.02', u'man.n.03', u'man.n.01', u'husband.n.01', u'world.n.08', u'man.n.08']))
-t2 = Term(u"niño",  set([u'male_child.n.01', u'cub.n.02', u'child.n.03', u'child.n.01']))
-t3 = Term(u"mujer", set([u'woman.n.01']))
-t4 = Term(u"esposo", set([u'husband.n.01']))
+t1 = u"hombre"
+t2 = u"niño"
+t3 = u"mujer"
+t4 = u"esposo"
 
 cat1 = Category("Parent", "Category")
 cat2 = Category("Parent", "Different category")
@@ -53,7 +53,7 @@ def test_contains():
 
     show("%r in %r" % (t4, f1), t4 in f1, False)
     show("%r in %r" % (t4, f2), t4 in f2, False)
-    show("%r in %r" % (t4, f5), t4 in f5, True)
+    show("%r in %r" % (t4, f5), t4 in f5, False)
     show("%r in %r" % (t4, f6), t4 in f6, True)
 
 def test_mapping():
@@ -77,7 +77,7 @@ def test_intersection():
     show("%r.intersection(%r)" % (f1, f2), f1.intersection(f2), [u"un"])
     show("%r.intersection(%r)" % (f1, f3), f1.intersection(f3), [])
     show("%r.intersection(%r)" % (f5, f2), f5.intersection(f2), [u"un"])
-    show("%r.intersection(%r)" % (f5, f6), f5.intersection(f6), [u"un", t1])
+    show("%r.intersection(%r)" % (f5, f6), f5.intersection(f6), [u"un"])
 
 def main():
     test_comparison()

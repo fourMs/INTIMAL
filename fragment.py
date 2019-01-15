@@ -17,7 +17,7 @@ others.
 
 from inputs import get_categorised_fragments, populate_fragments
 
-from objects import Category, Fragment, Term, \
+from objects import Category, Fragment, \
                     commit_text, compare_fragments, \
                     get_category_terms, get_fragment_terms, \
                     get_related_fragments, \
@@ -25,7 +25,7 @@ from objects import Category, Fragment, Term, \
                     word_document_frequencies, word_frequencies
 
 from analysis import process_fragment_tokens, \
-                     lower_word, map_to_synonyms, stem_word
+                     lower_word, stem_word
 
 from graph import write_graph
 
@@ -90,7 +90,7 @@ def get_common_terms(entity_terms):
 
     for entity, terms in entity_terms.items():
         for term in terms:
-            d[unicode(term)].add(entity)
+            d[term].add(entity)
 
     return d
 
@@ -130,7 +130,7 @@ def show_category_terms(category_terms, filename):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for category, terms in l:
-            terms = list(set(map(lambda t: unicode(t), terms)))
+            terms = list(set(terms))
             terms.sort()
             print >>out, category
             for term in terms:
@@ -167,7 +167,7 @@ def show_connections(connections, filename):
     try:
         for connection in connections:
             for term, weight in connection.similarity.items():
-                print >>out, unicode(term), weight,
+                print >>out, term, weight,
             print >>out
             for fragment in connection.fragments:
                 print >>out, fragment.text
@@ -195,15 +195,9 @@ def show_frequencies(frequencies, filename):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for term, occurrences in l:
-            print >>out, unicode(term), occurrences
+            print >>out, term, occurrences
     finally:
         out.close()
-
-def short_term(term):
-    if isinstance(term, Term):
-        return term.word
-    else:
-        return term
 
 def show_related_fragments(related, filename, shown_relations=5):
 
@@ -235,7 +229,7 @@ def show_related_fragments(related, filename, shown_relations=5):
                 print >>out, " Sim: %.2f" % measure,
 
                 for term, score in similarity.items():
-                    print >>out, "%s (%.2f)" % (short_term(term), score),
+                    print >>out, "%s (%.2f)" % (term, score),
 
                 print >>out
                 print >>out, "Text:", relation.text
@@ -390,7 +384,7 @@ if __name__ == "__main__":
     # Part-of-speech tagging to select certain types of words (nouns and verbs).
     # Normalisation involving stemming, synonyms and semantic equivalences.
 
-    process_fragment_tokens(fragments, [stem_word, lower_word, map_to_synonyms])
+    process_fragment_tokens(fragments, [stem_word, lower_word])
 
     process_fragments(fragments, [group_words, only_words, no_stop_words])
 

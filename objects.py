@@ -204,15 +204,7 @@ class Fragment:
         d = CountingDict()
 
         for word in self.words:
-
-            # Expand terms to distinguish between individual word senses.
-
-            if isinstance(word, Term):
-                senses = word.expand()
-                for sense in senses:
-                    d[sense] += 1.0 / len(senses)
-            else:
-                d[word] += 1
+            d[word] += 1
 
         return d
 
@@ -222,53 +214,6 @@ class Fragment:
 
     def label(self):
         return "%s:%s-%s" % (self.source, self.start, self.end)
-
-class Term:
-
-    "A word or term used in text."
-
-    def __init__(self, word, senses=None):
-        self.word = word
-        self.senses = set(senses or [word])
-
-    def __hash__(self):
-        return hash((self.word, only_one(self.senses)))
-
-    def __repr__(self):
-        return "Term(%r, %r)" % (self.word, self.senses)
-
-    def __str__(self):
-        return unicode(self)
-
-    def __unicode__(self):
-        return self.word
-
-    def __cmp__(self, other):
-
-        "Compare this term to 'other'."
-
-        if isinstance(other, Term):
-            if self.senses.intersection(other.senses):
-                return 0
-            else:
-                other = other.word
-
-        return cmp(self.word, other)
-
-    def __nonzero__(self):
-        return bool(self.word)
-
-    def expand(self):
-
-        "Expand the term to a collection of distinct word sense terms."
-
-        if len(self.senses) == 1:
-            return [self]
-
-        l = []
-        for sense in self.senses:
-            l.append(Term(self.word, [sense]))
-        return l
 
 # Fragment collection operations.
 

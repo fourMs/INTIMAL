@@ -80,15 +80,12 @@ presented below in their own distinct sections.
 Required components:
 
  * nltk (the package itself)
- * omw (Open Multilingual WordNet)
  * stopwords
 
 Installing the software and data:
 
 {{{
 python -m pip install -U --user nltk
-python -c 'import nltk; nltk.download("wordnet")'
-python -c 'import nltk; nltk.download("omw")'
 python -c 'import nltk; nltk.download("stopwords")'
 }}}
 

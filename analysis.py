@@ -13,8 +13,6 @@ Another potentially-useful toolkit is Polyglot:
 https://pypi.org/project/polyglot/
 """
 
-from nltk.corpus import wordnet as wn
-from objects import Term
 import spacy
 
 nlp = None
@@ -72,25 +70,6 @@ def stem_word(t):
         return (token, token.lemma_)
     else:
         return t
-
-def compare_pos(nltkpos, spacypos):
-    return nltkpos == "n" and spacypos == "NOUN"
-
-def map_to_synonyms(t, lang="spa"):
-
-    "Map the token in 't' to synonyms for normalisation."
-
-    token, result = t
-
-    senses = set()
-
-    for synset in wn.synsets(result, lang=lang):
-        if compare_pos(synset.pos(), token.pos_):
-            senses.add(synset.name())
-
-    # Create a term with the senses found for the word.
-
-    return token, Term(result, senses)
 
 # Internal functions for setting up and finalising results.
 
