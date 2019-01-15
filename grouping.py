@@ -20,8 +20,10 @@ def group_names(terms):
 
     "Group 'terms' into entities for names."
 
-    # NOTE: Use word features to support this correctly.
-    filler_words = ["de", "la", "las", "lo", "los"]
+    # Word features might be used to support this correctly. However, merely
+    # accumulating words of certain kinds can cause false positives.
+
+    filler_words = ["de", "del", "la", "las", "lo", "los"]
 
     l = []
     entity = []
