@@ -74,8 +74,7 @@ def stem_word(t):
         return t
 
 def compare_pos(nltkpos, spacypos):
-    return nltkpos == "n" and spacypos == "NOUN" or \
-           nltkpos == "v" and spacypos == "VERB"
+    return nltkpos == "n" and spacypos == "NOUN"
 
 def map_to_synonyms(t, lang="spa"):
 
