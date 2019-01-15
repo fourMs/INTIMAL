@@ -390,11 +390,9 @@ if __name__ == "__main__":
     # Part-of-speech tagging to select certain types of words (nouns and verbs).
     # Normalisation involving stemming, synonyms and semantic equivalences.
 
-    process_fragment_tokens(fragments, [stem_word, lower_word])
+    process_fragment_tokens(fragments, [stem_word, lower_word, map_to_synonyms])
 
     process_fragments(fragments, [group_words, only_words, no_stop_words])
-
-    process_fragment_tokens(fragments, [map_to_synonyms])
 
     # Emit the fragments for inspection.
 

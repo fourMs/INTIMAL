@@ -231,7 +231,7 @@ class Term:
         return unicode(self)
 
     def __unicode__(self):
-        return u"%s/%s" % (self.word, "/".join(self.senses))
+        return self.word
 
     def __cmp__(self, other):
 

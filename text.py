@@ -46,14 +46,14 @@ def remove_punctuation(s):
         s = s.replace(c, "")
     return s
 
-def only_words(words):
+def only_words(terms):
 
     "Filter out non-words, principally anything that is punctuation."
 
     l = []
-    for word in words:
-        if remove_punctuation(word).strip():
-            l.append(word)
+    for term in terms:
+        if remove_punctuation(unicode(term)).strip():
+            l.append(term)
     return l
 
 # General text operations.

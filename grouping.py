@@ -8,82 +8,86 @@ An alternative approach to this may involve using named entity recognition in
 toolkits such as spaCy.
 """
 
-def group_words(words):
+def group_words(terms):
 
-    "Group 'words' into terms."
+    "Group 'terms' into entities."
 
-    words = group_names(words)
-    words = group_quantities(words)
-    return words
+    terms = group_names(terms)
+    terms = group_quantities(terms)
+    return terms
 
-def group_names(words):
+def group_names(terms):
 
-    "Group 'words' into terms for names."
+    "Group 'terms' into entities for names."
 
     # NOTE: Use word features to support this correctly.
     filler_words = ["de", "la", "las", "lo", "los"]
 
     l = []
-    term = []
+    entity = []
     filler = []
 
-    for word in words:
+    for term in terms:
+        word = unicode(term)
 
         # Add upper-cased words, incorporating any filler words.
 
         if word.isupper() or word.istitle():
             if filler:
-                term += filler
+                entity += filler
                 filler = []
-            term.append(word)
+            entity.append(word)
 
         # Queue up filler words.
 
-        elif term and word in filler_words:
+        elif entity and word in filler_words:
             filler.append(word)
 
         # Handle other words.
 
         else:
-            if term:
-                l.append(" ".join(term))
-                term = []
+            if entity:
+                l.append(" ".join(entity))
+                entity = []
             if filler:
                 l += filler
                 filler = []
-            l.append(word)
 
-    if term:
-        l.append(" ".join(term))
+            l.append(term)
+
+    if entity:
+        l.append(" ".join(entity))
     if filler:
         l += filler
     return l
 
-def group_quantities(words):
+def group_quantities(terms):
 
-    "Group 'words' into terms for quantities."
+    "Group 'terms' into entities for quantities."
 
     units = [u"años", u"días"]
     l = []
-    term = []
+    entity = []
 
-    for word in words:
+    for term in terms:
+        word = unicode(term)
+
         if word.isdigit():
-            if term:
-                l.append(" ".join(term))
-            term = [word]
+            if entity:
+                l.append(" ".join(entity))
+            entity = [word]
         elif word in units:
-            term.append(word)
-            l.append(" ".join(term))
-            term = []
+            entity.append(word)
+            l.append(" ".join(entity))
+            entity = []
         else:
-            if term:
-                l.append(" ".join(term))
-                term = []
-            l.append(word)
+            if entity:
+                l.append(" ".join(entity))
+                entity = []
+            l.append(term)
 
-    if term:
-        l.append(" ".join(term))
+    if entity:
+        l.append(" ".join(entity))
     return l
 
 # vim: tabstop=4 expandtab shiftwidth=4

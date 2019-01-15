@@ -14,7 +14,7 @@ from nltk.corpus import stopwords
 
 stop_words = [u"ahí", u"da", u"entonces", u"si", u"u"]
 
-def no_stop_words(words):
+def no_stop_words(terms):
     l = []
 
     # NLTK stop words. These may not be entirely appropriate or sufficient for
@@ -22,9 +22,10 @@ def no_stop_words(words):
 
     stop = stop_words + stopwords.words("spanish")
 
-    for word in words:
+    for term in terms:
+        word = unicode(term)
         if not word.lower() in stop:
-            l.append(word)
+            l.append(term)
 
     return l
 
