@@ -31,9 +31,9 @@ from graph import write_graph
 
 from grouping import group_words
 
-from stopwords import no_stop_words
+from stopwords import filter_terms_by_pos
 
-from text import lower, normalise_accents, remove_punctuation, only_words
+from text import lower, normalise_accents, remove_punctuation
 
 from utils import cmp_value_lengths, cmp_values
 
@@ -378,7 +378,7 @@ if __name__ == "__main__":
 
     process_fragment_tokens(fragments, [stem_word, lower_word])
 
-    process_fragments(fragments, [group_words, only_words, no_stop_words])
+    process_fragments(fragments, [group_words, filter_terms_by_pos])
 
     # Emit the fragments for inspection.
 

@@ -9,6 +9,7 @@ of words having particular roles.
 """
 
 from nltk.corpus import stopwords
+from objects import Term
 
 # Provisional stop words.
 
@@ -25,6 +26,18 @@ def no_stop_words(terms):
     for term in terms:
         word = unicode(term)
         if not word.lower() in stop:
+            l.append(term)
+
+    return l
+
+def filter_terms_by_pos(terms):
+
+    "Filter 'terms' according to part-of-speech roles."
+
+    l = []
+
+    for term in terms:
+        if not isinstance(term, Term) or term.tag in ("NOUN", "ADJ", "VERB"):
             l.append(term)
 
     return l
