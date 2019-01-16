@@ -56,7 +56,9 @@ def lower_word(t):
 
     token, result = t
 
-    if token.pos_ not in ("PROPN",):
+    # Sometimes, articles appear in proper nouns.
+
+    if token.pos_ not in ("DET", "PROPN",):
         return (token, result.lower())
     else:
         return t
