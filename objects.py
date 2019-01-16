@@ -109,22 +109,65 @@ class Connection:
 
         return self.measure()
 
+class Source:
+
+    "A fragment source."
+
+    def __init__(self, filename, start, end):
+
+        """
+        Initialise a source with the given 'filename' and 'start' and 'end'
+        timings.
+        """
+
+        self.filename = filename
+        self.start = start
+        self.end = end
+
+    def __cmp__(self, other):
+
+        "Compare this source to 'other'."
+
+        key = self.as_tuple()
+        other_key = other.as_tuple()
+        return cmp(key, other_key)
+
+    def __hash__(self):
+
+        "Permit the source to be used as a dictionary key."
+
+        return hash(self.as_tuple())
+
+    def __repr__(self):
+        return "Source(%r, %r, %r)" % self.as_tuple()
+
+    def __str__(self):
+        return unicode(self)
+
+    def __unicode__(self):
+        return u"%s:%s-%s" % self.as_tuple()
+
+    def as_tuple(self):
+        return (self.filename, self.start, self.end)
+
+    # Graph methods.
+
+    def label(self):
+        return unicode(self)
+
 class Fragment:
 
     "A fragment of text from a transcript."
 
-    def __init__(self, source, start, end, category, words=None, text=None):
+    def __init__(self, source, category, words=None, text=None):
 
         """
-        Initialise a fragment from 'source' with the given 'start' and 'end'
-        timings, the nominated 'category', and a collection of corresponding
-        'words'. Any original 'text' may be set or instead committed later using
-        the 'commit_text' method.
+        Initialise a fragment from 'source', the nominated 'category', and a
+        collection of corresponding 'words'. Any original 'text' may be set or
+        instead committed later using the 'commit_text' method.
         """
 
         self.source = source
-        self.start = start
-        self.end = end
         self.category = category
         self.words = words or []
         self.text = text
@@ -133,12 +176,11 @@ class Fragment:
 
         """
         Compare this fragment to 'other' using the origin details of the
-        fragment.
+        fragment. This is used to order the fragments chronologically within
+        source transcripts.
         """
 
-        key = (self.source, self.start)
-        other_key = (other.source, other.start)
-        return cmp(key, other_key)
+        return cmp(self.source, other.source)
 
     def __contains__(self, other):
 
@@ -150,7 +192,7 @@ class Fragment:
 
         "Permit the fragment to be used as a dictionary key."
 
-        return hash((self.source, self.start, self.end, self.category))
+        return hash(self.source)
 
     def __nonzero__(self):
 
@@ -159,10 +201,10 @@ class Fragment:
         return bool(self.words)
 
     def __repr__(self):
-        return "Fragment(%r, %r, %r, %r, %r, %r)" % self.as_tuple()
+        return "Fragment(%r, %r, %r, %r)" % self.as_tuple()
 
     def as_tuple(self):
-        return (self.source, self.start, self.end, self.category, self.words, self.text)
+        return (self.source, self.category, self.words, self.text)
 
     def commit_text(self):
 
@@ -213,7 +255,7 @@ class Fragment:
     # Graph methods.
 
     def label(self):
-        return "%s:%s-%s" % (self.source, self.start, self.end)
+        return self.source.label()
 
 class Term:
 

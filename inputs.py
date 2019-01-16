@@ -5,7 +5,7 @@
 Fragment retrieval.
 """
 
-from objects import Category, Fragment
+from objects import Category, Fragment, Source
 import bisect
 
 # XML node processing.
@@ -39,7 +39,7 @@ def get_categorised_fragments(tiersdoc, source):
 
             for category in span.getElementsByTagName("v"):
                 fragments.append(
-                    Fragment(source, start, end,
+                    Fragment(Source(source, start, end),
                              Category(parent, textContent(category))))
                 break
 
@@ -57,7 +57,8 @@ def populate_fragments(fragments, textdoc, source):
         # The word is textual content within a subnode.
 
         for word in span.getElementsByTagName("v"):
-            temp = Fragment(source, start, end, None, [textContent(word)])
+            temp = Fragment(Source(source, start, end),
+                            None, [textContent(word)])
             break
         else:
             continue
@@ -71,7 +72,7 @@ def populate_fragments(fragments, textdoc, source):
 
         f = fragments[i]
 
-        if f.end > temp.start >= f.start:
+        if f.source.end > temp.source.start >= f.source.start:
             f.words += temp.words
 
 # vim: tabstop=4 expandtab shiftwidth=4

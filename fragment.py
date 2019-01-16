@@ -208,7 +208,7 @@ def show_related_fragments(related, filename, shown_relations=5):
 
             # Show the principal fragment details.
 
-            print >>out, "  Id:", fragment.source, fragment.start, fragment.end
+            print >>out, "  Id:", fragment.source, fragment.source.start, fragment.source.end
             print >>out, "Text:", fragment.text
             print >>out
 
@@ -217,7 +217,7 @@ def show_related_fragments(related, filename, shown_relations=5):
 
             for measure, relation, similarity in relations[:shown_relations]:
 
-                print >>out, "  Id:", relation.source, relation.start, relation.end
+                print >>out, "  Id:", relation.source, relation.source.start, relation.source.end
                 print >>out, " Sim: %.2f" % measure,
 
                 for term, score in similarity.items():
