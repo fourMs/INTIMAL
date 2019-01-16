@@ -37,7 +37,7 @@ def filter_terms_by_pos(terms):
     l = []
 
     for term in terms:
-        if not isinstance(term, Term) or term.tag in ("NOUN", "ADJ", "VERB"):
+        if not isinstance(term, Term) or term.tag in ("NOUN", "PROPN", "ADJ", "VERB"):
             l.append(term)
 
     return l
