@@ -5,12 +5,13 @@
 Textual abstractions.
 """
 
-from collections import defaultdict
-from itertools import combinations
-from math import log
 from text import is_punctuation, match_tokens, text_from_words
 from utils import CountingDict, get_relations, only_one
 from vectors import combine_term_vectors, get_term_vector_similarity
+
+from collections import defaultdict
+from itertools import combinations
+from math import log
 
 class Category:
 
@@ -312,6 +313,19 @@ def compare_fragments(fragments, idf=None):
 
     connections.sort(key=lambda c: c.measure())
     return connections
+
+def get_all_words(fragments):
+
+    "Return a sorted list of unique words."
+
+    s = set()
+
+    for fragment in fragments:
+        s.update(fragment.words)
+
+    l = list(s)
+    l.sort()
+    return l
 
 def get_category_terms(fragments):
 

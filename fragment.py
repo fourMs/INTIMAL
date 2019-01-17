@@ -15,11 +15,15 @@ similarity may be pulled apart by the relationships such fragments have with
 others.
 """
 
-from inputs import get_categorised_fragments, populate_fragments
+from inputs import get_input_filenames, \
+                   get_categorised_fragments, populate_fragments
 
 from objects import Category, Fragment, \
-                    commit_text, compare_fragments, \
-                    get_category_terms, get_fragment_terms, \
+                    commit_text, \
+                    compare_fragments, \
+                    get_all_words, \
+                    get_category_terms, \
+                    get_fragment_terms, \
                     get_related_fragments, \
                     inverse_document_frequencies, \
                     word_document_frequencies, word_frequencies
@@ -45,31 +49,6 @@ import codecs
 import sys
 
 # Fragment processing.
-
-def discard_empty_fragments(fragments):
-
-    "Return a list of non-empty instances from 'fragments'."
-
-    l = []
-
-    for fragment in fragments:
-        if fragment:
-            l.append(fragment)
-
-    return l
-
-def get_all_words(fragments):
-
-    "Return a sorted list of unique words."
-
-    s = set()
-
-    for fragment in fragments:
-        s.update(fragment.words)
-
-    l = list(s)
-    l.sort()
-    return l
 
 def process_fragments(fragments, processes):
 
@@ -239,58 +218,6 @@ def ensure_directory(name):
     if not isdir(name):
         mkdir(name)
 
-# Define the forms of filenames providing data.
-
-datatypes = ["Text", "Tiers"]
-
-def get_input_details(filename):
-
-    """
-    Return for 'filename' a tuple of the form (data type, basename). If the
-    filename does not identify one of the recognised data types, return None.
-    """
-
-    for datatype in datatypes:
-        if datatype in filename:
-            return (datatype, filename.rsplit("_", 1)[0])
-
-    return None
-
-def get_input_filenames(args):
-
-    """
-    Process the filenames in 'args', identifying groups of filenames to be
-    processed together. The result is a mapping from each filename prefix to the
-    corresponding group. The group is a mapping from each data type to the
-    corresponding filename providing the data.
-    """
-
-    d = defaultdict(set)
-
-    # Produce a mapping from prefix to (data type, filename).
-
-    for arg in args:
-        details = get_input_details(arg)
-
-        # The filename must show signs of providing a recognised data type.
-
-        if details:
-            datatype, prefix = details
-            d[prefix].add((datatype, arg))
-
-    # Generate a list of (prefix, filename mapping) entries.
-
-    l = []
-
-    for prefix, filenames in d.items():
-
-        # All the required data types must be supported by the files.
-
-        if len(filenames) == len(datatypes):
-            l.append((prefix, dict(filenames)))
-
-    return l
-
 helptext = """\
 Need an output directory name plus a collection of text and tiers filenames for
 reading. The output directory will be populated with files containing the
@@ -358,7 +285,7 @@ if __name__ == "__main__":
 
     # Discard empty fragments.
 
-    fragments = discard_empty_fragments(fragments)
+    fragments = filter(None, fragments)
 
     # Output words.
 

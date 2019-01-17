@@ -6,6 +6,8 @@ Fragment retrieval.
 """
 
 from objects import Category, Fragment, Source
+
+from collections import defaultdict
 import bisect
 
 # XML node processing.
@@ -74,5 +76,59 @@ def populate_fragments(fragments, textdoc, source):
 
         if f.source.end > temp.source.start >= f.source.start:
             f.words += temp.words
+
+# Input file handling.
+
+# Define the forms of filenames providing data.
+
+datatypes = ["Text", "Tiers"]
+
+def get_input_details(filename):
+
+    """
+    Return for 'filename' a tuple of the form (data type, basename). If the
+    filename does not identify one of the recognised data types, return None.
+    """
+
+    for datatype in datatypes:
+        if datatype in filename:
+            return (datatype, filename.rsplit("_", 1)[0])
+
+    return None
+
+def get_input_filenames(args):
+
+    """
+    Process the filenames in 'args', identifying groups of filenames to be
+    processed together. The result is a mapping from each filename prefix to the
+    corresponding group. The group is a mapping from each data type to the
+    corresponding filename providing the data.
+    """
+
+    d = defaultdict(set)
+
+    # Produce a mapping from prefix to (data type, filename).
+
+    for arg in args:
+        details = get_input_details(arg)
+
+        # The filename must show signs of providing a recognised data type.
+
+        if details:
+            datatype, prefix = details
+            d[prefix].add((datatype, arg))
+
+    # Generate a list of (prefix, filename mapping) entries.
+
+    l = []
+
+    for prefix, filenames in d.items():
+
+        # All the required data types must be supported by the files.
+
+        if len(filenames) == len(datatypes):
+            l.append((prefix, dict(filenames)))
+
+    return l
 
 # vim: tabstop=4 expandtab shiftwidth=4
