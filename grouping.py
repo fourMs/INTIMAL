@@ -32,28 +32,42 @@ def group_names(terms):
     filler = []
 
     for term in terms:
-        tag = isinstance(term, Term) and term.tag or None
         word = unicode(term)
 
         # Add title-cased words, incorporating any filler words.
 
         if word.istitle():
-            if filler:
-                entity += filler
-                filler = []
-            entity.append(word)
 
-        # Queue up filler words.
+            # Sometimes articles appear at the start of sentences. Sometimes
+            # they are part of entities.
+
+            if word.lower() in filler_words:
+                filler.append(term)
+
+            # Other words cause any filler words to be incorporated.
+
+            else:
+                if filler:
+                    entity += filler
+                    filler = []
+                entity.append(term)
+
+        # Queue up filler words only with confirmed entities.
 
         elif entity and word in filler_words:
-            filler.append(word)
+            filler.append(term)
 
         # Handle other words.
 
         else:
+            # Produce any held entity.
+
             if entity:
-                l.append(" ".join(entity))
+                l.append(" ".join(map(unicode, entity)))
                 entity = []
+
+            # Produce any trailing filler words.
+
             if filler:
                 l += filler
                 filler = []
@@ -61,7 +75,7 @@ def group_names(terms):
             l.append(term)
 
     if entity:
-        l.append(" ".join(entity))
+        l.append(" ".join(map(unicode, entity)))
     if filler:
         l += filler
     return l
