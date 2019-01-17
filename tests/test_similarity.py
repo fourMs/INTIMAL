@@ -6,7 +6,7 @@ Test similarity computation.
 """
 
 from test_support import set_verbose, show
-from objects import Category, Fragment, \
+from objects import Category, Fragment, Source, \
                     compare_fragments, get_fragment_similarity, \
                     inverse_document_frequencies, \
                     word_document_frequencies, word_frequencies
@@ -56,7 +56,7 @@ for i, sentence in enumerate(sentences):
     words = split_words(sentence)
     words = only_words(words)
     words = map(lambda s: s.lower(), words)
-    fragments.append(Fragment(source, i, i+1, category, words, sentence))
+    fragments.append(Fragment(Source(source, i, i+1), category, words, sentence))
 
 # Obtain statistics.
 

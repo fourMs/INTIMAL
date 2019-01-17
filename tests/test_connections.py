@@ -6,13 +6,15 @@ Test the connection abstraction.
 """
 
 from test_support import set_verbose, show
-from objects import Connection, Fragment
+from objects import Category, Connection, Fragment, Source
 import sys
 
 # Test data.
 
-f1 = Fragment("A1", 10, 20, "Parent", "Category")
-f2 = Fragment("A2", 50, 60, "Parent", "Category")
+cat1 = Category("Parent", "Category")
+
+f1 = Fragment(Source("A1", 10, 20), cat1)
+f2 = Fragment(Source("A2", 50, 60), cat1)
 
 c1 = Connection([], [f1, f2])
 

@@ -6,7 +6,7 @@ Test the fragment abstraction.
 """
 
 from test_support import set_verbose, show
-from objects import Category, Fragment
+from objects import Category, Fragment, Source
 import sys
 
 # Test data.
@@ -20,12 +20,12 @@ cat1 = Category("Parent", "Category")
 cat2 = Category("Parent", "Different category")
 cat3 = Category("P", "C")
 
-f1 = Fragment("A1", 10, 20, cat1, [u"un", u"hombre"])
-f2 = Fragment("A1", 40, 50, cat1, [u"un", t2])
-f3 = Fragment("A2", 10, 20, cat1)
-f4 = Fragment("A2", 10, 20, cat2)
-f5 = Fragment("A1", 40, 50, cat1, [u"un", t1])
-f6 = Fragment("A3", 100, 200, cat3, [u"un", t4])
+f1 = Fragment(Source("A1", 10, 20), cat1, [u"un", u"hombre"])
+f2 = Fragment(Source("A1", 40, 50), cat1, [u"un", t2])
+f3 = Fragment(Source("A2", 10, 20), cat1)
+f4 = Fragment(Source("A2", 10, 20), cat2)
+f5 = Fragment(Source("A1", 40, 50), cat1, [u"un", t1])
+f6 = Fragment(Source("A3", 100, 200), cat3, [u"un", t4])
 
 # Test cases.
 
