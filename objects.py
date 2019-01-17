@@ -181,7 +181,9 @@ class Fragment:
         source transcripts.
         """
 
-        return cmp(self.source, other.source)
+        key = (self.source, self.category)
+        other_key = (other.source, other.category)
+        return cmp(key, other_key)
 
     def __contains__(self, other):
 
@@ -193,7 +195,7 @@ class Fragment:
 
         "Permit the fragment to be used as a dictionary key."
 
-        return hash(self.source)
+        return hash((self.source, self.category))
 
     def __nonzero__(self):
 
