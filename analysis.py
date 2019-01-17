@@ -65,11 +65,11 @@ def lower_word(t):
 
 def stem_word(t):
 
-    "Stem the token in 't' if it is a verb."
+    "Stem the token in 't' if it is a verb or adjective."
 
     token, result = t
 
-    if token.pos_ == "VERB":
+    if token.pos_ in ("ADJ", "VERB"):
         return (token, token.lemma_)
     else:
         return t
