@@ -7,7 +7,6 @@ Test the connection abstraction.
 
 from test_support import set_verbose, show
 from objects import Category, Connection, Fragment, Source
-import sys
 
 # Test data.
 

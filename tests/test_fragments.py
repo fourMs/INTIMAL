@@ -7,7 +7,6 @@ Test the fragment abstraction.
 
 from test_support import set_verbose, show
 from objects import Category, Fragment, Source
-import sys
 
 # Test data.
 
@@ -65,7 +64,7 @@ def test_mapping():
     show("d.get(%r)" % f1, d.get(f1), "f1")
     show("d.get(%r)" % f2, d.get(f2), "f2")
     show("d.get(%r)" % f3, d.get(f3), "f3")
-    show("d.get(%r)" % f4, d.get(f4), None)
+    show("d.get(%r)" % f4, d.get(f4), "f3")
 
 def test_truth():
     show("bool(%r)" % f1, bool(f1), True)

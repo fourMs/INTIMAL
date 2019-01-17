@@ -151,6 +151,14 @@ class Source:
     def as_tuple(self):
         return (self.filename, self.start, self.end)
 
+    def within(self, other):
+        return self.filename == other.filename and \
+               self.start >= other.start and self.end <= other.end
+
+    def contains(self, other):
+        return self.filename == other.filename and \
+               self.start <= other.start and self.end >= other.end
+
     # Graph methods.
 
     def label(self):
@@ -181,9 +189,10 @@ class Fragment:
         source transcripts.
         """
 
-        key = (self.source, self.category)
-        other_key = (other.source, other.category)
-        return cmp(key, other_key)
+        if self.source.within(other.source) or self.source.contains(other.source):
+            return 0
+        else:
+            return cmp(self.source, other.source)
 
     def __contains__(self, other):
 
@@ -195,7 +204,7 @@ class Fragment:
 
         "Permit the fragment to be used as a dictionary key."
 
-        return hash((self.source, self.category))
+        return hash(self.source)
 
     def __nonzero__(self):
 

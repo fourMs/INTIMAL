@@ -12,7 +12,6 @@ from objects import Category, Fragment, Source, \
                     word_document_frequencies, word_frequencies
 from text import only_words
 import re
-import sys
 
 # Test data.
 
