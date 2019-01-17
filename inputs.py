@@ -20,6 +20,31 @@ def textContent(n):
 
 # XML document processing.
 
+def fill_categorised_fragments(fragments):
+
+    """
+    Add fragments with null categories to the sorted 'fragments' where gaps in
+    the timing exist between adjacent fragments.
+    """
+
+    l = []
+    last = 0
+
+    for fragment in fragments:
+        start = fragment.source.start
+
+        # Where the current fragment starts after the end of the last one,
+        # introduce a null-category fragment.
+
+        if fragment.source.start > last:
+            l.append(Fragment(Source(fragment.source.filename, last, start),
+                              None))
+
+        l.append(fragment)
+        last = fragment.source.end
+
+    return l
+
 def get_categorised_fragments(tiersdoc, source):
 
     "Using the 'tiersdoc' return a sorted list of fragments from 'source'."

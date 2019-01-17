@@ -61,7 +61,7 @@ def show_common_terms(common_terms, filename):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for term, entities in l:
-            print >>out, unicode(term), ",".join(map(lambda e: e.label(), entities))
+            print >>out, unicode(term), ",".join(map(lambda e: e and e.label() or "null", entities))
     finally:
         out.close()
 

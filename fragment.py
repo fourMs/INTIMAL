@@ -8,7 +8,8 @@ potentially weighting some terms as being more significant than others.
 """
 
 from inputs import get_input_filenames, \
-                   get_categorised_fragments, populate_fragments
+                   fill_categorised_fragments, get_categorised_fragments, \
+                   populate_fragments
 
 from objects import Category, Fragment, \
                     commit_text, \
@@ -94,6 +95,8 @@ if __name__ == "__main__":
         print >>sys.stderr, helptext
         sys.exit(1)
 
+    allow_uncategorised = "--all-fragments" in sys.argv
+
     # Derive filenames for output files.
 
     out = outputs.Output(outdir)
@@ -113,6 +116,7 @@ if __name__ == "__main__":
         tiersdoc = parse(tiersfn)
 
         current_fragments = get_categorised_fragments(tiersdoc, source)
+        current_fragments = fill_categorised_fragments(current_fragments)
         populate_fragments(current_fragments, textdoc, source)
 
         fragments += current_fragments
@@ -120,6 +124,11 @@ if __name__ == "__main__":
     # Discard empty fragments.
 
     fragments = filter(None, fragments)
+
+    # Discard uncategorised fragments.
+
+    if not allow_uncategorised:
+        fragments = filter(lambda f: f.category, fragments)
 
     # Output words.
 

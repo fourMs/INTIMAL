@@ -22,7 +22,7 @@ class Category:
         self.category = category
 
     def __cmp__(self, other):
-        return cmp(self.as_tuple(), other.as_tuple())
+        return cmp(self.as_tuple(), other and other.as_tuple())
 
     def __hash__(self):
         return hash(self.as_tuple())
