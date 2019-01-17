@@ -18,10 +18,10 @@ def set_verbose():
         verbose = True
 
 def show(text, result, expected):
-    print result == expected,
+    print result == expected and "Success" or "Failure",
     if verbose:
         print text,
-        print result, expected
+        print repr(result), repr(expected)
     else:
         print
 
