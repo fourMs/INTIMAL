@@ -75,20 +75,6 @@ The software is written in the Python programming language, tested with Python
 2.7, and makes use of a number of additional packages or libraries. These are
 presented below in their own distinct sections.
 
-=== NLTK ===
-
-Required components:
-
- * nltk (the package itself)
- * stopwords
-
-Installing the software and data:
-
-{{{
-python -m pip install -U --user nltk
-python -c 'import nltk; nltk.download("stopwords")'
-}}}
-
 === spaCy ===
 
 Required components:
