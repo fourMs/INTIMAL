@@ -8,7 +8,6 @@ Fragment retrieval.
 from objects import Category, Fragment, Source
 
 from collections import defaultdict
-import bisect
 
 # XML node processing.
 
@@ -77,6 +76,14 @@ def populate_fragments(fragments, textdoc, source):
 
     "Populate the 'fragments' using information from 'textdoc' for 'source'."
 
+    if not fragments:
+        return
+
+    it = iter(fragments)
+    current = None
+
+    # Obtain each word in turn. These must be sorted.
+
     for span in textdoc.getElementsByTagName("span"):
         start = float(span.getAttribute("start"))
         end = float(span.getAttribute("end"))
@@ -84,23 +91,23 @@ def populate_fragments(fragments, textdoc, source):
         # The word is textual content within a subnode.
 
         for word in span.getElementsByTagName("v"):
-            temp = Fragment(Source(source, start, end),
-                            None, [textContent(word)])
+            text = textContent(word)
             break
         else:
             continue
 
-        # Find the appropriate fragment.
+        # Find the appropriate fragment, stopping if no more fragments remain.
 
-        i = bisect.bisect_right(fragments, temp)
+        while current is None or start >= current.source.end:
+            try:
+                current = it.next()
+            except StopIteration:
+                return
 
-        if i > 0:
-            i -= 1
+        # Make sure each word is meant for the current fragment.
 
-        f = fragments[i]
-
-        if f.source.end > temp.source.start >= f.source.start:
-            f.words += temp.words
+        if end > current.source.start and start < current.source.end:
+            current.words.append(text)
 
 # Input file handling.
 

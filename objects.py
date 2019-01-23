@@ -189,10 +189,7 @@ class Fragment:
         source transcripts.
         """
 
-        if self.source.within(other.source) or self.source.contains(other.source):
-            return 0
-        else:
-            return cmp(self.source, other.source)
+        return cmp(self.source, other.source)
 
     def __contains__(self, other):
 
