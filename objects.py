@@ -119,60 +119,6 @@ class Connection:
 
         return self.measure()
 
-class Source:
-
-    "A fragment source."
-
-    def __init__(self, filename, start, end):
-
-        """
-        Initialise a source with the given 'filename' and 'start' and 'end'
-        timings.
-        """
-
-        self.filename = filename
-        self.start = start
-        self.end = end
-
-    def __cmp__(self, other):
-
-        "Compare this source to 'other'."
-
-        key = self.as_tuple()
-        other_key = other.as_tuple()
-        return cmp(key, other_key)
-
-    def __hash__(self):
-
-        "Permit the source to be used as a dictionary key."
-
-        return hash(self.as_tuple())
-
-    def __repr__(self):
-        return "Source(%r, %r, %r)" % self.as_tuple()
-
-    def __str__(self):
-        return unicode(self)
-
-    def __unicode__(self):
-        return u"%s:%s-%s" % self.as_tuple()
-
-    def as_tuple(self):
-        return (self.filename, self.start, self.end)
-
-    def within(self, other):
-        return self.filename == other.filename and \
-               self.start >= other.start and self.end <= other.end
-
-    def contains(self, other):
-        return self.filename == other.filename and \
-               self.start <= other.start and self.end >= other.end
-
-    # Graph methods.
-
-    def label(self):
-        return unicode(self)
-
 class Fragment:
 
     "A fragment of text from a transcript."
@@ -274,6 +220,60 @@ class Fragment:
 
     def label(self):
         return self.source.label()
+
+class Source:
+
+    "A fragment source."
+
+    def __init__(self, filename, start, end):
+
+        """
+        Initialise a source with the given 'filename' and 'start' and 'end'
+        timings.
+        """
+
+        self.filename = filename
+        self.start = start
+        self.end = end
+
+    def __cmp__(self, other):
+
+        "Compare this source to 'other'."
+
+        key = self.as_tuple()
+        other_key = other.as_tuple()
+        return cmp(key, other_key)
+
+    def __hash__(self):
+
+        "Permit the source to be used as a dictionary key."
+
+        return hash(self.as_tuple())
+
+    def __repr__(self):
+        return "Source(%r, %r, %r)" % self.as_tuple()
+
+    def __str__(self):
+        return unicode(self)
+
+    def __unicode__(self):
+        return u"%s:%s-%s" % self.as_tuple()
+
+    def as_tuple(self):
+        return (self.filename, self.start, self.end)
+
+    def within(self, other):
+        return self.filename == other.filename and \
+               self.start >= other.start and self.end <= other.end
+
+    def contains(self, other):
+        return self.filename == other.filename and \
+               self.start <= other.start and self.end >= other.end
+
+    # Graph methods.
+
+    def label(self):
+        return unicode(self)
 
 class Term:
 
