@@ -109,7 +109,7 @@ if __name__ == "__main__":
     # Discard uncategorised fragments.
 
     if not allow_uncategorised:
-        fragments = filter(lambda f: f.category, fragments)
+        fragments = filter(lambda f: f.category and f.category.complete(), fragments)
 
     # Output words.
 

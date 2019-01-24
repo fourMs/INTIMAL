@@ -39,6 +39,15 @@ class Category:
     def as_tuple(self):
         return (self.parent, self.category)
 
+    def complete(self):
+
+        """
+        Return whether the category is complete, having both parent and sub-
+        category.
+        """
+
+        return self.parent and self.category
+
     # Graph methods.
 
     def label(self):
