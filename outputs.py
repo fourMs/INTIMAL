@@ -5,6 +5,7 @@
 Output production.
 """
 
+from objects import Term
 from utils import cmp_value_lengths, cmp_values
 
 from os import mkdir
@@ -84,12 +85,16 @@ def show_connections(connections, filename):
 
 def show_fragments(fragments, filename):
 
-    "Write the textual representation of 'fragments' to 'filename'."
+    "Write a report of 'fragments' to 'filename'."
 
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for fragment in fragments:
-            print >>out, fragment
+            print >>out, "Source:", unicode(fragment.source)
+            print >>out, "Category:", unicode(fragment.category)
+            print >>out, "Text:", fragment.text
+            print >>out, "Terms:", u" ".join(map(term_summary, fragment.words))
+            print >>out
     finally:
         out.close()
 
@@ -149,6 +154,15 @@ def show_related_fragments(related, filename, shown_relations=5):
             print >>out
     finally:
         out.close()
+
+def term_summary(term):
+
+    "Produce a readable summary of 'term'."
+
+    if isinstance(term, Term):
+        return u"%s:%s" % (unicode(term), term.tag)
+    else:
+        return unicode(term)
 
 # Output file handling.
 
