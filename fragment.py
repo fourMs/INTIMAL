@@ -30,7 +30,6 @@ from stopwords import filter_terms_by_pos
 
 from text import normalise_accents
 
-import graph
 import outputs
 
 from collections import defaultdict
@@ -135,53 +134,47 @@ if __name__ == "__main__":
 
     process_fragments(fragments, [group_words, filter_terms_by_pos])
 
-    # Emit the fragments for inspection.
-
-    outputs.show_fragments(fragments, outfile("fragments.txt"))
-
     # Get terms used by each category for inspection.
 
     category_terms = get_category_terms(fragments)
-    outputs.show_category_terms(category_terms, outfile("terms.txt"))
 
     # Get common terms (common between categories).
 
     common_category_terms = get_common_terms(category_terms)
-    outputs.show_common_terms(common_category_terms, outfile("term_categories.txt"))
 
     # Get common terms (common between fragments).
 
     fragment_terms = get_fragment_terms(fragments)
-
     common_fragment_terms = get_common_terms(fragment_terms)
-    outputs.show_common_terms(common_fragment_terms, outfile("term_fragments.txt"))
 
     # Get term/word frequencies.
 
     frequencies = word_frequencies(fragments)
-    outputs.show_frequencies(frequencies, outfile("term_frequencies.txt"))
-
     doc_frequencies = word_document_frequencies(fragments)
-    outputs.show_frequencies(doc_frequencies, outfile("term_doc_frequencies.txt"))
-
     inv_doc_frequencies = inverse_document_frequencies(doc_frequencies, len(fragments))
-    outputs.show_frequencies(inv_doc_frequencies, outfile("term_inv_doc_frequencies.txt"))
 
     # Determine fragment similarity by taking the processed words and comparing
     # fragments.
 
     connections = compare_fragments(fragments, idf=inv_doc_frequencies)
+    related = get_related_fragments(connections)
+
+    # Emit the fragments for inspection.
+
+    outputs.show_fragments(fragments, outfile("fragments.txt"))
+
+    # Emit term details for inspection.
+
+    outputs.show_category_terms(category_terms, outfile("terms.txt"))
+    outputs.show_common_terms(common_category_terms, outfile("term_categories.txt"))
+    outputs.show_common_terms(common_fragment_terms, outfile("term_fragments.txt"))
+    outputs.show_frequencies(frequencies, outfile("term_frequencies.txt"))
+    outputs.show_frequencies(doc_frequencies, outfile("term_doc_frequencies.txt"))
+    outputs.show_frequencies(inv_doc_frequencies, outfile("term_inv_doc_frequencies.txt"))
 
     # Emit the connections for inspection.
 
     outputs.show_connections(connections, outfile("connections.txt"))
-
-    related = get_related_fragments(connections)
     outputs.show_related_fragments(related, outfile("relations.txt"))
-
-    # Produce a graph where each fragment is a node and the similarity (where
-    # non-zero) is an edge linking the fragments.
-
-    graph.write_graph(fragments, connections, outfile("graph.dot"))
 
 # vim: tabstop=4 expandtab shiftwidth=4
