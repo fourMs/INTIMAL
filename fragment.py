@@ -7,7 +7,7 @@ of importance. Define fragment similarity by identifying common terms,
 potentially weighting some terms as being more significant than others.
 """
 
-from inputs import get_input_filenames, \
+from inputs import get_fragments_from_files, \
                    fill_categorised_fragments, get_categorised_fragments, \
                    populate_fragments
 
@@ -34,7 +34,6 @@ import graph
 import outputs
 
 from collections import defaultdict
-from xml.dom.minidom import parse
 import sys
 
 # Fragment processing.
@@ -102,24 +101,7 @@ if __name__ == "__main__":
     out = outputs.Output(outdir)
     outfile = out.filename
 
-    # For each fragment defined by the tiers, collect corresponding words, producing
-    # fragment objects.
-
-    fragments = []
-
-    for source, source_filenames in get_input_filenames(filenames):
-        textfn = source_filenames["Text"]
-        tiersfn = source_filenames["Tiers"]
-
-        print tiersfn, textfn
-        textdoc = parse(textfn)
-        tiersdoc = parse(tiersfn)
-
-        current_fragments = get_categorised_fragments(tiersdoc, source)
-        current_fragments = fill_categorised_fragments(current_fragments)
-        populate_fragments(current_fragments, textdoc, source)
-
-        fragments += current_fragments
+    fragments = get_fragments_from_files(filenames)
 
     # Discard empty fragments.
 

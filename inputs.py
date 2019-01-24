@@ -8,6 +8,7 @@ Fragment retrieval.
 from objects import Category, Fragment, Source
 
 from collections import defaultdict
+from xml.dom.minidom import parse
 
 # XML node processing.
 
@@ -162,5 +163,32 @@ def get_input_filenames(args):
             l.append((prefix, dict(filenames)))
 
     return l
+
+def get_fragments_from_files(filenames):
+
+    """
+    Given the 'filenames' of files containing tier/fragment and textual data,
+    return populated fragments.
+    """
+
+    # For each fragment defined by the tiers, collect corresponding words, producing
+    # fragment objects.
+
+    fragments = []
+
+    for source, source_filenames in get_input_filenames(filenames):
+        textfn = source_filenames["Text"]
+        tiersfn = source_filenames["Tiers"]
+
+        textdoc = parse(textfn)
+        tiersdoc = parse(tiersfn)
+
+        current_fragments = get_categorised_fragments(tiersdoc, source)
+        current_fragments = fill_categorised_fragments(current_fragments)
+        populate_fragments(current_fragments, textdoc, source)
+
+        fragments += current_fragments
+
+    return fragments
 
 # vim: tabstop=4 expandtab shiftwidth=4
