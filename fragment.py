@@ -15,7 +15,7 @@ from objects import Category, Fragment, \
                     commit_text, \
                     compare_fragments, \
                     get_all_words, \
-                    get_fragment_terms, \
+                    get_common_terms, get_fragment_terms, \
                     get_related_fragments, \
                     inverse_document_frequencies, \
                     process_fragments, \
@@ -32,22 +32,11 @@ from text import normalise_accents, remove_punctuation_from_words
 
 import outputs
 
-from collections import defaultdict
 import sys
 
-# Term catalogues.
 
-def get_common_terms(entity_terms):
 
-    "Return a distribution mapping terms to common entities."
-
-    d = defaultdict(set)
-
-    for entity, terms in entity_terms.items():
-        for term in terms:
-            d[term].add(entity)
-
-    return d
+# Help text for program invocation.
 
 helptext = """\
 Need an output directory name plus a collection of text and tiers filenames for

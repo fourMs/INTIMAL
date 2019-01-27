@@ -31,10 +31,10 @@ class Category:
         return "Category(%r, %r)" % self.as_tuple()
 
     def __str__(self):
-        return "%s-%s" % self.as_tuple()
+        return unicode(self)
 
     def __unicode__(self):
-        return str(self)
+        return "%s-%s" % self.as_tuple()
 
     def as_tuple(self):
         return (self.parent, self.category)
@@ -51,7 +51,7 @@ class Category:
     # Graph methods.
 
     def label(self):
-        return str(self)
+        return unicode(self)
 
 class Connection:
 
@@ -167,6 +167,12 @@ class Fragment:
     def __repr__(self):
         return "Fragment(%r, %r, %r, %r)" % self.as_tuple()
 
+    def __str__(self):
+        return unicode(self)
+
+    def __unicode__(self):
+        return unicode(self.source)
+
     def as_tuple(self):
         return (self.source, self.category, self.words, self.text)
 
@@ -219,7 +225,7 @@ class Fragment:
     # Graph methods.
 
     def label(self):
-        return self.source.label()
+        return unicode(self)
 
 class Source:
 
@@ -448,6 +454,20 @@ def get_related_fragments(connections):
         for fragment, relations in connection.relations():
             for relation in relations:
                 d[fragment].append((measure, relation, similarity))
+
+    return d
+
+# Term catalogues.
+
+def get_common_terms(entity_terms):
+
+    "Return a distribution mapping terms to common entities."
+
+    d = defaultdict(set)
+
+    for entity, terms in entity_terms.items():
+        for term in terms:
+            d[term].add(entity)
 
     return d
 
