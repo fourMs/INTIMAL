@@ -9,6 +9,7 @@ from objects import Category, Fragment, Source
 
 from collections import defaultdict
 from xml.dom.minidom import parse
+import re
 
 # XML node processing.
 
@@ -65,13 +66,35 @@ def get_categorised_fragments(tiersdoc, source):
             # The category is textual content within a subnode.
 
             for category in span.getElementsByTagName("v"):
+
+                # Normalise the category labels.
+
+                parent = normalise(parent)
+                category = normalise(textContent(category))
+
                 fragments.append(
                     Fragment(Source(source, start, end),
-                             Category(parent, textContent(category))))
+                             Category(parent, category)))
                 break
 
     fragments.sort()
     return fragments
+
+def normalise(s):
+
+    "Normalise capitalisation in 's'."
+
+    l = []
+    sep = False
+
+    for part in re.split(r"(?<=[ _])([a-z])", s):
+        if not sep:
+            l.append(part)
+        else:
+            l.append(part.upper())
+        sep = not sep
+
+    return "".join(l)
 
 def populate_fragments(fragments, textdoc, source):
 
