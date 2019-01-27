@@ -124,7 +124,8 @@ if __name__ == "__main__":
 
     # Get terms used by each category for inspection.
 
-    category_terms = get_fragment_terms(fragments, lambda fragment: fragment.category)
+    category_terms = get_fragment_terms(fragments, lambda fragment:
+                                                   fragment.category.parent)
 
     # Get common terms (common between categories).
 
