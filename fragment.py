@@ -30,6 +30,8 @@ from stopwords import filter_terms_by_pos
 
 from text import normalise_accents, remove_punctuation_from_words
 
+from wordlist import get_wordlist_from_file
+
 import outputs
 
 import sys
@@ -69,6 +71,16 @@ if __name__ == "__main__":
         sys.exit(1)
 
     allow_uncategorised = "--all-fragments" in sys.argv
+    if allow_uncategorised:
+        sys.argv.remove("--all-fragments")
+
+    try:
+        i = sys.argv.index("--word-list")
+        del sys.argv[i]
+        wordlist = get_wordlist_from_file(sys.argv[i])
+        del sys.argv[i]
+    except (IndexError, ValueError):
+        wordlist = None
 
     # Derive filenames for output files.
 
@@ -110,6 +122,11 @@ if __name__ == "__main__":
     # adjectives).
 
     process_fragments(fragments, [group_words, filter_terms_by_pos])
+
+    # Selection of desired words.
+
+    if wordlist:
+        process_fragments(fragments, [wordlist.filter_words])
 
     # Get terms used by each category for inspection.
 
