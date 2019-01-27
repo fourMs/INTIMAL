@@ -453,6 +453,28 @@ def get_related_fragments(connections):
 
     return d
 
+def select_related_fragments_by_source(related, num):
+
+    """
+    For each fragment in the 'related' mapping, select related fragments from
+    'num' different source files.
+    """
+
+    d = defaultdict(list)
+
+    for fragment, connections in related.items():
+        sources = set([fragment.source.filename])
+
+        for related, connection in ConnectedFragment(fragment, connections):
+            if len(sources) >= num:
+                break
+
+            if related.source.filename not in sources:
+                d[fragment].append(connection)
+                sources.add(related.source.filename)
+
+    return d
+
 def sort_related_fragments(related):
 
     "Sort the 'related' fragments in descending order of similarity."
