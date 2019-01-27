@@ -389,6 +389,17 @@ def inverse_document_frequencies(frequencies, numdocs):
 
     return d
 
+def process_fragments(fragments, processes):
+
+    """
+    Process 'fragments' using the given 'processes', redefining the words (or
+    terms) in the fragments.
+    """
+
+    for fragment in fragments:
+        for process in processes:
+            fragment.words = process(fragment.words)
+
 def word_document_frequencies(fragments):
 
     "Return document frequencies for words from the 'fragments'."

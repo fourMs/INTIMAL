@@ -19,6 +19,7 @@ from objects import Category, Fragment, \
                     get_fragment_terms, \
                     get_related_fragments, \
                     inverse_document_frequencies, \
+                    process_fragments, \
                     word_document_frequencies, word_frequencies
 
 from analysis import process_fragment_tokens, \
@@ -34,19 +35,6 @@ import outputs
 
 from collections import defaultdict
 import sys
-
-# Fragment processing.
-
-def process_fragments(fragments, processes):
-
-    """
-    Process 'fragments' using the given 'processes', redefining the words (or
-    terms) in the fragments.
-    """
-
-    for fragment in fragments:
-        for process in processes:
-            fragment.words = process(fragment.words)
 
 # Term catalogues.
 
