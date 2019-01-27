@@ -50,22 +50,6 @@ def cmp_values(a, b):
 
     return cmp(a[1], b[1])
 
-# Permutation functions.
-
-def get_relations(values):
-
-    """
-    Return the relations for each value in the given 'values' collection,
-    providing entries of the form (value, other values).
-    """
-
-    l = []
-
-    for i, value in enumerate(values):
-        l.append((value, values[:i] + values[i+1:]))
-
-    return l
-
 # Collection functions.
 
 def only_one(l):

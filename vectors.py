@@ -27,28 +27,37 @@ Bag of words model: https://en.wikipedia.org/wiki/Bag-of-words_model
 Tf-idf: https://en.wikipedia.org/wiki/Tf%E2%80%93idf
 """
 
-from utils import CountingDict, get_relations
-
 def combine_term_vectors(vectors, idf=None):
 
     "Return the result of combining the given term 'vectors'."
 
-    d = CountingDict(1)
+    if not vectors:
+        return {}
+
+    d = {}
+
+    for term, value in vectors[0].items():
+
+        # Scale the term weight if requested.
+
+        idf_term = idf and idf[term] or 1
+        d[term] = value * idf_term
 
     # Take each vector in turn, trying to find terms in the other vectors.
 
-    for vector, others in get_relations(vectors):
-        for other in others:
-            for term, value in vector.items():
-                if other.has_key(term):
+    for vector in vectors[1:]:
+        for term in d.keys():
 
-                    # Scale the term weight if requested.
+            # Remove absent terms from the result.
 
-                    idf_term = idf and idf[term] or 1
+            if not vector.has_key(term):
+                del d[term]
 
-                    # Employ the product when combining weights.
+            # Combine term values with the result.
 
-                    d[term] *= value * idf_term
+            else:
+                idf_term = idf and idf[term] or 1
+                d[term] *= vector[term] * idf_term
 
     return d
 
