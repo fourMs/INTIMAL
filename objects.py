@@ -344,18 +344,6 @@ def get_all_words(fragments):
     l.sort()
     return l
 
-def get_category_terms(fragments):
-
-    "Return a dictionary mapping categories to terms."
-
-    d = defaultdict(list)
-
-    for fragment in fragments:
-        for word in fragment.words:
-            d[fragment.category].append(word)
-
-    return d
-
 def get_fragment_similarity(fragments, idf=None):
 
     """
@@ -367,14 +355,19 @@ def get_fragment_similarity(fragments, idf=None):
     tv = map(lambda f: f.term_vector(), fragments)
     return combine_term_vectors(tv, idf)
 
-def get_fragment_terms(fragments):
+def get_fragment_terms(fragments, key_function=None):
 
-    "Return a dictionary mapping fragments to terms."
+    """
+    Return a dictionary mapping fragments to terms. If 'key_function' is
+    specified, call this function on each fragment to yield a suitable
+    dictionary key instead of the fragment.
+    """
 
-    d = {}
+    fn = key_function or (lambda fragment: fragment)
+    d = defaultdict(list)
 
     for fragment in fragments:
-        d[fragment] = fragment.words
+        d[fn(fragment)] += fragment.words
 
     return d
 

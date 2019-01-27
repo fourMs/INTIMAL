@@ -15,7 +15,6 @@ from objects import Category, Fragment, \
                     commit_text, \
                     compare_fragments, \
                     get_all_words, \
-                    get_category_terms, \
                     get_fragment_terms, \
                     get_related_fragments, \
                     inverse_document_frequencies, \
@@ -65,7 +64,6 @@ following:
  * term document frequencies
  * term inverse document frequencies
  * fragments and related fragments
- * illustration graphs
 """
 
 # Main program.
@@ -126,7 +124,7 @@ if __name__ == "__main__":
 
     # Get terms used by each category for inspection.
 
-    category_terms = get_category_terms(fragments)
+    category_terms = get_fragment_terms(fragments, lambda fragment: fragment.category)
 
     # Get common terms (common between categories).
 
