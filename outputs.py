@@ -177,7 +177,10 @@ def show_related_fragments(related, filename, shown_relations=5):
 
                     print >>out, " Sim: %.2f" % connection.measure(),
 
-                    for term, score in connection.similarity.items():
+                    similarities = connection.similarity.items()
+                    similarities.sort()
+
+                    for term, score in similarities:
                         print >>out, "%s (%.2f)" % (unicode(term), score),
 
                     print >>out
