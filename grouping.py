@@ -63,7 +63,7 @@ def group_names(terms):
             # Produce any held entity.
 
             if entity:
-                l.append(" ".join(map(unicode, entity)))
+                emit_entity(l, entity)
                 entity = []
 
             # Produce any trailing filler words.
@@ -75,9 +75,11 @@ def group_names(terms):
             l.append(term)
 
     if entity:
-        l.append(" ".join(map(unicode, entity)))
+        emit_entity(l, entity)
+
     if filler:
         l += filler
+
     return l
 
 def group_quantities(terms):
@@ -93,20 +95,33 @@ def group_quantities(terms):
 
         if word.isdigit():
             if entity:
-                l.append(" ".join(entity))
-            entity = [word]
+                emit_entity(l, entity)
+            entity = [term]
+
         elif word in units:
-            entity.append(word)
-            l.append(" ".join(entity))
+            entity.append(term)
+            emit_entity(l, entity)
             entity = []
+
         else:
             if entity:
-                l.append(" ".join(entity))
+                emit_entity(l, entity)
                 entity = []
+
             l.append(term)
 
     if entity:
-        l.append(" ".join(entity))
+        emit_entity(l, entity)
+
     return l
+
+def emit_entity(l, entity):
+
+    "Add to 'l' the given 'entity'."
+
+    if len(entity) > 1:
+        l.append(" ".join(map(unicode, entity)))
+    else:
+        l.append(entity[0])
 
 # vim: tabstop=4 expandtab shiftwidth=4
