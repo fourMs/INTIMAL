@@ -169,31 +169,22 @@ def show_related_fragments(related, filename, shown_relations=5):
 
                 # Obtain the related fragments.
 
-                for _fragment, relations in connection.relations():
+                for relation in connection.relations(fragment):
                     if not to_show:
                         break
 
-                    if _fragment != fragment:
-                        continue
+                    print >>out, "  Id:", relation.source, relation.source.start, relation.source.end
 
-                    # Show each one.
+                    print >>out, " Sim: %.2f" % connection.measure(),
 
-                    for relation in relations:
-                        if not to_show:
-                            break
+                    for term, score in connection.similarity.items():
+                        print >>out, "%s (%.2f)" % (unicode(term), score),
 
-                        print >>out, "  Id:", relation.source, relation.source.start, relation.source.end
+                    print >>out
+                    print >>out, "Text:", relation.text
+                    print >>out
 
-                        print >>out, " Sim: %.2f" % connection.measure(),
-
-                        for term, score in connection.similarity.items():
-                            print >>out, "%s (%.2f)" % (unicode(term), score),
-
-                        print >>out
-                        print >>out, "Text:", relation.text
-                        print >>out
-
-                        to_show -= 1
+                    to_show -= 1
 
             if len(connections) > shown_relations:
                 print >>out, "%d related fragments not shown." % (len(connections) - shown_relations)

@@ -6,7 +6,7 @@ Textual abstractions.
 """
 
 from text import is_punctuation, match_tokens, text_from_words
-from utils import CountingDict, get_relations, only_one
+from utils import CountingDict, only_one
 from vectors import combine_term_vectors, get_term_vector_similarity
 
 from collections import defaultdict
@@ -102,14 +102,12 @@ class Connection:
         vectors = map(lambda f: f.term_vector(), self.fragments)
         return get_term_vector_similarity(vectors, self.similarity)
 
-    def relations(self):
+    def relations(self, fragment):
 
-        """
-        Return the relations for each fragment in this connection, using the
-        form (fragment, related fragments) for each fragment.
-        """
+        "Return the relations for the given 'fragment' in this connection."
 
-        return get_relations(self.fragments)
+        i = self.fragments.index(fragment)
+        return self.fragments[:i] + self.fragments[i+1:]
 
     # Graph methods.
 
