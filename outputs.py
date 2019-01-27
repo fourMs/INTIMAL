@@ -146,11 +146,11 @@ def show_related_fragments(related, filename, shown_relations=5):
 
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
-        for fragment, relations in related.items():
+        for fragment, connections in related.items():
 
             # Show the related fragments in descending order of similarity.
 
-            relations.sort(reverse=True)
+            connections.sort(key=lambda x: x.measure(), reverse=True)
 
             # Show the principal fragment details.
 
@@ -161,20 +161,42 @@ def show_related_fragments(related, filename, shown_relations=5):
             # For each related fragment, show details including the similarity
             # information.
 
-            for measure, relation, similarity in relations[:shown_relations]:
+            to_show = shown_relations
 
-                print >>out, "  Id:", relation.source, relation.source.start, relation.source.end
-                print >>out, " Sim: %.2f" % measure,
+            for connection in connections:
+                if not to_show:
+                    break
 
-                for term, score in similarity.items():
-                    print >>out, "%s (%.2f)" % (unicode(term), score),
+                # Obtain the related fragments.
 
-                print >>out
-                print >>out, "Text:", relation.text
-                print >>out
+                for _fragment, relations in connection.relations():
+                    if not to_show:
+                        break
 
-            if len(relations) > shown_relations:
-                print >>out, "%d related fragments not shown." % (len(relations) - shown_relations)
+                    if _fragment != fragment:
+                        continue
+
+                    # Show each one.
+
+                    for relation in relations:
+                        if not to_show:
+                            break
+
+                        print >>out, "  Id:", relation.source, relation.source.start, relation.source.end
+
+                        print >>out, " Sim: %.2f" % connection.measure(),
+
+                        for term, score in connection.similarity.items():
+                            print >>out, "%s (%.2f)" % (unicode(term), score),
+
+                        print >>out
+                        print >>out, "Text:", relation.text
+                        print >>out
+
+                        to_show -= 1
+
+            if len(connections) > shown_relations:
+                print >>out, "%d related fragments not shown." % (len(connections) - shown_relations)
 
             print >>out, "----"
             print >>out

@@ -401,32 +401,14 @@ def word_frequencies(fragments):
 def get_related_fragments(connections):
 
     """
-    Using 'connections', obtain the fragments related to each fragment,
-    returning a mapping from fragments to (measure, related fragment,
-    similarity), where similarity is the full similarity result.
+    Return a mapping from fragments to connections for the given 'connections'.
     """
-
-    # Visit all connections and collect for each fragment all the related
-    # fragments together with the similarity details between the principal
-    # fragment and each related fragment.
 
     d = defaultdict(list)
 
     for connection in connections:
-
-        # The computed measure is used to rank the related fragments. General
-        # similarity details are also included in the data for eventual output.
-
-        measure = connection.measure()
-        similarity = connection.similarity
-
-        # Obtain related fragments for this connection. There should only be
-        # one, but the connection supports relationships between more than two
-        # fragments in general.
-
-        for fragment, relations in connection.relations():
-            for relation in relations:
-                d[fragment].append((measure, relation, similarity))
+        for fragment in connection.fragments:
+            d[fragment].append(connection)
 
     return d
 
