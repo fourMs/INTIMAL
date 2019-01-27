@@ -188,26 +188,7 @@ class Fragment:
 
         return text_from_words(self.words)
 
-    def original_words(self):
-
-        "Return the originally-specified words for the terms in this fragment."
-
-        l = []
-        for word in self.words:
-            l.append(unicode(word))
-        return l
-
     # Similarity methods.
-
-    def intersection(self, other):
-
-        "Provide the intersection of terms in this and the 'other' fragment."
-
-        l = []
-        for word in self.words:
-            if word in other:
-                l.append(word)
-        return l
 
     def word_frequencies(self):
 
@@ -267,14 +248,6 @@ class Source:
 
     def as_tuple(self):
         return (self.filename, self.start, self.end)
-
-    def within(self, other):
-        return self.filename == other.filename and \
-               self.start >= other.start and self.end <= other.end
-
-    def contains(self, other):
-        return self.filename == other.filename and \
-               self.start <= other.start and self.end >= other.end
 
     # Graph methods.
 
