@@ -25,11 +25,29 @@ class CountingDict(defaultdict):
 # Comparison functions.
 
 def cmp_value_lengths(a, b):
-    acat = len(a[1])
-    bcat = len(b[1])
-    return cmp(acat, bcat)
+
+    """
+    Compare the (key, value) tuples 'a' and 'b' according to the length of
+    their values.
+    """
+
+    return cmp(len(a[1]), len(b[1]))
+
+def cmp_value_lengths_and_keys(a, b):
+
+    """
+    Compare the (key, value) tuples 'a' and 'b' according to the length of
+    their values and their keys.
+    """
+
+    akey = len(a[1]), a[0]
+    bkey = len(b[1]), b[0]
+    return cmp(akey, bkey)
 
 def cmp_values(a, b):
+
+    "Compare the (key, value) tuples 'a' and 'b' according to their values."
+
     return cmp(a[1], b[1])
 
 # Permutation functions.

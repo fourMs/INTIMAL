@@ -6,7 +6,7 @@ Output production.
 """
 
 from objects import Term
-from utils import cmp_value_lengths, cmp_values
+from utils import cmp_value_lengths_and_keys, cmp_values
 
 from os import mkdir
 from os.path import isdir, join
@@ -38,11 +38,23 @@ def show_category_terms(category_terms, filename):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for category, terms in l:
+
+            # Sort a list of distinct terms.
+
             terms = list(set(terms))
             terms.sort()
-            print >>out, category
+
+            # Show a category heading.
+
+            s = unicode(category)
+            print >>out, s
+            print >>out, "-" * len(s)
+
+            # Show the terms.
+
             for term in terms:
                 print >>out, unicode(term)
+
             print >>out
     finally:
         out.close()
@@ -54,14 +66,20 @@ def show_common_terms(common_terms, filename):
     the entities (categories or fragments) in which it appears.
     """
 
-    # Sort the terms and entities by increasing number of entities.
+    # Sort the terms and entities by increasing number of entities and by terms.
 
     l = common_terms.items()
-    l.sort(cmp=cmp_value_lengths)
+    l.sort(cmp=cmp_value_lengths_and_keys)
 
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for term, entities in l:
+
+            # Sort a list of distinct entities.
+
+            entities = list(set(entities))
+            entities.sort()
+
             print >>out, unicode(term), ",".join(map(lambda e: e and unicode(e) or "null", entities))
     finally:
         out.close()
@@ -74,11 +92,19 @@ def show_connections(connections, filename):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for connection in connections:
+
+            # Show terms and weights.
+
             for term, weight in connection.similarity.items():
                 print >>out, unicode(term), weight,
+
             print >>out
+
+            # Show the connected fragments.
+
             for fragment in connection.fragments:
                 print >>out, fragment.text
+
             print >>out
     finally:
         out.close()
