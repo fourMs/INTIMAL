@@ -453,6 +453,13 @@ def get_related_fragments(connections):
 
     return d
 
+def sort_related_fragments(related):
+
+    "Sort the 'related' fragments in descending order of similarity."
+
+    for fragment, connections in related.items():
+        connections.sort(key=lambda x: x.measure(), reverse=True)
+
 # Term catalogues.
 
 def get_common_terms(entity_terms):

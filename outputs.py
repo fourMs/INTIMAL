@@ -151,10 +151,6 @@ def show_related_fragments(related, filename, shown_relations=5):
     try:
         for fragment, connections in related.items():
 
-            # Show the related fragments in descending order of similarity.
-
-            connections.sort(key=lambda x: x.measure(), reverse=True)
-
             # Show the principal fragment details.
 
             print >>out, "  Id:", fragment.source, fragment.source.start, fragment.source.end
