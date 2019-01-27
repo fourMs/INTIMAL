@@ -160,9 +160,16 @@ def term_summary(term):
     "Produce a readable summary of 'term'."
 
     if isinstance(term, Term):
-        return u"%s:%s" % (unicode(term), term.tag)
+        return u"%s:%s" % (quoted(term), term.tag)
     else:
-        return unicode(term)
+        return quoted(term)
+
+def quoted(term):
+    s = unicode(term)
+    if " " in s:
+        return u'"%s"' % s
+    else:
+        return s
 
 # Output file handling.
 
