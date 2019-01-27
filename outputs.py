@@ -95,7 +95,10 @@ def show_connections(connections, filename):
 
             # Show terms and weights.
 
-            for term, weight in connection.similarity.items():
+            similarities = connection.similarity.items()
+            similarities.sort()
+
+            for term, weight in similarities:
                 print >>out, unicode(term), weight,
 
             print >>out
