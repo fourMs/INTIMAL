@@ -28,7 +28,7 @@ from grouping import group_words
 
 from stopwords import filter_terms_by_pos
 
-from text import normalise_accents
+from text import normalise_accents, remove_punctuation_from_words
 
 import outputs
 
@@ -120,6 +120,8 @@ if __name__ == "__main__":
 
     process_fragments(fragments, [normalise_accents])
     commit_text(fragments)
+
+    process_fragments(fragments, [remove_punctuation_from_words])
 
     # Perform some processes on the words:
 

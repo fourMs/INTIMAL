@@ -46,6 +46,19 @@ def remove_punctuation(s):
         s = s.replace(c, "")
     return s
 
+def remove_punctuation_from_word(s):
+    result = remove_punctuation(s)
+    if not result:
+        return s
+    else:
+        return result
+
+def remove_punctuation_from_words(terms):
+
+    "Remove any punctuation from 'terms'."
+
+    return map(remove_punctuation_from_word, terms)
+
 def only_words(terms):
 
     "Filter out non-words, principally anything that is punctuation."
