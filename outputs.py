@@ -5,7 +5,7 @@
 Output production.
 """
 
-from objects import Term
+from objects import ConnectedFragment, Term
 from utils import cmp_value_lengths_and_keys, cmp_values
 
 from os import mkdir
@@ -166,31 +166,25 @@ def show_related_fragments(related, filename, shown_relations=5):
 
             to_show = shown_relations
 
-            for connection in connections:
+            for relation, connection in ConnectedFragment(fragment, connections):
                 if not to_show:
                     break
 
-                # Obtain the related fragments.
+                print >>out, "  Id:", relation.source, relation.source.start, relation.source.end
 
-                for relation in connection.relations(fragment):
-                    if not to_show:
-                        break
+                print >>out, " Sim: %.2f" % connection.measure(),
 
-                    print >>out, "  Id:", relation.source, relation.source.start, relation.source.end
+                similarities = connection.similarity.items()
+                similarities.sort()
 
-                    print >>out, " Sim: %.2f" % connection.measure(),
+                for term, score in similarities:
+                    print >>out, "%s (%.2f)" % (unicode(term), score),
 
-                    similarities = connection.similarity.items()
-                    similarities.sort()
+                print >>out
+                print >>out, "Text:", relation.text
+                print >>out
 
-                    for term, score in similarities:
-                        print >>out, "%s (%.2f)" % (unicode(term), score),
-
-                    print >>out
-                    print >>out, "Text:", relation.text
-                    print >>out
-
-                    to_show -= 1
+                to_show -= 1
 
             if len(connections) > shown_relations:
                 print >>out, "%d related fragments not shown." % (len(connections) - shown_relations)

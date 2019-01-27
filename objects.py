@@ -396,6 +396,49 @@ def word_frequencies(fragments):
 
 # Connection-related operations.
 
+class ConnectedFragment:
+
+    "A record of fragment relationships via connections."
+
+    def __init__(self, fragment, connections):
+        self.fragment = fragment
+        self.connections = connections
+
+    def __iter__(self):
+        return RelatedFragments(self.fragment, self.connections)
+
+class RelatedFragments:
+
+    "A provider of related fragments from connections."
+
+    def __init__(self, fragment, connections):
+        self.fragment = fragment
+        self.connection_iter = iter(connections)
+        self.connection = None
+        self.relation_iter = None
+
+    def next(self):
+
+        "Return the next related fragment with its connection."
+
+        while self.connection_iter:
+            while self.relation_iter:
+                try:
+                    return self.relation_iter.next(), self.connection
+                except StopIteration:
+                    self.relation_iter = None
+
+            # Handle the end of a collection of relations by getting the next
+            # connection and obtaining the start of a collection.
+
+            try:
+                self.connection = self.connection_iter.next()
+                self.relation_iter = iter(self.connection.relations(self.fragment))
+            except StopIteration:
+                self.connection_iter = None
+
+        raise StopIteration
+
 def get_related_fragments(connections):
 
     """
