@@ -19,7 +19,9 @@ from objects import Category, Fragment, \
                     get_related_fragments, \
                     inverse_document_frequencies, \
                     process_fragments, \
-                    select_related_fragments_by_participant, sort_related_fragments, \
+                    select_related_fragments_by_category, \
+                    select_related_fragments_by_participant, \
+                    sort_related_fragments, \
                     word_document_frequencies, word_frequencies
 
 from analysis import process_fragment_tokens, \
@@ -158,7 +160,8 @@ if __name__ == "__main__":
     # Impose an ordering on the related fragments.
 
     sort_related_fragments(related)
-    related = select_related_fragments_by_participant(related, 4)
+    related_by_participant = select_related_fragments_by_participant(related, 4)
+    related_by_category = select_related_fragments_by_category(related, 4)
 
     # Emit the fragments for inspection.
 
@@ -176,6 +179,7 @@ if __name__ == "__main__":
     # Emit the connections for inspection.
 
     outputs.show_connections(connections, outfile("connections.txt"))
-    outputs.show_related_fragments(related, outfile("relations.txt"))
+    outputs.show_related_fragments(related_by_participant, outfile("relations.txt"))
+    outputs.show_related_fragments(related_by_category, outfile("relations_by_category.txt"))
 
 # vim: tabstop=4 expandtab shiftwidth=4
