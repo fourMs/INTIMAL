@@ -12,6 +12,8 @@ from vectors import combine_term_vectors, get_term_vector_similarity
 from collections import defaultdict
 from itertools import combinations
 from math import log
+import re
+import os.path
 
 class Category:
 
@@ -445,25 +447,39 @@ def get_related_fragments(connections):
 
     return d
 
-def select_related_fragments_by_source(related, num):
+def get_participant_from_source(source):
+
+    "Return the specific participant from 'source'."
+
+    filename = os.path.split(source.filename)[-1]
+
+    m = re.match(r"(A\d*)", filename)
+    if m:
+        return m.group()
+    else:
+        return None
+
+def select_related_fragments_by_participant(related, num):
 
     """
     For each fragment in the 'related' mapping, select related fragments from
-    'num' different source files.
+    'num' different participants.
     """
 
     d = defaultdict(list)
 
     for fragment, connections in related.items():
-        sources = set([fragment.source.filename])
+        participants = set([get_participant_from_source(fragment.source)])
 
         for related, connection in ConnectedFragment(fragment, connections):
-            if len(sources) >= num:
+            if len(participants) >= num:
                 break
 
-            if related.source.filename not in sources:
+            participant = get_participant_from_source(related.source)
+
+            if participant not in participants:
                 d[fragment].append(connection)
-                sources.add(related.source.filename)
+                participants.add(participant)
 
     return d
 

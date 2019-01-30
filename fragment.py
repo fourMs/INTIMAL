@@ -19,7 +19,7 @@ from objects import Category, Fragment, \
                     get_related_fragments, \
                     inverse_document_frequencies, \
                     process_fragments, \
-                    select_related_fragments_by_source, sort_related_fragments, \
+                    select_related_fragments_by_participant, sort_related_fragments, \
                     word_document_frequencies, word_frequencies
 
 from analysis import process_fragment_tokens, \
@@ -158,7 +158,7 @@ if __name__ == "__main__":
     # Impose an ordering on the related fragments.
 
     sort_related_fragments(related)
-    related = select_related_fragments_by_source(related, 4)
+    related = select_related_fragments_by_participant(related, 4)
 
     # Emit the fragments for inspection.
 
