@@ -50,6 +50,17 @@ def cmp_values(a, b):
 
     return cmp(a[1], b[1])
 
+def cmp_values_and_keys(a, b):
+
+    """
+    Compare the (key, value) tuples 'a' and 'b' according to their values and
+    keys.
+    """
+
+    akey = (a[1], a[0])
+    bkey = (b[1], b[0])
+    return cmp(akey, bkey)
+
 # Collection functions.
 
 def only_one(l):

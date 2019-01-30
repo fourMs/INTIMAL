@@ -6,7 +6,7 @@ Output production.
 """
 
 from objects import ConnectedFragment, Term
-from utils import cmp_value_lengths_and_keys, cmp_values
+from utils import cmp_value_lengths_and_keys, cmp_values_and_keys
 
 from os import mkdir
 from os.path import isdir, join
@@ -132,7 +132,7 @@ def show_frequencies(frequencies, filename):
     "Write the mapping of term 'frequencies' to 'filename'."
 
     l = frequencies.items()
-    l.sort(cmp=cmp_values)
+    l.sort(cmp=cmp_values_and_keys)
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for term, occurrences in l:
