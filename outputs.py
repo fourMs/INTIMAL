@@ -153,8 +153,9 @@ def show_related_fragments(related, filename, shown_relations=5):
 
             # Show the principal fragment details.
 
-            print >>out, "  Id:", fragment.source.filename, fragment.source.start, fragment.source.end
-            print >>out, "Text:", fragment.text
+            print >>out, "      Id:", fragment.source.filename, fragment.source.start, fragment.source.end
+            print >>out, "Category:", fragment.category
+            print >>out, "    Text:", fragment.text
             print >>out
 
             # For each related fragment, show details including the similarity
@@ -166,18 +167,20 @@ def show_related_fragments(related, filename, shown_relations=5):
                 if not to_show:
                     break
 
-                print >>out, "  Id:", relation.source.filename, relation.source.start, relation.source.end
+                print >>out, "      Id:", relation.source.filename, relation.source.start, relation.source.end
+                print >>out, "Category:", relation.category
 
-                print >>out, " Sim: %.2f" % connection.measure(),
+                print >>out, "     Sim: %.2f" % connection.measure()
 
                 similarities = connection.similarity.items()
                 similarities.sort()
 
+                print >>out, "         ",
                 for term, score in similarities:
                     print >>out, "%s (%.2f)" % (unicode(term), score),
 
                 print >>out
-                print >>out, "Text:", relation.text
+                print >>out, "    Text:", relation.text
                 print >>out
 
                 to_show -= 1
@@ -200,6 +203,9 @@ def term_summary(term):
         return quoted(term)
 
 def quoted(term):
+
+    "Quote the 'term' using quotation marks where spaces appear in the term."
+
     s = unicode(term)
     if " " in s:
         return u'"%s"' % s
@@ -220,6 +226,9 @@ class Output:
         return join(self.outdir, name)
 
 def ensure_directory(name):
+
+    "Make sure that directory 'name' exists."
+
     if not isdir(name):
         mkdir(name)
 
