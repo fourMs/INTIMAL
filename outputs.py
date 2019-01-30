@@ -153,7 +153,7 @@ def show_related_fragments(related, filename, shown_relations=5):
 
             # Show the principal fragment details.
 
-            print >>out, "  Id:", fragment.source, fragment.source.start, fragment.source.end
+            print >>out, "  Id:", fragment.source.filename, fragment.source.start, fragment.source.end
             print >>out, "Text:", fragment.text
             print >>out
 
@@ -166,7 +166,7 @@ def show_related_fragments(related, filename, shown_relations=5):
                 if not to_show:
                     break
 
-                print >>out, "  Id:", relation.source, relation.source.start, relation.source.end
+                print >>out, "  Id:", relation.source.filename, relation.source.start, relation.source.end
 
                 print >>out, " Sim: %.2f" % connection.measure(),
 
