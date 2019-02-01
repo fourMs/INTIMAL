@@ -9,8 +9,28 @@ from objects import ConnectedFragment, Term
 from utils import cmp_value_lengths_and_keys, cmp_values_and_keys
 
 from os import mkdir
-from os.path import isdir, join
+from os.path import exists, isdir, join
 import codecs
+
+# Output file handling.
+
+class Output:
+
+    "A container for output files."
+
+    def __init__(self, outdir):
+        self.outdir = outdir
+        ensure_directory(self.outdir)
+
+    def filename(self, name):
+        return join(self.outdir, name)
+
+def ensure_directory(name):
+
+    "Make sure that directory 'name' exists."
+
+    if not isdir(name):
+        mkdir(name)
 
 # Output conversion.
 
@@ -221,25 +241,5 @@ def quoted(term):
         return u'"%s"' % s
     else:
         return s
-
-# Output file handling.
-
-class Output:
-
-    "A container for output files."
-
-    def __init__(self, outdir):
-        self.outdir = outdir
-        ensure_directory(self.outdir)
-
-    def filename(self, name):
-        return join(self.outdir, name)
-
-def ensure_directory(name):
-
-    "Make sure that directory 'name' exists."
-
-    if not isdir(name):
-        mkdir(name)
 
 # vim: tabstop=4 expandtab shiftwidth=4
