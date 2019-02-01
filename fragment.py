@@ -99,6 +99,12 @@ if __name__ == "__main__":
     if not allow_uncategorised:
         fragments = filter(lambda f: f.category and f.category.complete(), fragments)
 
+    # Fix fragment categories.
+
+    for fragment in fragments:
+        if fragment.category.parent == "Hostland":
+            fragment.category.parent = "Host_Land"
+
     # Output words.
 
     all_words = get_all_words(fragments)
