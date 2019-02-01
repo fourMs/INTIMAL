@@ -151,11 +151,9 @@ def show_related_fragments(related, filename, shown_relations=5):
     try:
         for fragment, connections in related.items():
 
-            # Show the principal fragment details.
+            # Show the principal details of each fragment.
 
-            print >>out, "      Id:", fragment.source.filename, fragment.source.start, fragment.source.end
-            print >>out, "Category:", fragment.category
-            print >>out, "    Text:", fragment.text
+            show_fragment(fragment, out)
             print >>out
 
             # For each related fragment, show details including the similarity
@@ -167,20 +165,8 @@ def show_related_fragments(related, filename, shown_relations=5):
                 if not to_show:
                     break
 
-                print >>out, "      Id:", relation.source.filename, relation.source.start, relation.source.end
-                print >>out, "Category:", relation.category
-
-                print >>out, "     Sim: %.2f" % connection.measure()
-
-                similarities = connection.similarity.items()
-                similarities.sort()
-
-                print >>out, "         ",
-                for term, score in similarities:
-                    print >>out, "%s (%.2f)" % (unicode(term), score),
-
-                print >>out
-                print >>out, "    Text:", relation.text
+                show_similarity(connection, out)
+                show_fragment(relation, out)
                 print >>out
 
                 to_show -= 1
@@ -192,6 +178,30 @@ def show_related_fragments(related, filename, shown_relations=5):
             print >>out
     finally:
         out.close()
+
+def show_fragment(fragment, out):
+
+    "Show the principal details of 'fragment' using 'out'."
+
+    print >>out, "      Id:", fragment.source.filename, fragment.source.start, fragment.source.end
+    print >>out, "Category:", unicode(fragment.category)
+    print >>out, "    Text:", fragment.text
+
+def show_similarity(connection, out):
+
+    "Show similarity information for 'connection' using 'out'."
+
+    print >>out, "     Sim: %.2f" % connection.measure(),
+
+    similarities = connection.similarity.items()
+    similarities.sort()
+
+    for term, score in similarities:
+        print >>out, "%s (%.2f)" % (unicode(term), score),
+
+    print >>out
+
+# Output utilities.
 
 def term_summary(term):
 
