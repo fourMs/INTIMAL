@@ -81,28 +81,6 @@ def show_connections():
 
 # Test cases.
 
-def test_intersection():
-    show("%r.intersection(%r)" % (fragments[0], fragments[2]),
-         fragments[0].intersection(fragments[2]),
-         [u"pollo"])
-    show("%r.intersection(%r)" % (fragments[2], fragments[0]),
-         fragments[2].intersection(fragments[0]),
-         [u"pollo"])
-
-    show("%r.intersection(%r)" % (fragments[0], fragments[-2]),
-         fragments[0].intersection(fragments[-2]),
-         [u"pollo"])
-    show("%r.intersection(%r)" % (fragments[-2], fragments[0]),
-         fragments[-2].intersection(fragments[0]),
-         [u"pollo"])
-
-    show("%r.intersection(%r)" % (fragments[2], fragments[-2]),
-         fragments[2].intersection(fragments[-2]),
-         [u"el", u"pobre", u"pollo", u"el"])
-    show("%r.intersection(%r)" % (fragments[-2], fragments[2]),
-         fragments[-2].intersection(fragments[2]),
-         [u"el", u"pobre", u"pollo", u"el", u"el", u"el", u"el"])
-
 def test_similarity():
     show("get_fragment_similarity([%r, %r])" % (fragments[0], fragments[2]),
          get_fragment_similarity([fragments[0], fragments[2]]),
@@ -132,7 +110,6 @@ def test_frequencies():
 
 
 def main():
-    test_intersection()
     test_similarity()
     test_frequencies()
 

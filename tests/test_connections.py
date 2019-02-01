@@ -20,7 +20,7 @@ c1 = Connection([], [f1, f2])
 # Test cases.
 
 def test_relations():
-    show("%r.relations()" % c1, c1.relations(), [(f1, [f2]), (f2, [f1])])
+    show("%r.relation(%r)" % (c1, f1), c1.relation(f1), f2)
 
 def main():
     test_relations()

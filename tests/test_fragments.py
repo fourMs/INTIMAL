@@ -72,18 +72,17 @@ def test_truth():
     show("bool(%r)" % f3, bool(f3), False)
     show("bool(%r)" % f4, bool(f4), False)
 
-def test_intersection():
-    show("%r.intersection(%r)" % (f1, f2), f1.intersection(f2), [u"un"])
-    show("%r.intersection(%r)" % (f1, f3), f1.intersection(f3), [])
-    show("%r.intersection(%r)" % (f5, f2), f5.intersection(f2), [u"un"])
-    show("%r.intersection(%r)" % (f5, f6), f5.intersection(f6), [u"un"])
+def test_vector():
+    show("%r.term_vector()" % f1, f1.term_vector(), {u"un" : 1, u"hombre" : 1})
+    show("%r.term_vector()" % f2, f2.term_vector(), {u"un" : 1, t2 : 1})
+    show("%r.term_vector()" % f3, f3.term_vector(), {})
 
 def main():
     test_comparison()
     test_contains()
     test_mapping()
     test_truth()
-    test_intersection()
+    test_vector()
 
 if __name__ == "__main__":
     set_verbose()
