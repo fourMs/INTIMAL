@@ -22,8 +22,14 @@ class Output:
         self.outdir = outdir
         ensure_directory(self.outdir)
 
+    def exists(self, name):
+        return exists(self.filename(name))
+
     def filename(self, name):
         return join(self.outdir, name)
+
+    def subdir(self, name):
+        return Output(self.filename(name))
 
 def ensure_directory(name):
 
@@ -31,6 +37,16 @@ def ensure_directory(name):
 
     if not isdir(name):
         mkdir(name)
+
+def writefile(filename, text):
+
+    "Write to 'filename' the given 'text'."
+
+    out = codecs.open(filename, "w", encoding="utf-8")
+    try:
+        out.write(text)
+    finally:
+        out.close()
 
 # Output conversion.
 
@@ -241,5 +257,36 @@ def quoted(term):
         return u'"%s"' % s
     else:
         return s
+
+# Structured output.
+
+def write_fragment_data(datasets, dirname):
+
+    "Write fragment 'datasets' to 'dirname'."
+
+    output = Output(dirname)
+
+    for label, related in datasets:
+
+        # Process each fragment in the dataset along with its relations.
+
+        for fragment, connections in related.items():
+
+            # Obtain a subdirectory for the fragment data.
+
+            fragment_out = output.subdir(str(fragment.source))
+
+            # Write files containing the fragment details to a file in the
+            # subdirectory.
+
+            if not fragment_out.exists("text"):
+                writefile(fragment_out.filename("text"), fragment.text)
+
+            # Write connection information for the dataset in a new subdirectory.
+
+            dataset_out = fragment_out.subdir(label)
+
+            for i, (relation, connection) in enumerate(ConnectedFragment(fragment, connections)):
+                writefile(dataset_out.filename(str(i)), str(relation.source))
 
 # vim: tabstop=4 expandtab shiftwidth=4

@@ -186,4 +186,10 @@ if __name__ == "__main__":
     outputs.show_related_fragments(related_by_participant, outfile("relations.txt"))
     outputs.show_related_fragments(related_by_category, outfile("relations_by_category.txt"))
 
+    # Write related fragment data.
+
+    datasets = [("translation", related_by_participant), ("rotation", related_by_category)]
+
+    outputs.write_fragment_data(datasets, outfile("data"))
+
 # vim: tabstop=4 expandtab shiftwidth=4
