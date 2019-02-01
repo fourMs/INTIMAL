@@ -7,12 +7,10 @@ of importance. Define fragment similarity by identifying common terms,
 potentially weighting some terms as being more significant than others.
 """
 
-from inputs import get_fragments_from_files, \
-                   fill_categorised_fragments, get_categorised_fragments, \
+from inputs import get_fragments_from_files, get_categorised_fragments, \
                    populate_fragments
 
-from objects import Category, Fragment, \
-                    commit_text, \
+from objects import commit_text, \
                     compare_fragments, \
                     get_all_words, \
                     get_common_terms, get_fragment_terms, \
