@@ -222,7 +222,7 @@ class Source:
         timings.
         """
 
-        self.filename = filename
+        self.filename = os.path.split(filename)[-1]
         self.start = start
         self.end = end
 
@@ -251,6 +251,16 @@ class Source:
 
     def as_tuple(self):
         return (self.filename, self.start, self.end)
+
+    def participant(self):
+
+        "Return the specific participant."
+
+        m = re.match(r"(A\d*)", self.filename)
+        if m:
+            return m.group()
+        else:
+            return self.filename
 
     # Graph methods.
 
@@ -461,6 +471,8 @@ def select_related_fragments(related, num, get_criteria):
         values = set()
         values.add(get_criteria(fragment, values))
 
+        # Obtain each related fragment, assessing it with the function.
+
         for related, connection in ConnectedFragment(fragment, connections):
             if len(values) >= num:
                 break
@@ -507,7 +519,7 @@ def get_distinct_participant(fragment, values):
     'values', returning None otherwise.
     """
 
-    participant = get_participant_from_source(fragment.source)
+    participant = fragment.source.participant()
 
     if participant not in values:
         return participant
@@ -529,18 +541,6 @@ def get_distinct_subcategory(fragment, values):
 
     if not parent or category.parent == parent and category not in values:
         return category
-    else:
-        return None
-
-def get_participant_from_source(source):
-
-    "Return the specific participant from 'source'."
-
-    filename = os.path.split(source.filename)[-1]
-
-    m = re.match(r"(A\d*)", filename)
-    if m:
-        return m.group()
     else:
         return None
 
