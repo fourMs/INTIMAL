@@ -3,6 +3,14 @@
 
 """
 Stop word filtering.
+
+Part-of-speech tags originate from spaCy and include...
+
+ADJ - adjective
+ADV - adverb
+NOUN - common noun
+PNOUN - proper noun
+VERB - verb
 """
 
 from objects import Term
@@ -16,7 +24,7 @@ class POSFilter:
         "Initialise the filter with 'tags' of words to preserve."
 
         if tags is None:
-            self.tags = ("NOUN", "PROPN", "ADJ", "VERB")
+            self.tags = ("NOUN", "PROPN", "ADJ")
         else:
             self.tags = tags
 
