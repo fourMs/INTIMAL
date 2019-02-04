@@ -7,16 +7,29 @@ Stop word filtering.
 
 from objects import Term
 
-def filter_terms_by_pos(terms):
+class POSFilter:
 
-    "Filter 'terms' according to part-of-speech roles."
+    "A way of filtering stop-words from text."
 
-    l = []
+    def __init__(self, tags=None):
 
-    for term in terms:
-        if not isinstance(term, Term) or term.tag in ("NOUN", "PROPN", "ADJ", "VERB"):
-            l.append(term)
+        "Initialise the filter with 'tags' of words to preserve."
 
-    return l
+        if tags is None:
+            self.tags = ("NOUN", "PROPN", "ADJ", "VERB")
+        else:
+            self.tags = tags
+
+    def filter_words(self, words):
+
+        "Filter 'words' according to part-of-speech roles."
+
+        l = []
+
+        for word in words:
+            if not isinstance(word, Term) or word.tag in self.tags:
+                l.append(word)
+
+        return l
 
 # vim: tabstop=4 expandtab shiftwidth=4

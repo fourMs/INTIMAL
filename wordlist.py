@@ -5,6 +5,7 @@
 Word list functionality.
 """
 
+from inputs import get_list_from_file
 import codecs
 
 class Wordlist:
@@ -14,9 +15,12 @@ class Wordlist:
     def __init__(self, words):
         self.words = set(words)
 
+    def __repr__(self):
+        return "Wordlist(%r)" % list(self.words)
+
     def filter_words(self, words):
 
-        "Return 'words' with those not in this word list omitted."
+        "Return a copy of 'words' with those not in this word list omitted."
 
         l = []
 
@@ -30,17 +34,9 @@ def get_wordlist_from_file(filename):
 
     "Return a word list abstraction for the words defined in 'filename'."
 
-    l = []
+    if not filename:
+        return None
 
-    f = codecs.open(filename, encoding="utf-8")
-    try:
-        for line in f.xreadlines():
-            line = line.strip()
-            if line:
-                l.append(line)
-    finally:
-        f.close()
-
-    return Wordlist(l)
+    return Wordlist(get_list_from_file(filename))
 
 # vim: tabstop=4 expandtab shiftwidth=4

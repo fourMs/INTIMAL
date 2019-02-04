@@ -9,6 +9,7 @@ from objects import Category, Fragment, Source
 
 from collections import defaultdict
 from xml.dom.minidom import parse
+import codecs
 import re
 
 # XML node processing.
@@ -213,5 +214,48 @@ def get_fragments_from_files(filenames):
         fragments += current_fragments
 
     return fragments
+
+# Generic text file processing.
+
+def get_list_from_file(filename):
+
+    "Return a list of the words defined in 'filename'."
+
+    if not filename:
+        return None
+
+    l = []
+
+    f = codecs.open(filename, encoding="utf-8")
+    try:
+        for line in f.xreadlines():
+            line = line.strip()
+            if line:
+                l.append(line)
+    finally:
+        f.close()
+
+    return l
+
+def get_map_from_file(filename):
+
+    "Return a mapping from the words defined in 'filename'."
+
+    if not filename:
+        return None
+
+    d = {}
+
+    f = codecs.open(filename, encoding="utf-8")
+    try:
+        for line in f.xreadlines():
+            line = line.strip()
+            if line:
+                key, value = line.split(None, 1)
+                d[key] = value
+    finally:
+        f.close()
+
+    return d
 
 # vim: tabstop=4 expandtab shiftwidth=4

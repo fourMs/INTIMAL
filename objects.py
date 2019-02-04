@@ -323,6 +323,15 @@ def compare_fragments(fragments, idf=None):
     connections.sort(key=lambda c: c.measure())
     return connections
 
+def fix_category_names(fragments, category_map):
+
+    "Fix the category names in 'fragments' using the given 'category_map'."
+
+    for fragment in fragments:
+        fix = category_map.get(fragment.category.parent)
+        if fix:
+            fragment.category.parent = fix
+
 def get_all_words(fragments):
 
     "Return a sorted list of unique words."

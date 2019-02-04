@@ -8,10 +8,12 @@ potentially weighting some terms as being more significant than others.
 """
 
 from inputs import get_fragments_from_files, get_categorised_fragments, \
-                   populate_fragments
+                   populate_fragments, \
+                   get_list_from_file, get_map_from_file
 
 from objects import commit_text, \
                     compare_fragments, \
+                    fix_category_names, \
                     get_all_words, \
                     get_common_terms, get_fragment_terms, \
                     get_related_fragments, \
@@ -27,7 +29,7 @@ from analysis import process_fragment_tokens, \
 
 from grouping import group_words
 
-from stopwords import filter_terms_by_pos
+from stopwords import POSFilter
 
 from text import normalise_accents, remove_punctuation_from_words
 
@@ -35,13 +37,32 @@ from wordlist import get_wordlist_from_file
 
 import outputs
 
-import sys
+import os, sys
 
 
 
 # Help text for program invocation.
 
+progname = os.path.split(sys.argv[0])[-1]
+
 helptext = """\
+Usage: %s [ <options> ] <output directory> <input file>...
+
+Options:
+
+--all-fragments         Process all fragments including uncategorised ones
+
+--category-map <filename>
+                        Change categories according to the mapping defined in
+                        the indicated file
+
+--pos-tags <filename>   Preserve only words with the part-of-speech tags found
+                        in the indicated file
+
+--word-list <filename>  Preserve only words found in the indicated file, these
+                        being the root forms of word families (for example,
+                        general verbs instead of conjugations)
+
 Need an output directory name plus a collection of text and tiers filenames for
 reading. The output directory will be populated with files containing the
 following:
@@ -56,11 +77,35 @@ following:
  * term document frequencies
  * term inverse document frequencies
  * fragments and related fragments
-"""
+""" % progname
+
+def get_option(name, default=None, missing=None):
+
+    """
+    Return the value following the command option 'name' or 'default' if the
+    option was found without a following value. Return 'missing' if the option
+    was missing.
+    """
+
+    try:
+        i = sys.argv.index(name)
+        del sys.argv[i]
+        value = sys.argv[i]
+        del sys.argv[i]
+        return value
+    except IndexError:
+        return default
+    except ValueError:
+        return missing
 
 # Main program.
 
 if __name__ == "__main__":
+
+    all_fragments = get_option("--all-fragments", True, False)
+    category_map = get_map_from_file(get_option("--category-map"))
+    posfilter = POSFilter(get_list_from_file(get_option("--pos-tags")))
+    wordlist = get_wordlist_from_file(get_option("--word-list"))
 
     # Obtain filenames.
 
@@ -70,18 +115,6 @@ if __name__ == "__main__":
     except (IndexError, ValueError):
         print >>sys.stderr, helptext
         sys.exit(1)
-
-    allow_uncategorised = "--all-fragments" in sys.argv
-    if allow_uncategorised:
-        sys.argv.remove("--all-fragments")
-
-    try:
-        i = sys.argv.index("--word-list")
-        del sys.argv[i]
-        wordlist = get_wordlist_from_file(sys.argv[i])
-        del sys.argv[i]
-    except (IndexError, ValueError):
-        wordlist = None
 
     # Derive filenames for output files.
 
@@ -96,19 +129,17 @@ if __name__ == "__main__":
 
     # Discard uncategorised fragments.
 
-    if not allow_uncategorised:
+    if not all_fragments:
         fragments = filter(lambda f: f.category and f.category.complete(), fragments)
 
     # Fix fragment categories.
 
-    for fragment in fragments:
-        if fragment.category.parent == "Hostland":
-            fragment.category.parent = "Host_Land"
+    if category_map:
+        fix_category_names(fragments, category_map)
 
-    # Output words.
+    # Obtain the raw input words.
 
     all_words = get_all_words(fragments)
-    outputs.show_all_words(all_words, outfile("words.txt"))
 
     # Tidy up the data.
 
@@ -125,10 +156,10 @@ if __name__ == "__main__":
     process_fragment_tokens(fragments, [stem_word, lower_word])
 
     # Grouping of words into terms.
-    # Filtering of stop words by selecting certain kinds of words (nouns, verbs,
-    # adjectives).
+    # Filtering of stop words by selecting certain kinds of words (for example,
+    # nouns, verbs, adjectives).
 
-    process_fragments(fragments, [group_words, filter_terms_by_pos])
+    process_fragments(fragments, [group_words, posfilter.filter_words])
 
     # Selection of desired words.
 
@@ -173,6 +204,7 @@ if __name__ == "__main__":
 
     # Emit term details for inspection.
 
+    outputs.show_all_words(all_words, outfile("words.txt"))
     outputs.show_category_terms(category_terms, outfile("terms.txt"))
     outputs.show_common_terms(common_category_terms, outfile("term_categories.txt"))
     outputs.show_common_terms(common_fragment_terms, outfile("term_fragments.txt"))
