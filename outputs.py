@@ -8,7 +8,7 @@ Output production.
 from objects import ConnectedFragment, Term
 from utils import cmp_value_lengths_and_keys, cmp_values_and_keys
 
-from os import mkdir
+from os import listdir, mkdir, remove
 from os.path import exists, isdir, join
 import codecs
 
@@ -27,6 +27,12 @@ class Output:
 
     def filename(self, name):
         return join(self.outdir, name)
+
+    def filenames(self):
+        l = []
+        for name in listdir(self.outdir):
+            l.append(join(self.outdir, name))
+        return l
 
     def subdir(self, name):
         return Output(self.filename(name))
@@ -285,6 +291,11 @@ def write_fragment_data(datasets, dirname):
             # Write connection information for the dataset in a new subdirectory.
 
             dataset_out = fragment_out.subdir(label)
+
+            # Remove any existing files in the subdirectory.
+
+            for filename in dataset_out.filenames():
+                remove(filename)
 
             for i, (relation, connection) in enumerate(ConnectedFragment(fragment, connections)):
                 writefile(dataset_out.filename(str(i)), str(relation.source))
