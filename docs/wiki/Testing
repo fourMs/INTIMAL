@@ -1,0 +1,13 @@
+= Testing =
+
+A collection of tests can be found in the `tests` directory. These programs
+can be run directly provided that the `PYTHONPATH` is set appropriately and
+that Python can find the modules provided by this distribution. For example,
+the following will run a test program in the `tests` directory:
+
+{{{
+PYTHONPATH=. ./tests/test_connections.py
+}}}
+
+The test programs will produce a series of `Success` or `Failure` outputs. If
+working correctly, only `Success` outputs are to be expected.

@@ -3,28 +3,6 @@
 
 """
 Term vector computation.
-
-Term vectors are obtained from fragments and feature term frequencies. These
-vectors are combined to produce similarity details for the contributing
-fragments. The process of combination involves multiplying the frequencies
-together and optionally applying a scaling factor (typically the inverse
-document frequency of each term), producing a dot product of the vectors
-involved.
-
-An eventual similarity between fragments also involves the magnitude of the
-term vectors. This, combined with the similarity details yields a measure that
-may be interpreted as the cosine of an angle between the vectors, with a value
-of 1 indicating an angle of 0 and thus complete similarity between vectors, and
-with a value of 0 indicating a right angle and thus complete dissimilarity.
-
-More details can be found here:
-
-Vector space model: https://en.wikipedia.org/wiki/Vector_space_model
-
-Related concepts are described here:
-
-Bag of words model: https://en.wikipedia.org/wiki/Bag-of-words_model
-Tf-idf: https://en.wikipedia.org/wiki/Tf%E2%80%93idf
 """
 
 def combine_term_vectors(vectors, idf=None):

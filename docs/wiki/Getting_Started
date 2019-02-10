@@ -1,0 +1,17 @@
+= Getting Started =
+
+To be able to use this software, appropriate data is required along with the
+means to run the software. See the [[Required Data]] and [[Required Software]]
+documents for more details.
+
+To actually run the software, a command of the following form should work:
+
+{{{
+./fragments.py OUTPUT DATA/*.xml
+}}}
+
+Here, a directory for output data is supplied as `OUTPUT`. Meanwhile, input
+data is specified as residing in the `DATA` directory, with this directory
+needing to be initialised by the user before running the above command.
+
+The form of the output data is described in the [[Output Data]] document.

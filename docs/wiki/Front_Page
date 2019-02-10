@@ -1,0 +1,15 @@
+= Introduction =
+
+This is a software distribution for processing textual fragments prepared from
+audio recording transcripts, comparing the fragments for similarity,
+suggesting connections between the fragments, and producing data to permit a
+form of navigation of the fragments.
+
+See the following documents for practical information:
+
+ * [[Getting Started]] - details of how to use the software
+ * [[Required Data]] - information about the data understood by the software
+ * [[Required Software]] - other software needed for this software to work
+ * [[Data Processing]] - details of the processing performed by the software
+ * [[Output Data]] - a description of the output data produced by the software
+ * [[Testing]] - information about testing the software

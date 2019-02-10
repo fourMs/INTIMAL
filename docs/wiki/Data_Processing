@@ -1,0 +1,156 @@
+= Data Processing =
+
+A number of concepts are central to the work done by this software. These, 
+along with the processing of the data and the modelling of the data using such
+concepts are described below.
+
+From the [[Required Data|input data]], a collection of '''fragments''' are
+obtained, each of which defines a region of text corresponding to a period of
+audio. Each of these fragments may also have category information associated
+with it.
+
+A number of processing steps are undertaken with the populated fragments:
+
+ * The removal of fragments having no corresponding text
+ * The optional removal of uncategorised fragments
+ * The normalisation of category names
+ * The correction of accents due to data input limitations
+
+In order to work more productively with the fragments, a number of other steps
+are undertaken:
+
+ * The removal of punctuation in words
+ * The stemming of certain kinds of words to obtain their root forms
+ * The conversion to lower case of certain kinds of words
+ * The grouping of words into compound terms for things like proper nouns
+
+In general, a '''term''' is defined as a unit of text, being equivalent to a
+single word in most instances, but with a sequence of more than one word
+potentially defining a named entity.
+
+Finally, certain kinds of words are eliminated, leaving only particular kinds
+of words or terms (such as nouns and adjectives). A dictionary of terms can be
+used to narrow down the words in fragments still further.
+
+Consequently, each fragment is associated with a collection of terms, with
+each term having a particular '''frequency''' - that is, a number of
+occurrences - within that particular fragment.
+
+== Statistical Data Products ==
+
+A number of statistical products are obtained for the purpose of inspection,
+to get an impression of the nature of the data. These are produced in the
+[[Output Data|output data]]. Some of these products are also used for further
+computation.
+
+The '''term frequency''' indicates the number of times each given term
+appears. This quantity when considered for the entire set of processed
+fragments is merely used to show how common certain terms are. However, it is
+also meaningful when individual fragments are considered.
+
+The '''term document frequency''' indicates the number of fragments in which
+each given term appears (regardless of how many times it appears in any given
+fragment).
+
+For example, a term might appear in 15 different places in total across 8
+fragments. For the purposes of this software, it would have a frequency of 15
+for the entire collection of fragments and a document frequency of 8:
+
+f,,t,, = 15
+
+df,,t,, = 8
+
+Meanwhile, the '''inverse document frequency''' of each term is computed from
+the document frequency of the term and the number of documents (fragments) as
+follows:
+
+idf,,t,, = log,,10,,(n,,docs,, / (1 + df,,t,,))
+
+Where idf,,t,, is the term's inverse document frequency, df,,t,, is the term's
+document frequency, and n,,docs,, is the number of fragments.
+
+Using the previous example values, the described term would have an inverse
+document frequency from a set of 49 documents as follows:
+
+n,,docs,, = 49
+
+idf,,t,, = log,,10,,(n,,docs,, / (1 + df,,t,,)) = log,,10,,(49 / (1 + 8)) =
+log,,10,,(49 / 9) = log,,10,,(7) = 0.954
+
+A term appearing in every document would have an inverse document frequency as
+follows:
+
+idf,,every,, = log,,10,,(49 / (1 + 49)) = log,,10,,(49 / 50) = -0.009
+
+A term appearing in only one document would have the following value:
+
+idf,,one,, = log,,10,,(49 / (1 + 1)) = log,,10,,(49 / 2) = 1.389
+
+Thus, it can be seen that uncommon terms have higher values, with this
+property being employed in similarity computations as described below.
+
+== Computing Fragment Relationships ==
+
+A process of comparison is undertaken with each possible pair of fragments
+assessed for similarity. Where some similarity exists, a '''connection'''
+between these fragments is established.
+
+The similarity computation involves the term frequencies for each fragment,
+with a '''term vector''' being defined as a mapping from each term in a
+fragment to a '''weight''' for that term. Such a weight is derived from the
+term's frequency in that fragment.
+
+For example, a term may appear three times in a particular fragment d, thereby
+having a frequency of three:
+
+f(t, d) = 3
+
+In some approaches, the weight of the term in the term vector would also be
+three:
+
+w,,t,d,, = 3
+
+In the approach taken in this software, a scaling factor is applied to favour
+less common terms. Consequently, the inverse document frequency of a term is
+multiplied to the term frequency for the fragment:
+
+w,,t,d,, = f(t, d) * idf,,t,,
+
+For example, for the reasonably common term used above:
+
+w,,t,d,, = 3 * 0.954 = 2.862
+
+Two term vectors may then be combined to produce a similarity result for the
+contributing fragments. Consider the following vectors - d,,1,, and d,,2,, -
+involving all terms encountered in two fragments:
+
+|| Terms: || "gallina" || "gallo" || "ganso" || "pato" || "pollo" ||
+|| d,,1,, || 0         || 0       || 1.5     || 1.2    || 2.5     ||
+|| d,,2,, || 2.8       || 2.6     || 1.6     || 0      || 1.3     ||
+
+The process of combining term vectors involves multiplying the weights of
+each term together, producing a dot product of the vectors involved.
+
+d,,1,, . d,,2,, = 0 + 0 + (1.5 * 1.6) + 0 + (2.5 * 1.3) = 2.4 + 3.25 + 5.65
+
+An eventual similarity between fragments also involves the magnitude of the
+term vectors. This is divided into the dot product, yielding a measure that
+may be interpreted as the cosine of an angle between the vectors:
+
+cos ''theta'' = d,,1,, . d,,2,, / (|d,,1,,| |d,,2,,|) = 5.65 / (3.15 * 4.34) =
+0.75
+
+A value of 1 indicates a value of the angle ''theta'' of 0 and thus complete
+similarity between the vectors, with a value of 0 indicating that the vectors
+do not share terms and cannot be regarded as having any similarity.
+
+== References ==
+
+More details can be found here:
+
+ * [[https://en.wikipedia.org/wiki/Vector_space_model|Vector space model]]
+
+Related concepts are described here:
+
+ * [[https://en.wikipedia.org/wiki/Bag-of-words_model|Bag of words model]]
+ * [[https://en.wikipedia.org/wiki/Tf%E2%80%93idf|Tf-idf]]
