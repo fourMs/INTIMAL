@@ -299,7 +299,7 @@ def commit_text(fragments):
     for fragment in fragments:
         fragment.commit_text()
 
-def compare_fragments(fragments, idf=None):
+def compare_fragments(fragments, idf=None, terms_to_fragments=None):
 
     """
     Compare 'fragments' with each other, returning a list of connections
@@ -311,14 +311,44 @@ def compare_fragments(fragments, idf=None):
 
     connections = []
 
-    for f1, f2 in combinations(fragments, 2):
-        t = (f1, f2)
-        similarity = get_fragment_similarity(t, idf)
+    # Get pairs of fragments to compare.
+
+    if terms_to_fragments:
+        pairs = []
+
+        for f1 in fragments:
+            others = set()
+
+            # For each term, find fragments containing that term.
+
+            for term in f1.words:
+                others_for_term = terms_to_fragments.get(term)
+
+                # Ignore terms without fragments.
+
+                if not others_for_term:
+                    continue
+
+                # Obtain fragments that have not already been paired.
+
+                for f2 in others_for_term:
+                    if f1.source < f2.source:
+                        others.add(f2)
+
+            for f2 in others:
+                pairs.append((f1, f2))
+    else:
+        pairs = list(combinations(fragments, 2))
+
+    # Compare the fragment pairs.
+
+    for pair in pairs:
+        similarity = get_fragment_similarity(pair, idf)
 
         # Only record connections when some similarity exists.
 
         if similarity:
-            connections.append(Connection(similarity, t))
+            connections.append(Connection(similarity, pair))
 
     connections.sort(key=lambda c: c.measure())
     return connections

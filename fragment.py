@@ -189,7 +189,8 @@ if __name__ == "__main__":
     # Determine fragment similarity by taking the processed words and comparing
     # fragments.
 
-    connections = compare_fragments(fragments, idf=inv_doc_frequencies)
+    connections = compare_fragments(fragments, idf=inv_doc_frequencies,
+                                    terms_to_fragments=common_fragment_terms)
     related = get_related_fragments(connections)
 
     # Impose an ordering on the related fragments.
