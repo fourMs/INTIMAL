@@ -271,18 +271,33 @@ class Term:
 
     "A simple tagged term."
 
-    def __init__(self, word, tag=None):
+    def __init__(self, word, tag=None, normalised=None):
+
+        """
+        Initialise the term with the actual 'word', optional part-of-speech
+        'tag' and 'normalised' form (lemma).
+        """
+
         self.word = word
         self.tag = tag
+        self.normalised = normalised
 
     def __cmp__(self, other):
-        return cmp(unicode(self), unicode(other))
+
+        "Compare with 'other' using the normalised forms if possible."
+
+        if isinstance(other, Term) and other.normalised:
+            other = other.normalised
+        else:
+            other = unicode(other)
+
+        return cmp(self.normalised or unicode(self), other)
 
     def __hash__(self):
-        return hash(unicode(self))
+        return hash(self.normalised or unicode(self))
 
     def __repr__(self):
-        return "Term(%r, %r)" % (self.word, self.tag)
+        return "Term(%r, %r, %r)" % (self.word, self.tag, self.normalised)
 
     def __str__(self):
         return unicode(self)

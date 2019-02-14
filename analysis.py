@@ -89,7 +89,7 @@ def complete_result(t):
     "Return the eventual result from 't', this being (token, result)."
 
     token, result = t
-    return Term(result, token.pos_)
+    return Term(token.text, token.pos_, result)
 
 # Fragment processing.
 
