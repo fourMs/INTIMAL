@@ -134,21 +134,12 @@ def show_connections(connections, filename):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for connection in connections:
-
-            # Show terms and weights.
-
-            similarities = connection.similarity.items()
-            similarities.sort()
-
-            for term, weight in similarities:
-                print >>out, unicode(term), weight,
-
-            print >>out
+            show_similarity(connection, out)
 
             # Show the connected fragments.
 
             for fragment in connection.fragments:
-                print >>out, fragment.text
+                show_fragment(fragment, out)
 
             print >>out
     finally:
@@ -191,7 +182,12 @@ def show_related_fragments(related, filename, shown_relations=5):
 
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
-        for fragment, connections in related.items():
+        # Sort the fragments for output.
+
+        related_items = related.items()
+        related_items.sort()
+
+        for fragment, connections in related_items:
 
             # Show the principal details of each fragment.
 
@@ -213,11 +209,17 @@ def show_related_fragments(related, filename, shown_relations=5):
 
                 to_show -= 1
 
+            # In case the number of related fragments was not limited, limit it
+            # to the parameterised number.
+
             if len(connections) > shown_relations:
                 print >>out, "%d related fragments not shown." % (len(connections) - shown_relations)
 
+            # Make a separator after the fragments.
+
             print >>out, "----"
             print >>out
+
     finally:
         out.close()
 
