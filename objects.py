@@ -311,38 +311,9 @@ def compare_fragments(fragments, idf=None, terms_to_fragments=None):
 
     connections = []
 
-    # Get pairs of fragments to compare.
-
-    if terms_to_fragments:
-        pairs = []
-
-        for f1 in fragments:
-            others = set()
-
-            # For each term, find fragments containing that term.
-
-            for term in f1.words:
-                others_for_term = terms_to_fragments.get(term)
-
-                # Ignore terms without fragments.
-
-                if not others_for_term:
-                    continue
-
-                # Obtain fragments that have not already been paired.
-
-                for f2 in others_for_term:
-                    if f1.source < f2.source:
-                        others.add(f2)
-
-            for f2 in others:
-                pairs.append((f1, f2))
-    else:
-        pairs = list(combinations(fragments, 2))
-
     # Compare the fragment pairs.
 
-    for pair in pairs:
+    for pair in get_fragment_pairs(fragments, terms_to_fragments):
         similarity = get_fragment_similarity(pair, idf)
 
         # Only record connections when some similarity exists.
@@ -374,6 +345,39 @@ def get_all_words(fragments):
     l = list(s)
     l.sort()
     return l
+
+def get_fragment_pairs(fragments, terms_to_fragments=None):
+
+    "Get pairs of 'fragments' to compare."
+
+    if terms_to_fragments:
+        pairs = []
+
+        for f1 in fragments:
+            others = set()
+
+            # For each term, find fragments containing that term.
+
+            for term in set(f1.words):
+                others_for_term = terms_to_fragments.get(term)
+
+                # Ignore terms without fragments.
+
+                if not others_for_term:
+                    continue
+
+                # Obtain fragments that have not already been paired.
+
+                for f2 in others_for_term:
+                    if f1.source < f2.source:
+                        others.add(f2)
+
+            for f2 in others:
+                pairs.append((f1, f2))
+
+        return pairs
+    else:
+        return list(combinations(fragments, 2))
 
 def get_fragment_similarity(fragments, idf=None):
 
