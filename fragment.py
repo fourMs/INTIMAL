@@ -9,7 +9,8 @@ potentially weighting some terms as being more significant than others.
 
 from inputs import get_fragments_from_files, get_categorised_fragments, \
                    populate_fragments, \
-                   get_list_from_file, get_map_from_file
+                   get_list_from_file, get_map_from_file, \
+                   get_option
 
 from objects import commit_text, \
                     compare_fragments, \
@@ -56,6 +57,9 @@ Options:
                         Change categories according to the mapping defined in
                         the indicated file
 
+--num-related <number>  Indicate the maximum number of related fragments to be
+                        produced for each fragment
+
 --pos-tags <filename>   Preserve only words with the part-of-speech tags found
                         in the indicated file
 
@@ -79,31 +83,13 @@ following:
  * fragments and related fragments
 """ % progname
 
-def get_option(name, default=None, missing=None):
-
-    """
-    Return the value following the command option 'name' or 'default' if the
-    option was found without a following value. Return 'missing' if the option
-    was missing.
-    """
-
-    try:
-        i = sys.argv.index(name)
-        del sys.argv[i]
-        value = sys.argv[i]
-        del sys.argv[i]
-        return value
-    except IndexError:
-        return default
-    except ValueError:
-        return missing
-
 # Main program.
 
 if __name__ == "__main__":
 
     all_fragments = get_option("--all-fragments", True, False)
     category_map = get_map_from_file(get_option("--category-map"))
+    num_related_fragments = get_option("--num-related", 4, 4, int)
     posfilter = POSFilter(get_list_from_file(get_option("--pos-tags")))
     wordlist = get_wordlist_from_file(get_option("--word-list"))
 
@@ -196,8 +182,8 @@ if __name__ == "__main__":
     # Impose an ordering on the related fragments.
 
     sort_related_fragments(related)
-    related_by_participant = select_related_fragments_by_participant(related, 4)
-    related_by_category = select_related_fragments_by_category(related, 4)
+    related_by_participant = select_related_fragments_by_participant(related, num_related_fragments)
+    related_by_category = select_related_fragments_by_category(related, num_related_fragments)
 
     # Emit the fragments for inspection.
 

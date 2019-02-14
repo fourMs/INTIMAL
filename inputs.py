@@ -2,7 +2,7 @@
 # -*- coding: utf-8
 
 """
-Fragment retrieval.
+Fragment retrieval and other input processing.
 """
 
 from objects import Category, Fragment, Source
@@ -11,6 +11,7 @@ from collections import defaultdict
 from xml.dom.minidom import parse
 import codecs
 import re
+import sys
 
 # XML node processing.
 
@@ -257,5 +258,42 @@ def get_map_from_file(filename):
         f.close()
 
     return d
+
+# Command option handling.
+
+def get_option(name, default=None, missing=None, conversion=None):
+
+    """
+    Return the value following the command option 'name' or 'default' if the
+    option was found without a following value. Return 'missing' if the option
+    was missing.
+
+    If 'conversion' is indicated, attempt to call it with any found value as
+    argument, returning the result. Without a valid value, 'missing' is
+    returned.
+    """
+
+    try:
+        i = sys.argv.index(name)
+        del sys.argv[i]
+        value = sys.argv[i]
+        del sys.argv[i]
+
+        # Convert if requested.
+
+        if conversion:
+            return conversion(value)
+        else:
+            return value
+
+    # Without an explicit value.
+
+    except IndexError:
+        return default
+
+    # Without the option or with an invalid value.
+
+    except ValueError:
+        return missing
 
 # vim: tabstop=4 expandtab shiftwidth=4
