@@ -32,6 +32,7 @@ def group_names(terms):
     filler = []
 
     for term in terms:
+        tag = isinstance(term, Term) and term.tag or None
         word = unicode(term)
 
         # Add title-cased words, incorporating any filler words.
@@ -42,7 +43,16 @@ def group_names(terms):
             # they are part of entities.
 
             if word.lower() in filler_words:
-                filler.append(term)
+                if not entity:
+                    l.append(term)
+                else:
+                    filler.append(term)
+
+            # Reject various word roles in compound terms.
+
+            elif tag in ("ADP", "DET"):
+                end_entity(l, entity, filler)
+                l.append(term)
 
             # Other words cause any filler words to be incorporated.
 
@@ -62,24 +72,12 @@ def group_names(terms):
         else:
             # Produce any held entity.
 
-            if entity:
-                emit_entity(l, entity)
-                entity = []
-
-            # Produce any trailing filler words.
-
-            if filler:
-                l += filler
-                filler = []
-
+            end_entity(l, entity, filler)
             l.append(term)
 
-    if entity:
-        emit_entity(l, entity)
+    # Produce any held entity.
 
-    if filler:
-        l += filler
-
+    end_entity(l, entity, filler)
     return l
 
 def group_quantities(terms):
@@ -123,5 +121,19 @@ def emit_entity(l, entity):
         l.append(" ".join(map(unicode, entity)))
     else:
         l.append(entity[0])
+
+def end_entity(l, entity, filler):
+
+    "Add to 'l' any given 'entity' plus 'filler' words."
+
+    if entity:
+        emit_entity(l, entity)
+        del entity[:]
+
+    # Produce any trailing filler words.
+
+    if filler:
+        l += filler
+        del filler[:]
 
 # vim: tabstop=4 expandtab shiftwidth=4
