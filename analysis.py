@@ -69,7 +69,7 @@ def stem_word(t):
 
     token, result = t
 
-    if token.pos_ in ("ADJ", "VERB"):
+    if token.pos_ in ("ADJ", "NOUN", "VERB"):
         return (token, token.lemma_)
     else:
         return t
