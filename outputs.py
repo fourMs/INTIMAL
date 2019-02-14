@@ -252,7 +252,9 @@ def term_summary(term):
     "Produce a readable summary of 'term'."
 
     if isinstance(term, Term):
-        return u"%s:%s" % (quoted(term), term.tag)
+        tag = term.tag and ":%s" % term.tag or ""
+        norm = term.normalised and ":%s" % quoted(term.normalised) or ""
+        return u"%s%s%s" % (quoted(term.word), tag, norm)
     else:
         return quoted(term)
 
