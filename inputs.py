@@ -251,6 +251,7 @@ def get_serialised_fragments(filename):
             # Parse a record and modify the current fragment.
 
             key, value = line.split(": ", 1)
+            key = key.lstrip()
 
             if key == "Category":
                 current.category = get_serialised_category(value)

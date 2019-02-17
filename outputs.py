@@ -152,10 +152,7 @@ def show_fragments(fragments, filename):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for fragment in fragments:
-            print >>out, "Source:", unicode(fragment.source)
-            print >>out, "Category:", unicode(fragment.category)
-            print >>out, "Text:", fragment.text
-            print >>out, "Terms:", u" ".join(map(term_summary, fragment.words))
+            show_fragment(fragment, out, terms=True)
             print >>out
     finally:
         out.close()
@@ -223,13 +220,16 @@ def show_related_fragments(related, filename, shown_relations=5):
     finally:
         out.close()
 
-def show_fragment(fragment, out):
+def show_fragment(fragment, out, terms=False):
 
     "Show the principal details of 'fragment' using 'out'."
 
-    print >>out, "      Id:", fragment.source.filename, fragment.source.start, fragment.source.end
+    print >>out, "  Source:", unicode(fragment.source)
     print >>out, "Category:", unicode(fragment.category)
     print >>out, "    Text:", fragment.text
+
+    if terms:
+        print >>out, "   Terms:", u" ".join(map(term_summary, fragment.words))
 
 def show_similarity(connection, out):
 
