@@ -126,9 +126,11 @@ def show_common_terms(common_terms, filename):
     finally:
         out.close()
 
-def show_connections(connections, filename):
+def show_connections(connections, filename, brief=False):
 
     "Write a report of 'connections' to 'filename'."
+
+    j = rjust
 
     connections.sort(key=lambda x: x.measure())
     out = codecs.open(filename, "w", encoding="utf-8")
@@ -139,7 +141,13 @@ def show_connections(connections, filename):
             # Show the connected fragments.
 
             for fragment in connection.fragments:
-                show_fragment(fragment, out)
+
+                # For brief output, just show the source details.
+
+                if brief:
+                    print >>out, j("Source:"), unicode(fragment.source)
+                else:
+                    show_fragment(fragment, out)
 
             print >>out
     finally:
@@ -245,7 +253,7 @@ def show_similarity(connection, out):
     similarities.sort()
 
     for term, score in similarities:
-        print >>out, "%s (%.2f)" % (unicode(term), score),
+        print >>out, "%s (%.2f)" % (quoted(term), score),
 
     print >>out
 
