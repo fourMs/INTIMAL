@@ -29,6 +29,8 @@ from analysis import process_fragment_tokens, \
 
 from grouping import group_words
 
+from serialised import get_serialised_connections, get_serialised_fragments
+
 from stopwords import POSFilter
 
 from text import normalise_accents, remove_punctuation_from_words
@@ -46,7 +48,7 @@ import os, sys
 progname = os.path.split(sys.argv[0])[-1]
 
 helptext = """\
-Usage: %s [ <options> ] <output directory> <input file>...
+Usage: %s [ <options> ] <output directory> [ <input file>... ]
 
 Options:
 
@@ -66,9 +68,12 @@ Options:
                         being the root forms of word families (for example,
                         general verbs instead of conjugations)
 
-Need an output directory name plus a collection of text and tiers filenames for
-reading. The output directory will be populated with files containing the
-following:
+An output directory name is always needed. Initially, a collection of text and
+tiers filenames for reading are also needed. Subsequently, this collection of
+filenames can be omitted, and the previously-processed data will be loaded
+instead.
+
+The output directory will be populated with files containing the following:
 
  * fragments
  * connections
@@ -101,78 +106,121 @@ if __name__ == "__main__":
         print >>sys.stderr, helptext
         sys.exit(1)
 
-    # Process the input data.
+    # Detect the special case of using existing data.
 
-    fragments = get_fragments_from_files(filenames)
+    restore = not filenames
 
-    # Discard empty fragments.
+    # Derive filenames for output files.
 
-    fragments = filter(None, fragments)
+    out = outputs.Output(outdir)
+    outfile = out.filename
 
-    # Discard uncategorised fragments.
+    outfile_connections = outfile("connections.txt")
+    outfile_fragments = outfile("fragments.txt")
 
-    if not all_fragments:
-        fragments = filter(lambda f: f.category and f.category.complete(), fragments)
+    # Either restore serialised data.
 
-    # Fix fragment categories.
+    if restore:
+        fragments = get_serialised_fragments(outfile_fragments)
+        connections = get_serialised_connections(outfile_connections, fragments)
 
-    if category_map:
-        fix_category_names(fragments, category_map)
+    # Or process input data.
 
-    # Obtain the raw input words.
+    else:
+        fragments = get_fragments_from_files(filenames)
 
-    all_words = get_all_words(fragments)
+        # Discard empty fragments.
 
-    # Tidy up the data.
+        fragments = filter(None, fragments)
 
-    process_fragments(fragments, [normalise_accents])
-    commit_text(fragments)
+        # Discard uncategorised fragments.
 
-    process_fragments(fragments, [remove_punctuation_from_words])
+        if not all_fragments:
+            fragments = filter(lambda f: f.category and f.category.complete(), fragments)
 
-    # Perform some processes on the words:
+        # Fix fragment categories.
 
-    # Part-of-speech tagging.
-    # Normalisation involving stemming and lower-casing of words.
+        if category_map:
+            fix_category_names(fragments, category_map)
 
-    process_fragment_tokens(fragments, [stem_word, lower_word])
+        # Obtain the raw input words.
 
-    # Grouping of words into terms.
-    # Filtering of stop words by selecting certain kinds of words (for example,
-    # nouns, verbs, adjectives).
+        all_words = get_all_words(fragments)
 
-    process_fragments(fragments, [group_words, posfilter.filter_words])
+        # Tidy up the data.
 
-    # Selection of desired words.
+        process_fragments(fragments, [normalise_accents])
+        commit_text(fragments)
 
-    if wordlist:
-        process_fragments(fragments, [wordlist.filter_words])
+        process_fragments(fragments, [remove_punctuation_from_words])
 
-    # Get terms used by each category for inspection.
+        # Perform some processes on the words:
 
-    category_terms = get_fragment_terms(fragments, lambda fragment:
-                                                   fragment.category.parent)
+        # Part-of-speech tagging.
+        # Normalisation involving stemming and lower-casing of words.
 
-    # Get common terms (common between categories).
+        process_fragment_tokens(fragments, [stem_word, lower_word])
 
-    common_category_terms = get_common_terms(category_terms)
+        # Grouping of words into terms.
+        # Filtering of stop words by selecting certain kinds of words (for example,
+        # nouns, verbs, adjectives).
 
-    # Get common terms (common between fragments).
+        process_fragments(fragments, [group_words, posfilter.filter_words])
 
-    fragment_terms = get_fragment_terms(fragments)
-    common_fragment_terms = get_common_terms(fragment_terms)
+        # Selection of desired words.
 
-    # Get term/word frequencies.
+        if wordlist:
+            process_fragments(fragments, [wordlist.filter_words])
 
-    frequencies = word_frequencies(fragments)
-    doc_frequencies = word_document_frequencies(fragments)
-    inv_doc_frequencies = inverse_document_frequencies(doc_frequencies, len(fragments))
+        # Get terms used by each category for inspection.
 
-    # Determine fragment similarity by taking the processed words and comparing
-    # fragments.
+        category_terms = get_fragment_terms(fragments, lambda fragment:
+                                                       fragment.category.parent)
 
-    connections = compare_fragments(fragments, idf=inv_doc_frequencies,
-                                    terms_to_fragments=common_fragment_terms)
+        # Get common terms (common between categories).
+
+        common_category_terms = get_common_terms(category_terms)
+
+        # Get common terms (common between fragments).
+
+        fragment_terms = get_fragment_terms(fragments)
+        common_fragment_terms = get_common_terms(fragment_terms)
+
+        # Get term/word frequencies.
+
+        frequencies = word_frequencies(fragments)
+        doc_frequencies = word_document_frequencies(fragments)
+        inv_doc_frequencies = inverse_document_frequencies(doc_frequencies, len(fragments))
+
+        # Determine fragment similarity by taking the processed words and comparing
+        # fragments.
+
+        connections = compare_fragments(fragments, idf=inv_doc_frequencies,
+                                        terms_to_fragments=common_fragment_terms)
+
+        # Emit the fragments for inspection and potential recovery.
+
+        outputs.show_fragments(fragments, outfile_fragments)
+
+        # Emit the connection details for potential recovery.
+
+        outputs.show_connections(connections, outfile_connections, brief=True)
+
+        # Emit term details for inspection.
+
+        outputs.show_all_words(all_words, outfile("words.txt"))
+        outputs.show_category_terms(category_terms, outfile("terms.txt"))
+        outputs.show_common_terms(common_category_terms, outfile("term_categories.txt"))
+        outputs.show_common_terms(common_fragment_terms, outfile("term_fragments.txt"))
+        outputs.show_frequencies(frequencies, outfile("term_frequencies.txt"))
+        outputs.show_frequencies(doc_frequencies, outfile("term_doc_frequencies.txt"))
+        outputs.show_frequencies(inv_doc_frequencies, outfile("term_inv_doc_frequencies.txt"))
+
+        # Emit the connections for inspection.
+
+        outputs.show_connections(connections, outfile("connections_verbose.txt"))
+
+    # Process data using the connections as input.
 
     related = get_related_fragments(connections)
 
@@ -182,32 +230,8 @@ if __name__ == "__main__":
     related_by_participant = select_related_fragments_by_participant(related, num_related_fragments)
     related_by_category = select_related_fragments_by_category(related, num_related_fragments)
 
-    # Derive filenames for output files.
+    # Emit related data.
 
-    out = outputs.Output(outdir)
-    outfile = out.filename
-
-    # Emit the fragments for inspection and potential recovery.
-
-    outputs.show_fragments(fragments, outfile("fragments.txt"))
-
-    # Emit the connection details for potential recovery.
-
-    outputs.show_connections(connections, outfile("connections.txt"), brief=True)
-
-    # Emit term details for inspection.
-
-    outputs.show_all_words(all_words, outfile("words.txt"))
-    outputs.show_category_terms(category_terms, outfile("terms.txt"))
-    outputs.show_common_terms(common_category_terms, outfile("term_categories.txt"))
-    outputs.show_common_terms(common_fragment_terms, outfile("term_fragments.txt"))
-    outputs.show_frequencies(frequencies, outfile("term_frequencies.txt"))
-    outputs.show_frequencies(doc_frequencies, outfile("term_doc_frequencies.txt"))
-    outputs.show_frequencies(inv_doc_frequencies, outfile("term_inv_doc_frequencies.txt"))
-
-    # Emit the connections for inspection.
-
-    outputs.show_connections(connections, outfile("connections_verbose.txt"))
     outputs.show_related_fragments(related_by_participant, outfile("relations.txt"))
     outputs.show_related_fragments(related_by_category, outfile("relations_by_category.txt"))
 
