@@ -66,9 +66,10 @@ class Connection:
         involved.
         """
 
-        # Permit initialisation using None, testing the fragments otherwise.
+        # Permit initialisation using an empty list for later population,
+        # testing the fragments otherwise.
 
-        if fragments is not None and len(fragments) != 2:
+        if fragments and len(fragments) != 2:
             raise ValueError, fragments
 
         self.similarity = similarity
