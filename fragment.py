@@ -8,7 +8,6 @@ potentially weighting some terms as being more significant than others.
 """
 
 from inputs import get_fragments_from_files, get_categorised_fragments, \
-                   populate_fragments, \
                    get_list_from_file, get_map_from_file, \
                    get_option
 
@@ -102,10 +101,7 @@ if __name__ == "__main__":
         print >>sys.stderr, helptext
         sys.exit(1)
 
-    # Derive filenames for output files.
-
-    out = outputs.Output(outdir)
-    outfile = out.filename
+    # Process the input data.
 
     fragments = get_fragments_from_files(filenames)
 
@@ -177,6 +173,7 @@ if __name__ == "__main__":
 
     connections = compare_fragments(fragments, idf=inv_doc_frequencies,
                                     terms_to_fragments=common_fragment_terms)
+
     related = get_related_fragments(connections)
 
     # Impose an ordering on the related fragments.
@@ -184,6 +181,11 @@ if __name__ == "__main__":
     sort_related_fragments(related)
     related_by_participant = select_related_fragments_by_participant(related, num_related_fragments)
     related_by_category = select_related_fragments_by_category(related, num_related_fragments)
+
+    # Derive filenames for output files.
+
+    out = outputs.Output(outdir)
+    outfile = out.filename
 
     # Emit the fragments for inspection and potential recovery.
 
