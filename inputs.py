@@ -5,7 +5,7 @@
 Fragment retrieval and other input processing.
 """
 
-from objects import Category, Fragment, Source, Term
+from objects import Category, Connection, Fragment, Source, Term
 
 from collections import defaultdict
 from xml.dom.minidom import parse
@@ -218,6 +218,65 @@ def get_fragments_from_files(filenames):
 
 # Serialised object processing.
 
+def get_serialised_connections(filename, source_to_fragment):
+
+    """
+    Return a list of connections serialised in 'filename', linked to fragments
+    found using the given 'source_to_fragment' mapping.
+    """
+
+    l = []
+
+    f = codecs.open(filename, encoding="utf-8")
+    try:
+        current = Connection(None, [])
+
+        while True:
+
+            # Read each line (xreadlines seems to return plain strings).
+
+            line = f.readline()
+
+            if not line:
+                break
+
+            # Remove trailing newlines and complete the current connection if a
+            # blank line is encountered.
+
+            line = line.rstrip("\n")
+
+            if not line:
+                if current:
+                    l.append(current)
+                    current = Connection(None, [])
+                continue
+
+            # Parse a record and modify the current connection.
+
+            key, value = line.split(": ", 1)
+            key = key.lstrip()
+
+            if key == "Sim":
+                current.similarity = get_serialised_similarity(value)
+            elif key == "Source":
+                source = get_serialised_source(value)
+
+                # Find the referenced fragment.
+
+                fragment = source_to_fragment.get(source)
+                if fragment:
+                    current.fragments.append(fragment)
+
+        # Complete the current connection.
+
+        if current:
+            l.append(current)
+
+    finally:
+        f.close()
+
+    return l
+
 def get_serialised_fragments(filename):
 
     "Return a list of fragments serialised in 'filename'."
@@ -279,6 +338,46 @@ def get_serialised_category(value):
     parent, category = value.split("-", 1)
     return Category(parent, category)
 
+def get_serialised_similarity(value):
+
+    "Return similarity details from the given serialised 'value'."
+
+    # Remove the measure.
+
+    measure, value = value.split(None, 1)
+
+    # Acquire each term and weight.
+
+    l = []
+    i = 0
+
+    while i < len(value):
+        term, i = get_term_from_summary(value, i)
+
+        if i is None:
+            break
+
+        # Parse the weight.
+
+        start = value.find("(", i)
+        end = value.find(")", i)
+
+        if start != -1 and end != -1 and start < end:
+            try:
+                weight = float(value[start+1:end])
+            except ValueError:
+                break
+
+            l.append((term, weight))
+        else:
+            break
+
+        # Move on to the next term.
+
+        i = end + 2
+
+    return dict(l)
+
 def get_serialised_source(value):
 
     "Return a source from the given serialised 'value'."
@@ -300,6 +399,8 @@ def get_serialised_terms(value):
 
         if i is None:
             break
+
+        # Move on to the next term.
 
         i += 1
 
