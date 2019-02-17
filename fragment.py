@@ -185,9 +185,13 @@ if __name__ == "__main__":
     related_by_participant = select_related_fragments_by_participant(related, num_related_fragments)
     related_by_category = select_related_fragments_by_category(related, num_related_fragments)
 
-    # Emit the fragments for inspection.
+    # Emit the fragments for inspection and potential recovery.
 
     outputs.show_fragments(fragments, outfile("fragments.txt"))
+
+    # Emit the connection details for potential recovery.
+
+    outputs.show_connections(connections, outfile("connections.txt"), brief=True)
 
     # Emit term details for inspection.
 
@@ -201,7 +205,7 @@ if __name__ == "__main__":
 
     # Emit the connections for inspection.
 
-    outputs.show_connections(connections, outfile("connections.txt"))
+    outputs.show_connections(connections, outfile("connections_verbose.txt"))
     outputs.show_related_fragments(related_by_participant, outfile("relations.txt"))
     outputs.show_related_fragments(related_by_category, outfile("relations_by_category.txt"))
 
