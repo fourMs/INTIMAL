@@ -218,12 +218,14 @@ def get_fragments_from_files(filenames):
 
 # Serialised object processing.
 
-def get_serialised_connections(filename, source_to_fragment):
+def get_serialised_connections(filename, fragments):
 
     """
-    Return a list of connections serialised in 'filename', linked to fragments
-    found using the given 'source_to_fragment' mapping.
+    Return a list of connections serialised in 'filename', linked to the given
+    'fragments'.
     """
+
+    source_to_fragment = dict(map(lambda f: (f.source, f), fragments))
 
     l = []
 
