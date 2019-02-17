@@ -66,7 +66,9 @@ class Connection:
         involved.
         """
 
-        if len(fragments) != 2:
+        # Permit initialisation using None, testing the fragments otherwise.
+
+        if fragments is not None and len(fragments) != 2:
             raise ValueError, fragments
 
         self.similarity = similarity
@@ -89,6 +91,12 @@ class Connection:
         "Permit the connection to be used as a dictionary key."
 
         return hash(tuple(map(hash, self.fragments)))
+
+    def __nonzero__(self):
+
+        "Return the truth or non-emptiness of the connection."
+
+        return bool(self.fragments)
 
     def __repr__(self):
         return "Connection(%r, %r)" % self.as_tuple()
