@@ -224,18 +224,22 @@ def show_fragment(fragment, out, terms=False):
 
     "Show the principal details of 'fragment' using 'out'."
 
-    print >>out, "  Source:", unicode(fragment.source)
-    print >>out, "Category:", unicode(fragment.category)
-    print >>out, "    Text:", fragment.text
+    j = rjust
+
+    print >>out, j("Source:"), unicode(fragment.source)
+    print >>out, j("Category:"), unicode(fragment.category)
+    print >>out, j("Text:"), fragment.text
 
     if terms:
-        print >>out, "   Terms:", u" ".join(map(term_summary, fragment.words))
+        print >>out, j("Terms:"), u" ".join(map(term_summary, fragment.words))
 
 def show_similarity(connection, out):
 
     "Show similarity information for 'connection' using 'out'."
 
-    print >>out, "     Sim: %.2f" % connection.measure(),
+    j = rjust
+
+    print >>out, j("Sim:"), "%.2f" % connection.measure(),
 
     similarities = connection.similarity.items()
     similarities.sort()
@@ -246,6 +250,12 @@ def show_similarity(connection, out):
     print >>out
 
 # Output utilities.
+
+def rjust(s, width=9):
+
+    "Right-justify 's' to 'width'."
+
+    return s.rjust(width)
 
 def term_summary(term):
 
