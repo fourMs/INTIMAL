@@ -5,7 +5,8 @@
 Output production.
 """
 
-from objects import ConnectedFragment, Term
+from objects import Term
+from related import ConnectedFragment
 from utils import cmp_value_lengths_and_keys, cmp_values_and_keys
 
 from os import listdir, mkdir, remove

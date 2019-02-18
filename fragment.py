@@ -7,22 +7,33 @@ of importance. Define fragment similarity by identifying common terms,
 potentially weighting some terms as being more significant than others.
 """
 
+# Input and output.
+
 from inputs import get_fragments_from_files, get_categorised_fragments, \
                    get_list_from_file, get_map_from_file, \
                    get_option
+
+import outputs
+
+import os, sys
+
+# Abstractions and relation processing.
 
 from objects import commit_text, \
                     compare_fragments, \
                     fix_category_names, \
                     get_all_words, \
                     get_common_terms, get_fragment_terms, \
-                    get_related_fragments, \
                     inverse_document_frequencies, \
                     process_fragments, \
+                    word_document_frequencies, word_frequencies
+
+from related import get_related_fragments, \
                     select_related_fragments_by_category, \
                     select_related_fragments_by_participant, \
-                    sort_related_fragments, \
-                    word_document_frequencies, word_frequencies
+                    sort_related_fragments
+
+# Transformations on the words and text.
 
 from analysis import process_fragment_tokens, \
                      lower_word, stem_word
@@ -36,10 +47,6 @@ from stopwords import POSFilter
 from text import normalise_accents, remove_punctuation_from_words
 
 from wordlist import get_wordlist_from_file
-
-import outputs
-
-import os, sys
 
 
 
@@ -85,6 +92,9 @@ The output directory will be populated with files containing the following:
  * term document frequencies
  * term inverse document frequencies
  * fragments and related fragments
+
+The output directory will also contain a data subdirectory containing the
+processed data in a structured form.
 """ % progname
 
 # Main program.
