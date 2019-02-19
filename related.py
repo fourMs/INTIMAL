@@ -72,7 +72,7 @@ def sort_related_fragments(related):
     for fragment, connections in related.items():
         connections.sort(key=lambda x: x.measure(), reverse=True)
 
-# Fragment criteria helper functions.
+# Fragment selection criteria functions.
 
 def get_distinct_participant(fragment, fragments):
 
@@ -100,5 +100,21 @@ def get_distinct_subcategory(fragment, fragments):
     parents = map(lambda c: c.parent, categories)
 
     return parent in parents and category not in categories
+
+# Registry of functions.
+
+def get_related_fragment_selectors(names):
+
+    "Return functions for the given 'names'."
+
+    l = []
+    for name in names:
+        l.append(related_fragment_selectors[name])
+    return l
+
+related_fragment_selectors = {
+    "distinct_participant" : get_distinct_participant,
+    "distinct_subcategory" : get_distinct_subcategory,
+    }
 
 # vim: tabstop=4 expandtab shiftwidth=4

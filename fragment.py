@@ -18,7 +18,7 @@ Produce reports and structured data describing the processed data.
 
 from inputs import get_fragments_from_files, get_categorised_fragments, \
                    get_list_from_file, get_map_from_file, \
-                   get_flag, get_option
+                   get_flag, get_option, get_options
 
 import outputs
 
@@ -37,8 +37,8 @@ from objects import commit_text, \
                     word_document_frequencies, word_frequencies
 
 from related import get_related_fragments, \
-                    get_distinct_participant, \
-                    get_distinct_subcategory, \
+                    get_related_fragment_selectors, \
+                    related_fragment_selectors, \
                     select_related_fragments, \
                     sort_related_fragments
 
@@ -172,36 +172,6 @@ def process_fragment_data(fragments, out):
 
     return connections
 
-def process_relations(connections, config, out):
-
-    """
-    Process 'connections' to obtain relations, using 'config' to adjust the
-    processing, registering output with 'out'.
-    """
-
-    related = get_related_fragments(connections)
-
-    # Impose an ordering on the related fragments.
-
-    sort_related_fragments(related)
-
-    # Select appropriate fragments.
-
-    num = config.get("num_related_fragments")
-
-    related_by_participant = \
-        select_related_fragments(related, num, [get_distinct_participant])
-
-    related_by_category = \
-        select_related_fragments(related, num, [get_distinct_subcategory])
-
-    # Register some output data.
-
-    out["related_by_participant"] = related_by_participant
-    out["related_by_category"] = related_by_category
-
-    return related
-
 
 
 # Restoration of serialised data.
@@ -227,6 +197,49 @@ def restore_connections(fragments, out):
     recompute_connections(connections, out["inv_doc_frequencies"])
 
     return connections
+
+
+
+# Relation processing.
+
+def process_relations(connections, config, out):
+
+    """
+    Process 'connections' to obtain relations, using 'config' to adjust the
+    processing, registering output with 'out'.
+    """
+
+    related = get_related_fragments(connections)
+
+    # Impose an ordering on the related fragments.
+
+    sort_related_fragments(related)
+
+    # Only restrict the related fragments if requested.
+
+    if not config.has_key("select"):
+        return related
+
+    num = config.get("num_related_fragments")
+    all_related = []
+
+    # For each set of selection criteria, select appropriate fragments.
+
+    for criteria in config.get("select"):
+
+        # Obtain the functions from their names.
+
+        names = criteria.split(",")
+        selectors = get_related_fragment_selectors(names)
+
+        # Select and store the related fragments.
+
+        all_related.append((criteria, select_related_fragments(related, num, selectors)))
+
+    out["all_related"] = all_related
+
+    return related
+
 
 
 # Output data production.
@@ -279,16 +292,15 @@ def emit_relation_output(out):
     "Using 'out', emit relation output."
 
     outfile = out.filename
+    datasets = out.get("all_related")
+
+    if not datasets:
+        return
 
     # Emit related data.
 
-    outputs.show_related_fragments(out["related_by_participant"], outfile("relations.txt"))
-    outputs.show_related_fragments(out["related_by_category"], outfile("relations_by_category.txt"))
-
-    # Write related fragment data.
-
-    datasets = [("translation", out["related_by_participant"]),
-                ("rotation", out["related_by_category"])]
+    for criteria, dataset in datasets:
+        outputs.show_related_fragments(dataset, outfile(criteria))
 
     outputs.write_fragment_data(datasets, outfile("data"))
 
@@ -298,8 +310,18 @@ def emit_relation_output(out):
 
 progname = os.path.split(sys.argv[0])[-1]
 
+related_fragment_selectors_list = list(related_fragment_selectors)
+related_fragment_selectors_list.sort()
+
+related_fragment_selectors_text = "\n".join(related_fragment_selectors_list)
+
 helptext = """\
 Usage: %s [ <options> ] <output directory> [ <input file>... ]
+
+An output directory name is always needed. Initially, a collection of text and
+tiers filenames for reading are also needed. Subsequently, this collection of
+filenames can be omitted, and the previously-processed data will be loaded
+instead.
 
 Input file processing options:
 
@@ -321,14 +343,18 @@ Output options:
 --num-related <number>  Indicate the maximum number of related fragments to be
                         produced for each fragment
 
+--select <criteria>     Select related fragments using the given criteria, these
+                        being a comma-separated list of functions, described
+                        below
+
 --stats                 Produce full output featuring statistical reports
 
 --verbose               Produce verbose output describing the data
 
-An output directory name is always needed. Initially, a collection of text and
-tiers filenames for reading are also needed. Subsequently, this collection of
-filenames can be omitted, and the previously-processed data will be loaded
-instead.
+Related fragments can be selected by combining criteria specified using a list
+of functions chosen from the following:
+
+%s
 
 The output directory will be populated with files containing the following:
 
@@ -345,7 +371,7 @@ The output directory will be populated with files containing the following:
 
 The output directory will also contain a data subdirectory containing the
 processed data in a structured form.
-""" % progname
+""" % (progname, related_fragment_selectors_text)
 
 
 
@@ -359,6 +385,7 @@ if __name__ == "__main__":
     config["category_map"] = get_map_from_file(get_option("--category-map"))
     config["num_related_fragments"] = get_option("--num-related", 4, 4, int)
     config["posfilter"] = POSFilter(get_list_from_file(get_option("--pos-tags")))
+    config["select"] = get_options("--select")
     config["wordlist"] = get_wordlist_from_file(get_option("--word-list"))
 
     statistics_output = get_flag("--stats")
