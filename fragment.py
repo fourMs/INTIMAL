@@ -33,6 +33,7 @@ from objects import commit_text, \
                     get_common_terms, get_fragment_terms, \
                     inverse_document_frequencies, \
                     process_fragments, \
+                    recompute_connections, \
                     word_document_frequencies, word_frequencies
 
 from related import get_related_fragments, \
@@ -214,6 +215,10 @@ def restore_connections(fragments, out):
     out["connections"] = connections = \
         get_serialised_connections(outfile("connections.txt"), fragments)
 
+    # Recompute the similarities.
+
+    recompute_connections(connections, out["inv_doc_frequencies"])
+
     return connections
 
 
@@ -374,12 +379,8 @@ if __name__ == "__main__":
 
     if restore:
         fragments = restore_fragments(out)
+        process_statistics(fragments, out)
         connections = restore_connections(fragments, out)
-
-        # Regenerate the statistics if the output is requested.
-
-        if statistics_output:
-            process_statistics(fragments, out)
 
     # Or process input data.
 

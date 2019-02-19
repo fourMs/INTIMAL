@@ -452,6 +452,18 @@ def process_fragments(fragments, processes):
         for process in processes:
             fragment.words = process(fragment.words)
 
+def recompute_connections(connections, idf=None):
+
+    """
+    Recompute the similarity details of the given 'connections'.
+
+    If 'idf' is given, use this inverse document frequency distribution to scale
+    term weights.
+    """
+
+    for connection in connections:
+        connection.similarity = get_fragment_similarity(connection.fragments, idf)
+
 def word_document_frequencies(fragments):
 
     "Return document frequencies for words from the 'fragments'."
