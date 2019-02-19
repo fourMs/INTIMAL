@@ -9,38 +9,6 @@ from collections import defaultdict
 
 # Connection-related operations.
 
-class ConnectedFragment:
-
-    "A record of fragment relationships via connections."
-
-    def __init__(self, fragment, connections):
-        self.fragment = fragment
-        self.connections = connections
-
-    def __iter__(self):
-        return RelatedFragments(self.fragment, self.connections)
-
-class RelatedFragments:
-
-    "A provider of related fragments from connections."
-
-    def __init__(self, fragment, connections):
-        self.fragment = fragment
-        self.connection_iter = iter(connections)
-
-    def next(self):
-
-        "Return the next related fragment with its connection."
-
-        while self.connection_iter:
-            try:
-                connection = self.connection_iter.next()
-                return connection.relation(self.fragment), connection
-            except StopIteration:
-                self.connection_iter = None
-
-        raise StopIteration
-
 def get_related_fragments(connections):
 
     """
@@ -71,11 +39,12 @@ def select_related_fragments(related, num, get_criteria):
 
         # Obtain each related fragment, assessing it with the function.
 
-        for related, connection in ConnectedFragment(fragment, connections):
+        for connection in connections:
             if len(values) >= num:
                 break
 
-            value = get_criteria(related, values)
+            relation = connection.relation(fragment)
+            value = get_criteria(relation, values)
 
             if value:
                 d[fragment].append(connection)

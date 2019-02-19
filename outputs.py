@@ -6,7 +6,6 @@ Output production.
 """
 
 from objects import Term
-from related import ConnectedFragment
 from utils import cmp_value_lengths_and_keys, cmp_values_and_keys
 
 from os import listdir, mkdir, remove
@@ -231,9 +230,11 @@ def show_related_fragments(related, filename, shown_relations=5):
 
             to_show = shown_relations
 
-            for relation, connection in ConnectedFragment(fragment, connections):
+            for connection in connections:
                 if not to_show:
                     break
+
+                relation = connection.relation(fragment)
 
                 show_similarity(connection, out)
                 show_fragment(relation, out)
@@ -346,7 +347,8 @@ def write_fragment_data(datasets, dirname):
             for filename in dataset_out.filenames():
                 remove(filename)
 
-            for i, (relation, connection) in enumerate(ConnectedFragment(fragment, connections)):
+            for i, connection in enumerate(connections):
+                relation = connection.relation(fragment)
                 writefile(dataset_out.filename(str(i)), str(relation.source))
 
 # vim: tabstop=4 expandtab shiftwidth=4
