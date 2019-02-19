@@ -261,6 +261,25 @@ def get_map_from_file(filename):
 
 # Command option handling.
 
+def get_flag(name, present=True, absent=False):
+
+    """
+    Return for the command option 'name', the 'present' value if the option (or
+    flag) was found, 'absent' otherwise.
+
+    If present, the option/flag is removed from the command arguments.
+    """
+
+    try:
+        i = sys.argv.index(name)
+        del sys.argv[i]
+        return present
+
+    # Without the option.
+
+    except ValueError:
+        return absent
+
 def get_option(name, default=None, missing=None, conversion=None):
 
     """
@@ -271,6 +290,9 @@ def get_option(name, default=None, missing=None, conversion=None):
     If 'conversion' is indicated, attempt to call it with any found value as
     argument, returning the result. Without a valid value, 'missing' is
     returned.
+
+    If present, the option and any associated value is removed from the command
+    arguments.
     """
 
     try:
