@@ -3,15 +3,22 @@
 
 """
 Collect words into the identified fragments, reducing the words to only those
-of importance. Define fragment similarity by identifying common terms,
-potentially weighting some terms as being more significant than others.
+of importance.
+
+Define fragment similarity by identifying common terms, potentially weighting
+some terms as being more significant than others.
+
+Collect sorted relations between fragments according to different selection
+criteria.
+
+Produce reports and structured data describing the processed data.
 """
 
 # Input and output.
 
 from inputs import get_fragments_from_files, get_categorised_fragments, \
                    get_list_from_file, get_map_from_file, \
-                   get_option
+                   get_flag, get_option
 
 import outputs
 
@@ -50,9 +57,14 @@ from wordlist import get_wordlist_from_file
 
 
 
-def process_input_data(filenames, outfile):
+# The input data processing workflow.
 
-    "Process data from 'filenames', using 'outfile' to create output filenames."
+def process_input_data(filenames, config, out):
+
+    """
+    Process data from 'filenames', using 'config' to adjust the processing,
+    registering output data with 'out'.
+    """
 
     fragments = get_fragments_from_files(filenames)
 
@@ -62,13 +74,13 @@ def process_input_data(filenames, outfile):
 
     # Discard uncategorised fragments.
 
-    if not all_fragments:
+    if not config.get("all_fragments"):
         fragments = filter(lambda f: f.category and f.category.complete(), fragments)
 
     # Fix fragment categories.
 
-    if category_map:
-        fix_category_names(fragments, category_map)
+    if config.get("category_map"):
+        fix_category_names(fragments, config.get("category_map"))
 
     # Obtain the raw input words.
 
@@ -92,12 +104,24 @@ def process_input_data(filenames, outfile):
     # Filtering of stop words by selecting certain kinds of words (for example,
     # nouns, verbs, adjectives).
 
-    process_fragments(fragments, [group_words, posfilter.filter_words])
+    process_fragments(fragments, [group_words,
+                                  config.get("posfilter").filter_words])
 
     # Selection of desired words.
 
-    if wordlist:
-        process_fragments(fragments, [wordlist.filter_words])
+    if config.get("wordlist"):
+        process_fragments(fragments, [config.get("wordlist").filter_words])
+
+    # Register some output data.
+
+    out["all_words"] = all_words
+    out["fragments"] = fragments
+
+    return fragments
+
+def process_statistics(fragments, out):
+
+    "Process 'fragments' to obtain statistics, registering output with 'out'."
 
     # Get terms used by each category for inspection.
 
@@ -119,35 +143,142 @@ def process_input_data(filenames, outfile):
     doc_frequencies = word_document_frequencies(fragments)
     inv_doc_frequencies = inverse_document_frequencies(doc_frequencies, len(fragments))
 
+    # Register some output data.
+
+    out["category_terms"] = category_terms
+    out["common_category_terms"] = common_category_terms
+    out["common_fragment_terms"] = common_fragment_terms
+    out["frequencies"] = frequencies
+    out["doc_frequencies"] = doc_frequencies
+    out["inv_doc_frequencies"] = inv_doc_frequencies
+
+def process_fragment_data(fragments, out):
+
+    "Process 'fragments' to obtain connections, registering output with 'out'."
+
+    process_statistics(fragments, out)
+
     # Determine fragment similarity by taking the processed words and comparing
     # fragments.
 
-    connections = compare_fragments(fragments, idf=inv_doc_frequencies,
-                                    terms_to_fragments=common_fragment_terms)
+    connections = compare_fragments(fragments, idf=out["inv_doc_frequencies"],
+                                    terms_to_fragments=out["common_fragment_terms"])
+
+    # Register some output data.
+
+    out["connections"] = connections
+
+    return connections
+
+def process_relations(connections, config, out):
+
+    """
+    Process 'connections' to obtain relations, using 'config' to adjust the
+    processing, registering output with 'out'.
+    """
+
+    related = get_related_fragments(connections)
+
+    # Impose an ordering on the related fragments.
+
+    sort_related_fragments(related)
+    related_by_participant = select_related_fragments_by_participant(related,
+                                 config.get("num_related_fragments"))
+    related_by_category = select_related_fragments_by_category(related,
+                                 config.get("num_related_fragments"))
+
+    # Register some output data.
+
+    out["related_by_participant"] = related_by_participant
+    out["related_by_category"] = related_by_category
+
+    return related
+
+
+
+# Restoration of serialised data.
+
+def restore_fragments(out):
+
+    "Restore fragments from an output file via 'out'."
+
+    out["fragments"] = fragments = \
+        get_serialised_fragments(outfile("fragments.txt"))
+
+    return fragments
+
+def restore_connections(fragments, out):
+
+    "Using 'fragments', restore connections from an output file via 'out'."
+
+    out["connections"] = connections = \
+        get_serialised_connections(outfile("connections.txt"), fragments)
+
+    return connections
+
+
+# Output data production.
+
+def emit_basic_output(out):
+
+    "Using 'out', emit basic output data featuring the processed input."
+
+    outfile = out.filename
 
     # Emit the fragments for inspection and potential recovery.
 
-    outputs.show_fragments(fragments, outfile("fragments.txt"))
+    outputs.show_fragments(out["fragments"], outfile("fragments.txt"))
 
     # Emit the connection details for potential recovery.
 
-    outputs.show_connections(connections, outfile("connections.txt"), brief=True)
+    outputs.show_connections(out["connections"], outfile("connections.txt"), brief=True)
+
+    # Emit details of all the different words originally encountered.
+
+    outputs.show_all_words(out["all_words"], outfile("words.txt"))
+
+def emit_statistics_output(out):
+
+    "Using 'out', emit output data featuring statistical reports."
+
+    outfile = out.filename
 
     # Emit term details for inspection.
 
-    outputs.show_all_words(all_words, outfile("words.txt"))
-    outputs.show_category_terms(category_terms, outfile("terms.txt"))
-    outputs.show_common_terms(common_category_terms, outfile("term_categories.txt"))
-    outputs.show_common_terms(common_fragment_terms, outfile("term_fragments.txt"))
-    outputs.show_frequencies(frequencies, outfile("term_frequencies.txt"))
-    outputs.show_frequencies(doc_frequencies, outfile("term_doc_frequencies.txt"))
-    outputs.show_frequencies(inv_doc_frequencies, outfile("term_inv_doc_frequencies.txt"))
+    outputs.show_category_terms(out["category_terms"], outfile("terms.txt"))
+    outputs.show_common_terms(out["common_category_terms"], outfile("term_categories.txt"))
+    outputs.show_common_terms(out["common_fragment_terms"], outfile("term_fragments.txt"))
+    outputs.show_frequencies(out["frequencies"], outfile("term_frequencies.txt"))
+    outputs.show_frequencies(out["doc_frequencies"], outfile("term_doc_frequencies.txt"))
+    outputs.show_frequencies(out["inv_doc_frequencies"], outfile("term_inv_doc_frequencies.txt"))
+
+def emit_verbose_output(out):
+
+    "Using 'out', emit output data featuring verbose details."
+
+    outfile = out.filename
 
     # Emit the connections for inspection.
 
-    outputs.show_connections(connections, outfile("connections_verbose.txt"))
+    outputs.show_connections(out["connections"], outfile("connections_verbose.txt"))
 
-    return connections
+def emit_relation_output(out):
+
+    "Using 'out', emit relation output."
+
+    outfile = out.filename
+
+    # Emit related data.
+
+    outputs.show_related_fragments(out["related_by_participant"], outfile("relations.txt"))
+    outputs.show_related_fragments(out["related_by_category"], outfile("relations_by_category.txt"))
+
+    # Write related fragment data.
+
+    datasets = [("translation", out["related_by_participant"]),
+                ("rotation", out["related_by_category"])]
+
+    outputs.write_fragment_data(datasets, outfile("data"))
 
 
 
@@ -158,7 +289,7 @@ progname = os.path.split(sys.argv[0])[-1]
 helptext = """\
 Usage: %s [ <options> ] <output directory> [ <input file>... ]
 
-Options:
+Input file processing options:
 
 --all-fragments         Process all fragments including uncategorised ones
 
@@ -166,15 +297,21 @@ Options:
                         Change categories according to the mapping defined in
                         the indicated file
 
---num-related <number>  Indicate the maximum number of related fragments to be
-                        produced for each fragment
-
 --pos-tags <filename>   Preserve only words with the part-of-speech tags found
                         in the indicated file
 
 --word-list <filename>  Preserve only words found in the indicated file, these
                         being the root forms of word families (for example,
                         general verbs instead of conjugations)
+
+Output options:
+
+--num-related <number>  Indicate the maximum number of related fragments to be
+                        produced for each fragment
+
+--stats                 Produce full output featuring statistical reports
+
+--verbose               Produce verbose output describing the data
 
 An output directory name is always needed. Initially, a collection of text and
 tiers filenames for reading are also needed. Subsequently, this collection of
@@ -204,11 +341,16 @@ processed data in a structured form.
 
 if __name__ == "__main__":
 
-    all_fragments = get_option("--all-fragments", True, False)
-    category_map = get_map_from_file(get_option("--category-map"))
-    num_related_fragments = get_option("--num-related", 4, 4, int)
-    posfilter = POSFilter(get_list_from_file(get_option("--pos-tags")))
-    wordlist = get_wordlist_from_file(get_option("--word-list"))
+    config = {}
+
+    config["all_fragments"] = get_flag("--all-fragments")
+    config["category_map"] = get_map_from_file(get_option("--category-map"))
+    config["num_related_fragments"] = get_option("--num-related", 4, 4, int)
+    config["posfilter"] = POSFilter(get_list_from_file(get_option("--pos-tags")))
+    config["wordlist"] = get_wordlist_from_file(get_option("--word-list"))
+
+    statistics_output = get_flag("--stats")
+    verbose_output = get_flag("--verbose")
 
     # Obtain filenames.
 
@@ -231,33 +373,36 @@ if __name__ == "__main__":
     # Either restore serialised data.
 
     if restore:
-        fragments = get_serialised_fragments(outfile("fragments.txt"))
-        connections = get_serialised_connections(outfile("connections.txt"), fragments)
+        fragments = restore_fragments(out)
+        connections = restore_connections(fragments, out)
+
+        # Regenerate the statistics if the output is requested.
+
+        if statistics_output:
+            process_statistics(fragments, out)
 
     # Or process input data.
 
     else:
-        connections = process_input_data(filenames, outfile)
+        fragments = process_input_data(filenames, config, out)
+        connections = process_fragment_data(fragments, out)
 
-    # Process data using the connections as input.
+        # Emit basic output to serialise the processed data.
 
-    related = get_related_fragments(connections)
+        emit_basic_output(out)
 
-    # Impose an ordering on the related fragments.
+    # Process relation data.
 
-    sort_related_fragments(related)
-    related_by_participant = select_related_fragments_by_participant(related, num_related_fragments)
-    related_by_category = select_related_fragments_by_category(related, num_related_fragments)
+    process_relations(connections, config, out)
 
-    # Emit related data.
+    # Emit output.
 
-    outputs.show_related_fragments(related_by_participant, outfile("relations.txt"))
-    outputs.show_related_fragments(related_by_category, outfile("relations_by_category.txt"))
+    if statistics_output:
+        emit_statistics_output(out)
 
-    # Write related fragment data.
+    if verbose_output:
+        emit_verbose_output(out)
 
-    datasets = [("translation", related_by_participant), ("rotation", related_by_category)]
-
-    outputs.write_fragment_data(datasets, outfile("data"))
+    emit_relation_output(out)
 
 # vim: tabstop=4 expandtab shiftwidth=4
