@@ -122,6 +122,11 @@ def populate_fragments(fragments, textdoc, source):
         else:
             continue
 
+        # Skip empty words.
+
+        if not text:
+            continue
+
         # Find the appropriate fragment, stopping if no more fragments remain.
 
         while current is None or start >= current.source.end:
