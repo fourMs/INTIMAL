@@ -323,4 +323,21 @@ def get_option(name, default=None, missing=None, conversion=None):
     except ValueError:
         return missing
 
+def get_options(name, conversion=None):
+
+    """
+    Return all values following options of the given 'name', employing
+    'conversion' on all valid values.
+    """
+
+    values = []
+
+    while True:
+        value = get_option(name, conversion)
+        if value is None:
+            break
+        values.append(value)
+
+    return values
+
 # vim: tabstop=4 expandtab shiftwidth=4
