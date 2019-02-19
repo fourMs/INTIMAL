@@ -37,8 +37,9 @@ from objects import commit_text, \
                     word_document_frequencies, word_frequencies
 
 from related import get_related_fragments, \
-                    select_related_fragments_by_category, \
-                    select_related_fragments_by_participant, \
+                    get_distinct_participant, \
+                    get_distinct_subcategory, \
+                    select_related_fragments, \
                     sort_related_fragments
 
 # Transformations on the words and text.
@@ -183,10 +184,16 @@ def process_relations(connections, config, out):
     # Impose an ordering on the related fragments.
 
     sort_related_fragments(related)
-    related_by_participant = select_related_fragments_by_participant(related,
-                                 config.get("num_related_fragments"))
-    related_by_category = select_related_fragments_by_category(related,
-                                 config.get("num_related_fragments"))
+
+    # Select appropriate fragments.
+
+    num = config.get("num_related_fragments")
+
+    related_by_participant = \
+        select_related_fragments(related, num, [get_distinct_participant])
+
+    related_by_category = \
+        select_related_fragments(related, num, [get_distinct_subcategory])
 
     # Register some output data.
 
