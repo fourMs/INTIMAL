@@ -295,12 +295,10 @@ class Term:
 
         "Compare with 'other' using the normalised forms if possible."
 
-        if isinstance(other, Term) and other.normalised:
-            other = other.normalised
+        if self.normalised and isinstance(other, Term) and other.normalised:
+            return cmp(self.normalised, other.normalised)
         else:
-            other = unicode(other)
-
-        return cmp(self.normalised or unicode(self), other)
+            return cmp(unicode(self), unicode(other))
 
     def __hash__(self):
         return hash(self.normalised or unicode(self))
