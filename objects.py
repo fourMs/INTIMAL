@@ -97,7 +97,7 @@ class Connection:
 
         "Return the truth or non-emptiness of the connection."
 
-        return bool(self.fragments)
+        return len(self.fragments) == 2
 
     def __repr__(self):
         return "Connection(%r, %r)" % self.as_tuple()
@@ -492,6 +492,11 @@ def recompute_connections(connections):
 
     for connection in connections:
         connection.similarity = get_fragment_similarity(connection.fragments)
+
+    # Eliminate connections without any similarity. This may occur if words
+    # have been excluded using a word list.
+
+    return filter(lambda c: c.measure(), connections)
 
 def scale_term_vector(vector, mapping=None):
 
