@@ -73,9 +73,9 @@ def test_truth():
     show("bool(%r)" % f4, bool(f4), False)
 
 def test_vector():
-    show("%r.term_vector()" % f1, f1.term_vector(), {u"un" : 1, u"hombre" : 1})
-    show("%r.term_vector()" % f2, f2.term_vector(), {u"un" : 1, t2 : 1})
-    show("%r.term_vector()" % f3, f3.term_vector(), {})
+    show("%r.get_term_vector()" % f1, f1.get_term_vector(), {u"un" : 1, u"hombre" : 1})
+    show("%r.get_term_vector()" % f2, f2.get_term_vector(), {u"un" : 1, t2 : 1})
+    show("%r.get_term_vector()" % f3, f3.get_term_vector(), {})
 
 def main():
     test_comparison()

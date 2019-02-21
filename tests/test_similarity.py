@@ -9,6 +9,7 @@ from test_support import set_verbose, show
 from objects import Category, Fragment, Source, \
                     compare_fragments, get_fragment_similarity, \
                     inverse_document_frequencies, \
+                    process_term_vectors, \
                     word_document_frequencies, word_frequencies
 from text import only_words
 import re
@@ -57,14 +58,10 @@ for i, sentence in enumerate(sentences):
     words = map(lambda s: s.lower(), words)
     fragments.append(Fragment(Source(source, i, i+1), category, words, sentence))
 
-# Obtain statistics.
-
-wdf = word_document_frequencies(fragments)
-idf = inverse_document_frequencies(wdf, len(fragments))
-
 # Prepare connections for testing.
 
-connections = compare_fragments(fragments, idf=idf)
+process_term_vectors(fragments)
+connections = compare_fragments(fragments)
 
 
 

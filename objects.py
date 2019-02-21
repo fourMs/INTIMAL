@@ -354,8 +354,7 @@ def compare_fragments(fragments, terms_to_fragments=None):
     # Compare the fragment pairs.
 
     for pair in get_fragment_pairs(fragments, terms_to_fragments):
-        vectors = get_term_vectors(pair)
-        similarity = combine_term_vectors(vectors)
+        similarity = get_fragment_similarity(pair)
 
         # Only record connections when some similarity exists.
 
@@ -420,6 +419,16 @@ def get_fragment_pairs(fragments, terms_to_fragments=None):
     else:
         return list(combinations(fragments, 2))
 
+def get_fragment_similarity(fragments):
+
+    """
+    Return the combined term vectors for 'fragments' as a raw similarity
+    measure.
+    """
+
+    vectors = get_term_vectors(fragments)
+    return combine_term_vectors(vectors)
+
 def get_fragment_terms(fragments, key_function=None):
 
     """
@@ -482,8 +491,7 @@ def recompute_connections(connections):
     "Recompute the similarity details of the given 'connections'."
 
     for connection in connections:
-        vectors = get_term_vectors(connection.fragments)
-        connection.similarity = combine_term_vectors(vectors)
+        connection.similarity = get_fragment_similarity(connection.fragments)
 
 def scale_term_vector(vector, mapping=None):
 
