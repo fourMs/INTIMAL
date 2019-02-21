@@ -25,7 +25,10 @@ class Wordlist:
         l = []
 
         for word in words:
-            if word in self.words:
+
+            # Convert terms/words to a specific string form.
+
+            if unicode(word) in self.words:
                 l.append(word)
 
         return l
