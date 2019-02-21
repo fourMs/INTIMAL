@@ -42,7 +42,7 @@ def get_serialised_connections(filename, fragments):
             if not line:
                 if current:
                     l.append(current)
-                    current = Connection(None, [])
+                current = Connection(None, [])
                 continue
 
             # Parse a record and modify the current connection.
