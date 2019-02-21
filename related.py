@@ -74,6 +74,15 @@ def sort_related_fragments(related):
 
 # Fragment selection criteria functions.
 
+def get_any_fragment(fragment, fragments):
+
+    """
+    For 'fragment', return a true value regardless of its relationship to
+    'fragments'.
+    """
+
+    return True
+
 def get_distinct_participant(fragment, fragments):
 
     """
@@ -113,8 +122,9 @@ def get_related_fragment_selectors(names):
     return l
 
 related_fragment_selectors = {
-    "distinct_participant" : get_distinct_participant,
-    "distinct_subcategory" : get_distinct_subcategory,
+    "any"                   : get_any_fragment,
+    "distinct_participant"  : get_distinct_participant,
+    "distinct_subcategory"  : get_distinct_subcategory,
     }
 
 # vim: tabstop=4 expandtab shiftwidth=4
