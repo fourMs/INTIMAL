@@ -234,7 +234,14 @@ def get_list_from_file(filename):
 
     f = codecs.open(filename, encoding="utf-8")
     try:
-        for line in f.xreadlines():
+        while True:
+
+            # Read each line (xreadlines seems to return plain strings).
+
+            line = f.readline()
+            if not line:
+                break
+
             line = line.strip()
             if line:
                 l.append(line)
@@ -254,7 +261,14 @@ def get_map_from_file(filename):
 
     f = codecs.open(filename, encoding="utf-8")
     try:
-        for line in f.xreadlines():
+        while True:
+
+            # Read each line (xreadlines seems to return plain strings).
+
+            line = f.readline()
+            if not line:
+                break
+
             line = line.strip()
             if line:
                 key, value = line.split(None, 1)
