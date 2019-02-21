@@ -5,7 +5,7 @@
 Term vector computation.
 """
 
-def combine_term_vectors(vectors, idf=None):
+def combine_term_vectors(vectors):
 
     "Return the result of combining the given term 'vectors'."
 
@@ -15,11 +15,7 @@ def combine_term_vectors(vectors, idf=None):
     d = {}
 
     for term, value in vectors[0].items():
-
-        # Scale the term weight if requested.
-
-        idf_term = idf and idf[term] or 1
-        d[term] = value * idf_term
+        d[term] = value
 
     # Take each vector in turn, trying to find terms in the other vectors.
 
@@ -34,8 +30,7 @@ def combine_term_vectors(vectors, idf=None):
             # Combine term values with the result.
 
             else:
-                idf_term = idf and idf[term] or 1
-                d[term] *= vector[term] * idf_term
+                d[term] *= vector[term]
 
     return d
 

@@ -33,6 +33,7 @@ from objects import commit_text, \
                     get_common_terms, get_fragment_terms, \
                     inverse_document_frequencies, \
                     process_fragments, \
+                    process_term_vectors, \
                     recompute_connections, \
                     word_document_frequencies, word_frequencies
 
@@ -154,16 +155,22 @@ def process_statistics(fragments, out):
     out["doc_frequencies"] = doc_frequencies
     out["inv_doc_frequencies"] = inv_doc_frequencies
 
-def process_fragment_data(fragments, out):
+def process_fragment_data(fragments, config, out):
 
-    "Process 'fragments' to obtain connections, registering output with 'out'."
+    """
+    Process 'fragments' to obtain connections, using 'config' to adjust the
+    processing, registering output with 'out'.
+    """
 
-    process_statistics(fragments, out)
+    # Define the term vectors.
+
+    process_term_vectors(fragments, not config.get("term_presence_only"),
+                         out["inv_doc_frequencies"])
 
     # Determine fragment similarity by taking the processed words and comparing
     # fragments.
 
-    connections = compare_fragments(fragments, idf=out["inv_doc_frequencies"],
+    connections = compare_fragments(fragments,
                                     terms_to_fragments=out["common_fragment_terms"])
 
     # Register some output data.
@@ -185,16 +192,26 @@ def restore_fragments(out):
 
     return fragments
 
-def restore_connections(fragments, out):
+def restore_connections(fragments, config, out):
 
-    "Using 'fragments', restore connections from an output file via 'out'."
+    """
+    Using 'fragments' and 'config' to adjust the processing, restore connections
+    from an output file via 'out'.
+    """
+
+    # Define the term vectors.
+
+    process_term_vectors(fragments, not config.get("term_presence_only"),
+                         out["inv_doc_frequencies"])
+
+    # Restore the connections using the fragments.
 
     out["connections"] = connections = \
         get_serialised_connections(outfile("connections.txt"), fragments)
 
     # Recompute the similarities.
 
-    recompute_connections(connections, out["inv_doc_frequencies"])
+    recompute_connections(connections)
 
     return connections
 
@@ -349,6 +366,8 @@ Output options:
 
 --stats                 Produce full output featuring statistical reports
 
+--term-presence-only    Do not employ term frequencies in term vectors
+
 --verbose               Produce verbose output describing the data
 
 Related fragments can be selected by combining criteria specified using a list
@@ -383,6 +402,7 @@ if __name__ == "__main__":
 
     config["all_fragments"] = get_flag("--all-fragments")
     config["category_map"] = get_map_from_file(get_option("--category-map"))
+    config["term_presence_only"] = get_flag("--term-presence-only")
     config["num_related_fragments"] = get_option("--num-related", 4, 4, int)
     config["posfilter"] = POSFilter(get_list_from_file(get_option("--pos-tags")))
     config["select"] = get_options("--select")
@@ -414,13 +434,14 @@ if __name__ == "__main__":
     if restore:
         fragments = restore_fragments(out)
         process_statistics(fragments, out)
-        connections = restore_connections(fragments, out)
+        connections = restore_connections(fragments, config, out)
 
     # Or process input data.
 
     else:
         fragments = process_input_data(filenames, config, out)
-        connections = process_fragment_data(fragments, out)
+        process_statistics(fragments, out)
+        connections = process_fragment_data(fragments, config, out)
 
         # Emit basic output to serialise the processed data.
 

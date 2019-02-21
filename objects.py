@@ -113,7 +113,7 @@ class Connection:
         Return an overall similarity measure using the full similarity details.
         """
 
-        vectors = map(lambda f: f.term_vector(), self.fragments)
+        vectors = get_term_vectors(self.fragments)
         return get_term_vector_similarity(vectors, self.similarity)
 
     def relation(self, fragment):
@@ -147,6 +147,7 @@ class Fragment:
         self.category = category
         self.words = words or []
         self.text = text
+        self.vector = None
 
     def __cmp__(self, other):
 
@@ -213,7 +214,26 @@ class Fragment:
 
         return d
 
-    term_vector = word_frequencies
+    def get_term_vector(self, frequencies=True):
+
+        "Return a vector containing term weights."
+
+        # Employ term frequencies as weights if requested.
+
+        if frequencies:
+            d = self.word_frequencies()
+
+        # Otherwise, define the presence of terms.
+
+        else:
+            d = {}
+            for word in self.words:
+                d[word] = 1
+
+        return d
+
+    def set_term_vector(self, vector):
+        self.vector = vector
 
     # Graph methods.
 
@@ -321,14 +341,12 @@ def commit_text(fragments):
     for fragment in fragments:
         fragment.commit_text()
 
-def compare_fragments(fragments, idf=None, terms_to_fragments=None):
+def compare_fragments(fragments, terms_to_fragments=None):
 
     """
     Compare 'fragments' with each other, returning a list of connections
-    sorted by the similarity measure.
-
-    If 'idf' is given, use this inverse document frequency distribution to scale
-    term weights.
+    sorted by the similarity measure. The 'terms_to_fragments' mapping, if
+    provided, is used to optimise the fragment pairing process.
     """
 
     connections = []
@@ -336,7 +354,8 @@ def compare_fragments(fragments, idf=None, terms_to_fragments=None):
     # Compare the fragment pairs.
 
     for pair in get_fragment_pairs(fragments, terms_to_fragments):
-        similarity = get_fragment_similarity(pair, idf)
+        vectors = get_term_vectors(pair)
+        similarity = combine_term_vectors(vectors)
 
         # Only record connections when some similarity exists.
 
@@ -401,17 +420,6 @@ def get_fragment_pairs(fragments, terms_to_fragments=None):
     else:
         return list(combinations(fragments, 2))
 
-def get_fragment_similarity(fragments, idf=None):
-
-    """
-    Obtain term vectors from 'fragments' and combine them to give an indication
-    of similarity. Where 'idf' is given, use the inverse document frequency
-    distribution to scale term weights.
-    """
-
-    tv = map(lambda f: f.term_vector(), fragments)
-    return combine_term_vectors(tv, idf)
-
 def get_fragment_terms(fragments, key_function=None):
 
     """
@@ -427,6 +435,12 @@ def get_fragment_terms(fragments, key_function=None):
         d[fn(fragment)] += fragment.words
 
     return d
+
+def get_term_vectors(fragments):
+
+    "Return the term vectors for 'fragments'."
+
+    return map(lambda f: f.vector, fragments)
 
 def inverse_document_frequencies(frequencies, numdocs):
 
@@ -450,17 +464,34 @@ def process_fragments(fragments, processes):
         for process in processes:
             fragment.words = process(fragment.words)
 
-def recompute_connections(connections, idf=None):
+def process_term_vectors(fragments, frequencies=True, mapping=None):
 
     """
-    Recompute the similarity details of the given 'connections'.
-
-    If 'idf' is given, use this inverse document frequency distribution to scale
-    term weights.
+    Process term vectors from 'fragments', employing term frequencies if the
+    'frequencies' indicator is set to a true value, and employing any 'mapping'
+    to scale term weights.
     """
+
+    for fragment in fragments:
+        vector = fragment.get_term_vector(frequencies)
+        scale_term_vector(vector, mapping)
+        fragment.set_term_vector(vector)
+
+def recompute_connections(connections):
+
+    "Recompute the similarity details of the given 'connections'."
 
     for connection in connections:
-        connection.similarity = get_fragment_similarity(connection.fragments, idf)
+        vectors = get_term_vectors(connection.fragments)
+        connection.similarity = combine_term_vectors(vectors)
+
+def scale_term_vector(vector, mapping=None):
+
+    "Scale the 'vector' using a term 'mapping' to weights."
+
+    if mapping:
+        for word, weight in vector.items():
+            vector[word] = weight * (mapping.get(word) or 1)
 
 def word_document_frequencies(fragments):
 
