@@ -110,11 +110,6 @@ def process_input_data(filenames, config, out):
     process_fragments(fragments, [group_words,
                                   config.get("posfilter").filter_words])
 
-    # Selection of desired words.
-
-    if config.get("wordlist"):
-        process_fragments(fragments, [config.get("wordlist").filter_words])
-
     # Register some output data.
 
     out["all_words"] = all_words
@@ -211,11 +206,25 @@ def restore_connections(fragments, config, out):
 
     # Recompute the similarities.
 
-    recompute_connections(connections)
+    connections = recompute_connections(connections)
 
     return connections
 
 
+
+# Word filtering/selection.
+
+def process_wordlist(fragments, config, out):
+
+    "Process 'fragments'"
+
+    if config.get("wordlist"):
+        process_fragments(fragments, [config.get("wordlist").filter_words])
+
+        # Register the filtered output. Note that the fragments are mutated,
+        # so the original fragment output would also be filtered at this point.
+
+        out["fragments_filtered"] = fragments
 
 # Relation processing.
 
@@ -278,6 +287,17 @@ def emit_basic_output(out):
     # Emit details of all the different words originally encountered.
 
     outputs.show_all_words(out["all_words"], outfile("words.txt"))
+
+def emit_filtered_output(out):
+
+    "Using 'out', emit filtered output data featuring the processed input."
+
+    outfile = out.filename
+
+    # Emit the fragments for inspection and potential recovery.
+
+    if out.has_key("fragments_filtered"):
+        outputs.show_fragments(out["fragments_filtered"], outfile("fragments_filtered.txt"))
 
 def emit_statistics_output(out):
 
@@ -433,13 +453,19 @@ if __name__ == "__main__":
 
     if restore:
         fragments = restore_fragments(out)
+        process_wordlist(fragments, config, out)
         process_statistics(fragments, out)
         connections = restore_connections(fragments, config, out)
+
+        # Emit filtered output to show the effect of any word list.
+
+        emit_filtered_output(out)
 
     # Or process input data.
 
     else:
         fragments = process_input_data(filenames, config, out)
+        process_wordlist(fragments, config, out)
         process_statistics(fragments, out)
         connections = process_fragment_data(fragments, config, out)
 
