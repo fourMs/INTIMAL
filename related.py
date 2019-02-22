@@ -122,9 +122,9 @@ def get_related_fragment_selectors(names):
     return l
 
 related_fragment_selectors = {
-    "any"                   : get_any_fragment,
-    "distinct_participant"  : get_distinct_participant,
-    "distinct_subcategory"  : get_distinct_subcategory,
+    "any"           : get_any_fragment,
+    "translation"   : get_distinct_participant,
+    "rotation"      : get_distinct_subcategory,
     }
 
 # vim: tabstop=4 expandtab shiftwidth=4
