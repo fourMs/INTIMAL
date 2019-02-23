@@ -162,7 +162,11 @@ def show_connections(connections, filename, brief=False):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for connection in connections:
-            show_similarity(connection, out)
+
+            # Only show similarity details for verbose output.
+
+            if not brief:
+                show_similarity(connection, out)
 
             # Show the connected fragments.
 

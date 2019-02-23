@@ -4,10 +4,11 @@ To be able to use this software, appropriate data is required along with the
 means to run the software. See the [[Required Data]] and [[Required Software]]
 documents for more details.
 
-To actually run the software, a command of the following form should work:
+To actually run the software, commands of the following form should work:
 
 {{{
-./fragments.py OUTPUT DATA/*.xml
+./build.py OUTPUT DATA/*.xml
+./export.py OUTPUT
 }}}
 
 Here, a directory for output data is supplied as `OUTPUT`. Meanwhile, input
