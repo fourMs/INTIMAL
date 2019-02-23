@@ -361,7 +361,6 @@ def compare_fragments(fragments, terms_to_fragments=None):
         if similarity:
             connections.append(Connection(similarity, pair))
 
-    connections.sort(key=lambda c: c.measure())
     return connections
 
 def fix_category_names(fragments, category_map):
