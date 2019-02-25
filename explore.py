@@ -6,7 +6,7 @@ Explore the generated data.
 """
 
 from os import listdir
-from os.path import join
+from os.path import isdir, join
 import codecs
 import sys
 
@@ -312,14 +312,23 @@ def jump(explorer):
 # Main program.
 
 if __name__ == "__main__":
+
+    # Obtain the output directory.
+
     if len(sys.argv) < 2:
-        print >>sys.stderr, "Need the data directory to explore."
+        print >>sys.stderr, "Need the output directory to explore."
+        sys.exit(1)
+
+    datadir = join(sys.argv[1], "data")
+
+    if not isdir(datadir):
+        print >>sys.stderr, "Need the output directory containing a subdirectory called data."
         sys.exit(1)
 
     # Initialise the explorer.
 
     out = codecs.getwriter(encoding)(sys.stdout)
-    explorer = Explorer(sys.argv[1], out)
+    explorer = Explorer(datadir, out)
 
     # Choose a fragment to begin with.
 
