@@ -22,6 +22,13 @@ also provide support for certain information retrieval activities, it may
 still be advisible to perform some of these outside the database system and
 then import the processed data into a database for subsequent processing.
 
+== Exposing Concepts in Command Invocation ==
+
+The commands used to [[Getting Started|operate the software]] accept plain
+input filenames, but it might be useful to employ logic already present in the
+software to associate filenames with archive participants and to allow users
+to indicate participant identifiers instead of filenames.
+
 == Word Lists ==
 
 The words or terms in word lists must be specific forms and not root (or
