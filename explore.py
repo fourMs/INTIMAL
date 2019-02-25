@@ -39,6 +39,10 @@ class Explorer:
         self.step = None
         self.rotation = None
 
+        # Remember visited fragments.
+
+        self.visited = set()
+
     # Fragment selection.
 
     def get_fragments(self):
@@ -170,6 +174,10 @@ class Explorer:
 
         fragment = fragment or self.fragment
 
+        if fragment in self.visited:
+            print >>self.out, "VISITED!"
+            print >>self.out
+
         print >>self.out, fragment
         print >>self.out, self.get_fragment_data(fragment, "category")
         print >>self.out
@@ -179,6 +187,10 @@ class Explorer:
         if self.step is None:
             print >>self.out, "%d fragments ahead." % self.get_num_related_fragments(fragment, "translation")
             print >>self.out
+
+        # Remember this fragment as having been visited.
+
+        self.visited.add(fragment)
 
     # Navigation methods.
 
