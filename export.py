@@ -222,6 +222,12 @@ If --stats is indicated, the following statistical reports are produced:
 
 if __name__ == "__main__":
 
+    # Show the help message if requested.
+
+    if get_flag("--help"):
+        print >>sys.stderr, helptext
+        sys.exit(0)
+
     config = {}
 
     config["num_related_fragments"] = get_option("--num-related", 4, 4, int)

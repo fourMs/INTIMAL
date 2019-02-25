@@ -205,6 +205,12 @@ If --verbose is indicated, a verbose report of the connections will be produced.
 
 if __name__ == "__main__":
 
+    # Show the help message if requested.
+
+    if get_flag("--help"):
+        print >>sys.stderr, helptext
+        sys.exit(0)
+
     config = {}
 
     config["all_fragments"] = get_flag("--all-fragments")
