@@ -1,0 +1,12 @@
+= Data Exploration =
+
+The `explore.py` program can be used with an output data directory to
+investigate and explore the generated data. For example, with the output
+directory called `OUTPUT`:
+
+{{{
+./explore.py OUTPUT
+}}}
+
+This program provides an interactive interface that permits the viewing of
+fragments and navigation between related fragments.

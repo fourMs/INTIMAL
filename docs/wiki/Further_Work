@@ -1,0 +1,30 @@
+= Further Work =
+
+This software is necessarily limited in functionality and scope. This document
+aims to describe limitations and potential improvements.
+
+<<TableOfContents(2)>>
+
+== Database Representations ==
+
+The software generates a serialised form of the input data that is easier to
+work with, permitting further querying and export operations without having to
+parse the input data again or to establish the maximal presence of connections
+between fragments. However, the serialised form makes some assumptions for
+convenience, and where terms might have a more varied form, the format
+employed would need adjusting.
+
+One approach that would alleviate such concerns and be appropriate for a
+slightly more ambitious project would involve introducing a formal database
+system, perhaps using a relational model. This would also permit more
+flexibility with regard to tools and querying. Although some database systems
+also provide support for certain information retrieval activities, it may
+still be advisible to perform some of these outside the database system and
+then import the processed data into a database for subsequent processing.
+
+== Word Lists ==
+
+The words or terms in word lists must be specific forms and not root (or
+normalised) forms of more general words. Such lists could be enhanced to
+support root forms and indicate the part-of-speech role of the word, thus
+allowing such forms to match terms in the input data.

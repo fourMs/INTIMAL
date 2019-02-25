@@ -1,5 +1,7 @@
 = Getting Started =
 
+<<TableOfContents(2,3)>>
+
 To be able to use this software, appropriate data is required along with the
 means to run the software. See the [[Required Data]] and [[Required Software]]
 documents for more details.
@@ -16,3 +18,187 @@ data is specified as residing in the `DATA` directory, with this directory
 needing to be initialised by the user before running the above command.
 
 The form of the output data is described in the [[Output Data]] document.
+
+== Building the Database ==
+
+The `build.py` program is used to build a database of fragment and connection
+information that can be processed further using the `export.py` program.
+Running the program with the `--help` option provides usage instructions:
+
+{{{
+./build.py --help
+}}}
+
+The most useful options are those controlling category information and term
+selection.
+
+=== Category Normalisation ===
+
+By specifying a category map file using the `--category-map` option, the
+category details found in the input data can be normalised to eliminate
+inconsistencies. A file, `categories.txt`, is provided to assist this task
+with the data used in the development of this software. Thus, a command of the
+following form should be used instead with that particular data:
+
+{{{
+./build.py --category-map categories.txt OUTPUT DATA/*.xml
+}}}
+
+A category map file should define on each line a space-separated pair of
+category labels, with the first label being the form of a category in the
+input data, and with the second label being the desired form of the category
+for processing. For example:
+
+{{{
+Hostland Host_Land
+}}}
+
+=== Term Selection ===
+
+By specifying a file containing part-of-speech tags using the `--pos-tags`
+option, different kinds of words can be selected as terms. A file, `pos.txt`,
+is provided to illustrate the composition of such a file and can be used as
+follows:
+
+{{{
+./build.py --pos-tags pos.txt OUTPUT DATA/*.xml
+}}}
+
+By default, adjectives (`ADJ`), common nouns (`NOUN`) and proper nouns
+(`PROPN`) are selected, and the `pos.txt` file merely selects the same kinds
+of words explicitly. To do so, the file contains one tag (or kind of word) per
+line as follows:
+
+{{{
+ADJ
+NOUN
+PNOUN
+}}}
+
+== Selecting and Exporting Data ==
+
+The `export.py` program is used to indicate how data is to be selected from
+the database constructed using the `build.py` program, and it then exports
+this data to the specified output directory.
+
+Running the program with the `--help` option provides usage instructions:
+
+{{{
+./export.py --help
+}}}
+
+A number of options are available for influencing the generated output data.
+
+=== Related Fragment Selection ===
+
+The most significant output product of the `export.py` program is data
+describing fragment relationships, these having been established by comparing
+fragments and defining connections between them on the basis of some form of
+similarity. Fragment relationship information is produced as a collection of
+fragments related to a primary fragment sorted in descending order of
+similarity.
+
+==== Collection Size ====
+
+The number of fragments in each related fragment collection can be defined
+using the `--num-fragments` option. Each primary fragment taken together with
+the fragments most closely related to form a collection may then not exceed
+the indicated size.
+
+For example, to indicate that each fragment may not have more than six related
+fragments in the output data:
+
+{{{
+./export.py --num-fragments 7 --select any OUTPUT
+}}}
+
+Here, six related fragments plus the primary fragment gives seven fragments in
+total.
+
+==== Selection Functions ====
+
+To select and generate fragment relationships for connections, the `--select`
+option is used together with the name of a selection function. This function
+imposes constraints on the fragments presented as being the closest related
+fragments to the given primary fragment.
+
+All such functions are mentioned in the help text but include the following:
+
+ * `any` - selects fragments without any constraints
+
+ * `rotation` - selects fragments having the same category but a distinct
+   subcategory from others in the collection
+
+ * `translation` - selects fragments having a distinct participant from others
+   in the collection
+
+To generate separate related fragment collections for "rotation" and
+"translation", the following command could be used:
+
+{{{
+./export.py --select rotation --select translation OUTPUT
+}}}
+
+Selection functions can be combined, so that if fragments were to be selected
+as part of a collection provided that they have a distinct subcategory ''and''
+a distinct participant from the other fragments in the collection, the
+following command might be used:
+
+{{{
+./export.py --select rotation,translation OUTPUT
+}}}
+
+Other functions could be defined and used to generate new kinds of collections
+or for combination with functions already being used to generate collections.
+
+=== Statistics Generation ===
+
+The `export.py` program can be asked to produce statistical output as
+described in the [[Output Data]] document. To do so, the `--stats` option can
+be used. For example:
+
+{{{
+./export.py --stats OUTPUT
+}}}
+
+This option can be used alone to only generate statistics or it can be used
+alongside other options.
+
+=== Term Presences and Weights ===
+
+The computation of similiarities between fragments can be configured to take
+into account the frequency of terms within fragments or to employ the mere
+presence of terms instead. The `--term-presence-only` option can be specified
+to override the default frequency-based behaviour and to treat terms in
+fragments as having a frequency or weight of one regardless of the actual term
+frequency:
+
+{{{
+./export.py --term-presence-only --select any OUTPUT
+}}}
+
+See the [[Data Processing]] document for more information about the
+computation of fragment similarity.
+
+=== Term/Word List Selection ===
+
+By default, the software relies only on part-of-speech tagging to identify
+usable words or terms in the input text, this being controlled in the
+`build.py` program by the `--pos-tags` option.
+
+However, the `--word-list` option can be used with the `export.py` program to
+indicate a specific list of words to be selected as terms, with all other
+words to be filtered out. This can be specified as in the following example:
+
+{{{
+./export.py --word-list words.txt --select any OUTPUT
+}}}
+
+With a specified word list, the comparisons of fragments will employ only the
+terms in the list if they are present: all other terms will be ignored.
+
+A word list file consists of a single word or term per line and employs the
+specific form of words, not root (or normalised) forms. Consequently,
+variations of root forms such as verb conjugations, noun plurals, different
+adjective forms depending on word gender, and so on, must appear in the word
+list if those specific forms are to be recognised.

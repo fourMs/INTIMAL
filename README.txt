@@ -17,3 +17,10 @@ The original content in docs/wiki aims to be readable as plain text under most
 circumstances, but the intention is that this content be translated to HTML
 since it employs a formatting language based on the MoinMoin wiki format
 syntax.
+
+The following command can be used to generate the HTML form of the
+documentation from the main directory of this distribution:
+
+moinconvert --input-dir docs/wiki --document-index index.html \
+            --output-dir docs/html --theme mercurial \
+            --macros --root Introduction --all

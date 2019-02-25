@@ -9,13 +9,20 @@ of output data products are generated in the output directory:
 These products are a consequence of the modelling and [[Data Processing|
 processing]] of the input data.
 
+== Basic Information ==
+
+The following basic information files are generated:
+
+|| '''File'''                     || '''Description'''                        ||
+|| `connections.txt`              || connections of pairs of fragments        ||
+|| `fragments.txt`                || details of each textual fragment         ||
+|| `words.txt`                    || all known words in their original form   ||
+
 == Reports ==
 
 The following report files are generated:
 
 || '''File'''                     || '''Description'''                        ||
-|| `connections.txt`              || connections of pairs of fragments        ||
-|| `fragments.txt`                || details of each textual fragment         ||
 || `related.txt`                  || fragments and those most closely related ||
 || `related_by_category.txt`      || related fragments in the same category   ||
 || `term_categories.txt`          || the categories associated with each term ||
@@ -24,7 +31,6 @@ The following report files are generated:
 || `term_doc_frequencies.txt`     || term document frequencies                ||
 || `term_inv_doc_frequencies.txt` || term inverse document frequencies        ||
 || `terms.txt`                    || the terms found in each category         ||
-|| `words.txt`                    || all known words in their original form   ||
 
 == Structured Data ==
 
@@ -43,9 +49,15 @@ directory hierarchy is as follows:
       text
       rotation
         <related fragment index>
+          fragment
+          measure
+          similarity
         ...
       translation
         <related fragment index>
+          fragment
+          measure
+          similarity
         ...
     ...
 }}}
@@ -58,19 +70,19 @@ identifier>` above) contains the following:
 || `rotation`              || A directory containing related fragment details ||
 || `translation`           || A directory containing related fragment details ||
 
-The `rotation` and `translation` directories each contain files labelled with
-fragment index numbers, starting from 0, indicating the most closely related
-fragments in descending order of similarity to the fragment identified by the
-parent directory. In each of these files is the identifier of the related
-fragment.
+The `rotation` and `translation` directories each contain directories labelled
+with fragment index numbers, starting from 0, indicating the most closely
+related fragments in descending order of similarity to the fragment identified
+by the parent directory. In each of these directories is a file containing the
+identifier of the related fragment.
 
 Thus, to identify the most closely related `rotation` fragment of an
-identified fragment, the following file within that fragment's directory would
-be read:
+identified fragment, the following file within the output directory would be
+read:
 
 {{{
-rotation/0
+data/<fragment>/rotation/0/fragment
 }}}
 
 The contents of this file would then be used to identify a directory within
-the `data` directory.
+the `data` directory containing the details of the related fragment.
