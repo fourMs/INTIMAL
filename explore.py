@@ -43,6 +43,9 @@ class Explorer:
 
         self.visited = set()
 
+    def have_step(self):
+        return self.step is not None
+
     # Fragment selection.
 
     def get_fragments(self):
@@ -141,18 +144,18 @@ class Explorer:
 
         "Return the identifier of the current step fragment."
 
-        if self.step is not None:
+        if self.have_step():
             return self.get_related_fragment_data(self.fragment, "translation", self.step, "fragment")
         else:
             return self.fragment
 
     # Input methods.
 
-    def get_input(self):
+    def get_input(self, prompt):
 
         "Prompt and return input."
 
-        print >>self.out, "> ",
+        print >>self.out, prompt,
         s = raw_input()
         print >>self.out
         return unicode(s, encoding)
@@ -192,6 +195,18 @@ class Explorer:
 
         self.visited.add(fragment)
 
+    def show_similarity(self, kind, n):
+
+        """
+        Show similarity to the current fragment for the related fragment of the
+        given 'kind' in position 'n'.
+        """
+
+        if n is not None:
+            print >>self.out, "Measure:", self.get_related_fragment_data(self.fragment, kind, n, "measure")
+            print >>self.out, "Similarity:", self.get_related_fragment_data(self.fragment, kind, n, "similarity")
+            print >>self.out
+
     # Navigation methods.
 
     def move_forward(self):
@@ -223,9 +238,7 @@ class Explorer:
                 self.step += 1
             
             print >>self.out, "Step #%d..." % self.step
-            print >>self.out, "Measure:", self.get_related_fragment_data(self.fragment, "translation", self.step, "measure")
-            print >>self.out, "Similarity:", self.get_related_fragment_data(self.fragment, "translation", self.step, "similarity")
-            print >>self.out
+            self.show_similarity("translation", self.step)
 
             if self.step == limit:
                 self.select_fragment(self.get_step_fragment())
@@ -272,15 +285,14 @@ class Explorer:
                 else:
                     self.rotation = None
 
+        self.show_similarity("rotation", self.rotation)
         self.show_fragment(self.get_rotation_fragment())
 
     def stop(self):
 
-        "Stop and select any rotation or step fragment as the current fragment."
+        "Stop and select any step fragment as the current fragment."
 
-        if self.rotation is not None:
-            self.select_fragment(self.get_rotation_fragment())
-        elif self.step is not None:
+        if self.have_step():
             self.select_fragment(self.get_step_fragment())
 
         self.show_fragment()
@@ -290,7 +302,7 @@ def jump(explorer):
     "Obtain a fragment identifier for the 'explorer'."
 
     while True:
-        fragment = explorer.get_input()
+        fragment = explorer.get_input("fragment> ")
         explorer.select_fragment(fragment)
         if explorer.fragment:
             break
@@ -318,7 +330,12 @@ if __name__ == "__main__":
     # Loop, accepting commands, and performing movements.
 
     while True:
-        command = explorer.get_input()
+        print >>out, "Which way? (%d fragments visited)" % \
+                     len(explorer.visited)
+        print >>out, "(f)orward, (l)eft, (r)ight, %s(j)ump, (q)uit" % \
+                     (explorer.have_step() and "(s)top, " or "")
+
+        command = explorer.get_input("> ")
 
         if command in ("q", "quit"):
             break
