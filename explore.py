@@ -10,11 +10,13 @@ from os.path import join
 import codecs
 import sys
 
+encoding = "utf-8"
+
 def readfile(filename):
 
     "Return the text in 'filename'."
 
-    f = codecs.open(filename, encoding="utf-8")
+    f = codecs.open(filename, encoding=encoding)
     try:
         return f.read()
     finally:
@@ -36,6 +38,8 @@ class Explorer:
         self.fragment = None
         self.step = None
         self.rotation = None
+
+    # Fragment selection.
 
     def get_fragments(self):
 
@@ -64,12 +68,12 @@ class Explorer:
 
         return join(self.datadir, fragment)
 
-    def get_fragment_text(self, fragment):
+    def get_fragment_data(self, fragment, datatype):
 
-        "Return the textual content of 'fragment'."
+        "Return the textual content for 'fragment' of the given 'datatype'."
 
         dirname = self.get_fragment_dir(fragment)
-        textfile = join(dirname, "text")
+        textfile = join(dirname, datatype)
         return readfile(textfile)
 
     def get_related_fragment_dir(self, fragment, kind):
@@ -106,7 +110,7 @@ class Explorer:
         dirname = self.get_related_fragment_dir(fragment, kind)
         return len(listdir(dirname))
 
-    def get_related_fragment(self, fragment, kind, n):
+    def get_related_fragment_data(self, fragment, kind, n, datatype):
 
         """
         For 'fragment', return the fragment identifier of the related fragment
@@ -114,7 +118,8 @@ class Explorer:
         """
 
         dirname = self.get_related_fragment_dir(fragment, kind)
-        filename = join(dirname, str(n))
+        dirname = join(dirname, str(n))
+        filename = join(dirname, datatype)
         return readfile(filename)
 
     # Convenience methods.
@@ -124,7 +129,7 @@ class Explorer:
         "Return the identifier of the current rotation fragment."
 
         if self.rotation is not None:
-            return self.get_related_fragment(self.fragment, "rotation", self.rotation)
+            return self.get_related_fragment_data(self.fragment, "rotation", self.rotation, "fragment")
         else:
             return self.fragment
 
@@ -133,7 +138,7 @@ class Explorer:
         "Return the identifier of the current step fragment."
 
         if self.step is not None:
-            return self.get_related_fragment(self.fragment, "translation", self.step)
+            return self.get_related_fragment_data(self.fragment, "translation", self.step, "fragment")
         else:
             return self.fragment
 
@@ -146,7 +151,7 @@ class Explorer:
         print >>self.out, "> ",
         s = raw_input()
         print >>self.out
-        return s
+        return unicode(s, encoding)
 
     # Output methods.
 
@@ -166,7 +171,9 @@ class Explorer:
         fragment = fragment or self.fragment
 
         print >>self.out, fragment
-        print >>self.out, self.get_fragment_text(fragment)
+        print >>self.out, self.get_fragment_data(fragment, "category")
+        print >>self.out
+        print >>self.out, self.get_fragment_data(fragment, "text")
         print >>self.out
 
         if self.step is None:
@@ -203,7 +210,9 @@ class Explorer:
             elif self.step < limit:
                 self.step += 1
             
-            print >>self.out, "Step #%d." % self.step
+            print >>self.out, "Step #%d..." % self.step
+            print >>self.out, "Measure:", self.get_related_fragment_data(self.fragment, "translation", self.step, "measure")
+            print >>self.out, "Similarity:", self.get_related_fragment_data(self.fragment, "translation", self.step, "similarity")
             print >>self.out
 
             if self.step == limit:
@@ -285,7 +294,7 @@ if __name__ == "__main__":
 
     # Initialise the explorer.
 
-    out = codecs.getwriter("utf-8")(sys.stdout)
+    out = codecs.getwriter(encoding)(sys.stdout)
     explorer = Explorer(sys.argv[1], out)
 
     # Choose a fragment to begin with.

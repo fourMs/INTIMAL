@@ -8,7 +8,7 @@ Output production.
 from objects import Term
 from utils import cmp_value_lengths_and_keys, cmp_values_and_keys
 
-from os import listdir, mkdir, remove
+from os import listdir, mkdir, remove, rmdir
 from os.path import exists, isdir, join
 import codecs
 
@@ -47,6 +47,14 @@ class Output:
         return self.data.keys()
 
     # Filesystem-related methods.
+
+    def clean(self, recursive=False):
+        for filename in self.filenames():
+            if not isdir(filename):
+                remove(filename)
+            elif recursive:
+                Output(filename).clean(True)
+                rmdir(filename)
 
     def exists(self, name):
         return exists(self.filename(name))
@@ -167,6 +175,7 @@ def show_connections(connections, filename, brief=False):
 
             if not brief:
                 show_similarity(connection, out)
+                print >>out
 
             # Show the connected fragments.
 
@@ -241,6 +250,7 @@ def show_related_fragments(related, filename, shown_relations=5):
                 relation = connection.relation(fragment)
 
                 show_similarity(connection, out)
+                print >>out
                 show_fragment(relation, out)
                 print >>out
 
@@ -280,14 +290,7 @@ def show_similarity(connection, out):
     j = rjust
 
     print >>out, j("Sim:"), "%.2f" % connection.measure(),
-
-    similarities = connection.similarity.items()
-    similarities.sort()
-
-    for term, score in similarities:
-        print >>out, "%s (%.2f)" % (quoted(term), score),
-
-    print >>out
+    print >>out, similarity_details(connection)
 
 # Output utilities.
 
@@ -296,6 +299,20 @@ def rjust(s, width=9):
     "Right-justify 's' to 'width'."
 
     return s.rjust(width)
+
+def similarity_details(connection):
+
+    "Return a string containing the similarity details for 'connection'."
+
+    similarities = connection.similarity.items()
+    similarities.sort()
+
+    l = []
+
+    for term, score in similarities:
+        l.append(u"%s (%.2f)" % (quoted(term), score))
+
+    return u" ".join(l)
 
 def term_summary(term):
 
@@ -341,18 +358,19 @@ def write_fragment_data(datasets, dirname):
 
             if not fragment_out.exists("text"):
                 writefile(fragment_out.filename("text"), fragment.text)
+                writefile(fragment_out.filename("category"), unicode(fragment.category))
 
             # Write connection information for the dataset in a new subdirectory.
 
             dataset_out = fragment_out.subdir(label)
-
-            # Remove any existing files in the subdirectory.
-
-            for filename in dataset_out.filenames():
-                remove(filename)
+            dataset_out.clean(recursive=True)
 
             for i, connection in enumerate(connections):
+                relation_out = dataset_out.subdir(str(i))
                 relation = connection.relation(fragment)
-                writefile(dataset_out.filename(str(i)), str(relation.source))
+
+                writefile(relation_out.filename("fragment"), str(relation.source))
+                writefile(relation_out.filename("measure"), str(connection.measure()))
+                writefile(relation_out.filename("similarity"), similarity_details(connection))
 
 # vim: tabstop=4 expandtab shiftwidth=4
