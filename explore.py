@@ -180,12 +180,12 @@ class Explorer:
         if fragment in self.visited:
             print >>self.out, "VISITED!"
             print >>self.out
-
-        print >>self.out, fragment
-        print >>self.out, self.get_fragment_data(fragment, "category")
-        print >>self.out
-        print >>self.out, self.get_fragment_data(fragment, "text")
-        print >>self.out
+        else:
+            print >>self.out, fragment
+            print >>self.out, self.get_fragment_data(fragment, "category")
+            print >>self.out
+            print >>self.out, self.get_fragment_data(fragment, "text")
+            print >>self.out
 
         if self.step is None:
             print >>self.out, "%d fragments ahead." % self.get_num_related_fragments(fragment, "translation")
