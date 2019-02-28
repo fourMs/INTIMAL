@@ -7,8 +7,8 @@ suggesting connections between the fragments.
 
 More information can be found in the docs directory in this distribution.
 
- * For reading in a text editor, see docs/wiki/Front_Page
- * For reading in a Web browser, see docs/html/Front_Page
+ * For reading in a text editor, see docs/wiki/Introduction
+ * For reading in a Web browser, see docs/html/index.html
 
 A Note about the Documentation
 ------------------------------
