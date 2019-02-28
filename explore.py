@@ -7,6 +7,7 @@ Explore the generated data.
 
 from os import listdir
 from os.path import isdir, join
+from locale import getlocale, setlocale, LC_CTYPE
 import codecs
 import sys
 
@@ -149,17 +150,6 @@ class Explorer:
         else:
             return self.fragment
 
-    # Input methods.
-
-    def get_input(self, prompt):
-
-        "Prompt and return input."
-
-        print >>self.out, prompt,
-        s = raw_input()
-        print >>self.out
-        return unicode(s, encoding)
-
     # Output methods.
 
     def show_fragments(self):
@@ -297,12 +287,37 @@ class Explorer:
 
         self.show_fragment()
 
-def jump(explorer):
+class Prompter:
+
+    "A class responsible for prompting and obtaining input."
+
+    def __init__(self, out, encoding):
+
+        """
+        Initialise the prompter with the given 'out' stream and input
+        'encoding'.
+        """
+
+        self.out = out
+        self.encoding = encoding
+
+    # Input methods.
+
+    def get_input(self, prompt):
+
+        "Prompt and return input."
+
+        print >>self.out, prompt,
+        s = raw_input()
+        print >>self.out
+        return unicode(s, self.encoding)
+
+def jump(explorer, prompter):
 
     "Obtain a fragment identifier for the 'explorer'."
 
     while True:
-        fragment = explorer.get_input("fragment> ")
+        fragment = prompter.get_input("fragment> ")
         explorer.select_fragment(fragment)
         if explorer.fragment:
             break
@@ -312,6 +327,11 @@ def jump(explorer):
 # Main program.
 
 if __name__ == "__main__":
+
+    # Obtain locale details.
+
+    setlocale(LC_CTYPE, "")
+    lang, console_encoding = getlocale(LC_CTYPE)
 
     # Obtain the output directory.
 
@@ -327,14 +347,15 @@ if __name__ == "__main__":
 
     # Initialise the explorer.
 
-    out = codecs.getwriter(encoding)(sys.stdout)
+    out = codecs.getwriter(console_encoding)(sys.stdout)
     explorer = Explorer(datadir, out)
+    prompter = Prompter(out, console_encoding)
 
     # Choose a fragment to begin with.
 
     print >>out, "Select a fragment to start."
     explorer.show_fragments()
-    jump(explorer)
+    jump(explorer, prompter)
 
     # Loop, accepting commands, and performing movements.
 
@@ -344,7 +365,7 @@ if __name__ == "__main__":
         print >>out, "(f)orward, (l)eft, (r)ight, %s(j)ump, (q)uit" % \
                      (explorer.have_step() and "(s)top, " or "")
 
-        command = explorer.get_input("> ")
+        command = prompter.get_input("> ")
 
         if command in ("q", "quit"):
             break
@@ -357,7 +378,7 @@ if __name__ == "__main__":
         elif command in ("r", "right"):
             explorer.rotate(1)
         elif command in ("j", "jump"):
-            jump(explorer)
+            jump(explorer, prompter)
         else:
             print >>out, "Bad command."
 
