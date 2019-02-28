@@ -4,6 +4,8 @@ A number of concepts are central to the work done by this software. These,
 along with the processing of the data and the modelling of the data using such
 concepts are described below.
 
+<<TableOfContents(2)>>
+
 From the [[Required Data|input data]], a collection of '''fragments''' are
 obtained, each of which defines a region of text corresponding to a period of
 audio. Each of these fragments may also have category information associated
@@ -118,15 +120,22 @@ w,,t,d,, = f(t, d) * idf,,t,,
 
 For example, for the reasonably common term used above:
 
+f(t, d) = 3
+
+idf,,t,, = 0.954
+
+w,,t,d,, = f(t, d) * idf,,t,,
+
 w,,t,d,, = 3 * 0.954 = 2.862
 
 Two term vectors may then be combined to produce a similarity result for the
 contributing fragments. Consider the following vectors - d,,1,, and d,,2,, -
 involving all terms encountered in two fragments:
 
-|| Terms: || "gallina" || "gallo" || "ganso" || "pato" || "pollo" ||
-|| d,,1,, || 0         || 0       || 1.5     || 1.2    || 2.5     ||
-|| d,,2,, || 2.8       || 2.6     || 1.6     || 0      || 1.3     ||
+||               ||<:-5> '''Terms'''                                     ||
+|| '''Vectors''' || "gallina" || "gallo" || "ganso" || "pato" || "pollo" ||
+|| d,,1,,        || 0         || 0       || 1.5     || 1.2    || 2.5     ||
+|| d,,2,,        || 2.8       || 2.6     || 1.6     || 0      || 1.3     ||
 
 The process of combining term vectors involves multiplying the weights of
 each term together, producing a dot product of the vectors involved.
@@ -143,6 +152,97 @@ cos ''theta'' = d,,1,, . d,,2,, / (|d,,1,,| |d,,2,,|) = 5.65 / (3.15 * 4.34) =
 A value of 1 indicates a value of the angle ''theta'' of 0 and thus complete
 similarity between the vectors, with a value of 0 indicating that the vectors
 do not share terms and cannot be regarded as having any similarity.
+
+Since the value of ''theta'' is not particularly relevant, the similarity is
+defined for the purposes of this software as follows:
+
+sim(d,,1,,,d,,2,,) = cos ''theta''
+
+== Related Fragment Collections ==
+
+As part of preparing the [[Output Data|output data]], collections of related
+fragments are prepared for each connected fragment. Such collections are
+sorted in order of decreasing similarity, so that each successive fragment in
+the collection will have the same or lower similarity to the fragment
+immediately preceding it.
+
+Thus, the relationships recorded in a related fragment collection can be
+visualised as follows:
+
+######## A graph showing the relationships between a fragment and related
+######## fragments in a collection.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph related_fragments {
+  node [shape=ellipse,fontsize="13.0",fontname="Helvetica"];
+
+  subgraph {
+    rank=same;
+
+    fA [label="A\n(primary)"];
+    fB [label="B\n(related)"];
+    fC [label="C\n(related)"];
+    fD [label="D\n(related)"];
+    fn [label="...",shape=none];
+  }
+
+  fB -> fC -> fD -> fn [penwidth=0,arrowhead=none];
+
+  fA -> fB;
+  fA -> fC;
+  fA -> fD;
+}
+}}}
+
+########
+
+Although each of the related fragments has a relationship to the primary
+fragment, its appearance in the collection does not indicate any relationship
+with other members of the collection, nor does it suggest that the primary
+fragment has any particular position in any given fragment's own collection of
+related fragments.
+
+######## A graph showing the relationships between another fragment and related
+######## fragments in a collection.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph more_related_fragments {
+  node [shape=ellipse,fontsize="13.0",fontname="Helvetica"];
+
+  subgraph {
+    rank=same;
+
+    fC [label="C\n(primary)",style=filled,fillcolor=gold];
+    fE [label="E\n(related)"];
+    fF [label="F\n(related)"];
+    fA [label="A\n(related)",style=filled,fillcolor=gold];
+    fn [label="...",shape=none];
+  }
+
+  fE -> fF -> fA -> fn [penwidth=0,arrowhead=none];
+
+  fC -> fE;
+  fC -> fF;
+  fC -> fA;
+}
+}}}
+
+########
+
+Thus, in the above examples, a traversal of the related fragments for fragment
+A stopping at fragment C would take us through fragment B. However, it is
+possible that a traversal of related fragments for fragment C would never
+yield fragment B.
+
+And since other fragments that are unrelated to fragment A may be related to
+fragment C, it is also possible that the position of A in the related
+fragments for C is not the same as the position of C in the related fragments
+for A, since these other fragments (E and F in the example) may be more
+closely related to C than A.
 
 == References ==
 

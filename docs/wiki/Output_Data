@@ -47,34 +47,41 @@ directory hierarchy is as follows:
   data
     <fragment identifier>
       text
-      rotation
+      <related fragment selector>
         <related fragment index>
           fragment
           measure
           similarity
         ...
-      translation
-        <related fragment index>
-          fragment
-          measure
-          similarity
-        ...
+      ...
     ...
 }}}
 
 Each fragment-specific subdirectory of `data` (denoted using `<fragment
 identifier>` above) contains the following:
 
-|| '''File or Directory''' || '''Description'''                               ||
-|| `text`                  || A file containing the original fragment text    ||
-|| `rotation`              || A directory containing related fragment details ||
-|| `translation`           || A directory containing related fragment details ||
+|| '''File'''      || '''Description'''                                       ||
+|| `text`          || A file containing the original fragment text            ||
 
-The `rotation` and `translation` directories each contain directories labelled
-with fragment index numbers, starting from 0, indicating the most closely
-related fragments in descending order of similarity to the fragment identified
-by the parent directory. In each of these directories is a file containing the
-identifier of the related fragment.
+In addition, depending on the options specified when producing the output
+data, the following directories (denoted using `<related fragment selector>`)
+will appear alongside `text`:
+
+|| '''Directory''' || '''Description'''                                       ||
+|| `any`           ||<|3> Directories containing related fragment details     ||
+|| `rotation`      ||
+|| `translation`   ||
+
+These directories each contain directories (denoted using `<related fragment
+index>`) labelled with fragment index numbers, starting from 0, indicating the
+most closely related fragments in descending order of similarity to the
+fragment identified by the parent directory. In each of these directories are
+the following files:
+
+|| '''File'''      || '''Description'''                                       ||
+|| `fragment`      || A file containing the related fragment identifier       ||
+|| `measure`       || A file containing the overall similarity measure        ||
+|| `similarity`    || A file containing fragment similarity details           ||
 
 Thus, to identify the most closely related `rotation` fragment of an
 identified fragment, the following file within the output directory would be
