@@ -38,7 +38,18 @@ The software prerequisites are described below.
 Source: [[https://www.python.org/]]
 
 Typically, operating system distributions provide Python 2.7 as standard or as
-an installable package. See the appropriate instructions for details.
+an installable package. To check if you have Python 2.7 available on your
+system, open a command prompt and type the following:
+
+{{{
+python2.7
+}}}
+
+If the output from the command indicates Python 2.7, you may proceed to
+install other prerequisites. (Use the Ctrl-D key combination to exit Python.)
+
+If Python 2.7 does not seem to be installed, consult your operating system
+documentation for the details of installing a suitable package.
 
 === spaCy ===
 
