@@ -164,7 +164,7 @@ def emit_relation_output(out):
 
 progname = os.path.split(sys.argv[0])[-1]
 
-related_fragment_selectors_list = list(related_fragment_selectors)
+related_fragment_selectors_list = list(related_fragment_selectors.keys())
 related_fragment_selectors_list.sort()
 
 related_fragment_selectors_text = "\n".join(related_fragment_selectors_list)
