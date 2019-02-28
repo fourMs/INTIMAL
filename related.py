@@ -110,6 +110,19 @@ def get_distinct_subcategory(fragment, fragments):
 
     return parent in parents and category not in categories
 
+def get_same_participant(fragment, fragments):
+
+    """
+    For 'fragment', return a true value if its participant is already
+    represented in 'fragments', returning a false value otherwise. This should
+    ensure that only a single participant is represented.
+    """
+
+    participant = fragment.source.participant()
+    participants = map(lambda f: f.source.participant(), fragments)
+
+    return participant in participants
+
 # Registry of functions.
 
 def get_related_fragment_selectors(names):
@@ -118,13 +131,13 @@ def get_related_fragment_selectors(names):
 
     l = []
     for name in names:
-        l.append(related_fragment_selectors[name])
+        l += related_fragment_selectors[name]
     return l
 
 related_fragment_selectors = {
-    "any"           : get_any_fragment,
-    "translation"   : get_distinct_participant,
-    "rotation"      : get_distinct_subcategory,
+    "any"           : [get_any_fragment],
+    "translation"   : [get_distinct_participant],
+    "rotation"      : [get_distinct_subcategory, get_same_participant],
     }
 
 # vim: tabstop=4 expandtab shiftwidth=4
