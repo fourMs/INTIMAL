@@ -102,7 +102,7 @@ class Explorer:
         """
 
         dirname = self.get_related_fragment_dir(fragment, kind)
-        positions = map(int, listdir(dirname))
+        positions = isdir(dirname) and map(int, listdir(dirname))
         if positions:
             return max(positions)
         else:
@@ -116,7 +116,7 @@ class Explorer:
         """
 
         dirname = self.get_related_fragment_dir(fragment, kind)
-        return len(listdir(dirname))
+        return isdir(dirname) and len(listdir(dirname)) or 0
 
     def get_related_fragment_data(self, fragment, kind, n, datatype):
 
