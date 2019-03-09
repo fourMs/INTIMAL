@@ -9,6 +9,21 @@ from collections import defaultdict
 
 # Connection-related operations.
 
+def combine_related_fragments(all_related):
+
+    """
+    Combine mappings in 'all_related' to produce a single mapping from fragments
+    to related fragments.
+    """
+
+    d = defaultdict(set)
+
+    for mapping in all_related:
+        for fragment, related in mapping.items():
+            d[fragment].update(related)
+
+    return d
+
 def get_related_fragments(connections):
 
     """
@@ -139,5 +154,45 @@ related_fragment_selectors = {
     "translation"   : [get_distinct_participant],
     "rotation"      : [get_distinct_subcategory, get_same_participant],
     }
+
+# Analysis functions.
+
+def get_accessing_fragments(related):
+
+    """
+    Return a mapping from 'related' fragments to their accessors. This reverses
+    the mapping from fragments to related fragments, permitting an assessment of
+    how accessible related fragments are.
+    """
+
+    d = defaultdict(set)
+
+    for primary, connections in related.items():
+        for connection in connections:
+            d[fragment.relation(primary)].add(primary)
+
+    return d
+
+def find_fragments(fragment, related, visited=None):
+
+    "Return all fragments accessible from 'fragment' in 'related'."
+
+    visited = visited or set()
+
+    connections = related.get(fragment)
+
+    if connections:
+        for connection in connections:
+
+            # Obtain each related fragment and search its relations if not
+            # already visited.
+
+            f = connection.relation(fragment)
+
+            if f not in visited:
+                visited.add(f)
+                find_fragments(f, related, visited)
+
+    return visited
 
 # vim: tabstop=4 expandtab shiftwidth=4
