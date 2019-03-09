@@ -183,6 +183,8 @@ Input file processing options:
 
 Output options:
 
+--no-output             Suppress output for testing purposes
+
 --num-related <number>  Indicate the maximum number of related fragments to be
                         produced for each fragment
 
@@ -235,6 +237,7 @@ if __name__ == "__main__":
     config["term_presence_only"] = get_flag("--term-presence-only")
     config["wordlist"] = get_wordlist_from_file(get_option("--word-list"))
 
+    no_output = get_flag("--no-output")
     statistics_output = get_flag("--stats")
 
     # Obtain the output directory.
@@ -260,19 +263,23 @@ if __name__ == "__main__":
     process_statistics(fragments, out)
     connections = restore_connections(fragments, config, out)
 
-    # Emit filtered output to show the effect of any word list.
-
-    emit_filtered_output(out)
-
     # Process relation data.
 
     process_relations(connections, config, out)
 
     # Emit output.
 
-    emit_relation_output(out)
+    if not no_output:
 
-    if statistics_output:
-        emit_statistics_output(out)
+        # Emit filtered output to show the effect of any word list.
+
+        emit_filtered_output(out)
+
+        # Emit relations for fragments.
+
+        emit_relation_output(out)
+
+        if statistics_output:
+            emit_statistics_output(out)
 
 # vim: tabstop=4 expandtab shiftwidth=4
