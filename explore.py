@@ -56,22 +56,22 @@ class Explorer:
 
         return listdir(self.datadir)
 
-    def select_fragment(self, fragment):
+    def select_fragment(self, identifier):
 
-        "Select the given 'fragment'."
+        "Select the fragment with the given 'identifier'."
 
-        if fragment not in self.get_fragments():
+        if identifier not in self.get_fragments():
             return
 
         # Reset stepping and rotation.
 
-        self.fragment = fragment
+        self.fragment = self.open_fragment(identifier)
         self.step = None
         self.rotation = None
 
     def select_random_fragment(self):
 
-        "Select a random 'fragment'."
+        "Select a random fragment."
 
         l = random.sample(self.get_fragments(), 1)
         if l:
@@ -79,65 +79,11 @@ class Explorer:
 
     # Fragment directory contents.
 
-    def get_fragment_dir(self, fragment):
+    def open_fragment(self, identifier):
 
-        "Return the directory for 'fragment'."
+        "Return a fragment object for the 'identifier'."
 
-        return join(self.datadir, fragment)
-
-    def get_fragment_data(self, fragment, datatype):
-
-        "Return the textual content for 'fragment' of the given 'datatype'."
-
-        dirname = self.get_fragment_dir(fragment)
-        textfile = join(dirname, datatype)
-        return readfile(textfile)
-
-    def get_related_fragment_dir(self, fragment, kind):
-
-        """
-        Return the directory for 'fragment' containing related fragment details
-        of the given 'kind'.
-        """
-
-        dirname = self.get_fragment_dir(fragment)
-        return join(dirname, kind)
-
-    def get_limit_related_fragments(self, fragment, kind):
-
-        """
-        For 'fragment', return the position limit of the related fragments of
-        the given 'kind'.
-        """
-
-        dirname = self.get_related_fragment_dir(fragment, kind)
-        positions = isdir(dirname) and map(int, listdir(dirname))
-        if positions:
-            return max(positions)
-        else:
-            return None
-
-    def get_num_related_fragments(self, fragment, kind):
-
-        """
-        For 'fragment', return the number of related fragments of the given
-        'kind'.
-        """
-
-        dirname = self.get_related_fragment_dir(fragment, kind)
-        return isdir(dirname) and len(listdir(dirname)) or 0
-
-    def get_related_fragment_data(self, fragment, kind, n, datatype):
-
-        """
-        For 'fragment', return the fragment identifier of the related fragment
-        of the given 'kind' in position 'n'.
-        """
-
-        dirname = self.get_related_fragment_dir(fragment, kind)
-        dirname = join(dirname, str(n))
-        filename = join(dirname, datatype)
-        return readfile(filename)
+        return Fragment(identifier, join(self.datadir, identifier))
 
     # Convenience methods.
 
@@ -146,18 +92,22 @@ class Explorer:
         "Return the identifier of the current rotation fragment."
 
         if self.rotation is not None:
-            return self.get_related_fragment_data(self.fragment, "rotation", self.rotation, "fragment")
+            related = self.fragment.get_relations("rotation")
+            fragment = related[self.rotation]
+            return fragment.get_data("fragment")
         else:
-            return self.fragment
+            return self.fragment.identifier
 
     def get_step_fragment(self):
 
         "Return the identifier of the current step fragment."
 
         if self.have_step():
-            return self.get_related_fragment_data(self.fragment, "translation", self.step, "fragment")
+            related = self.fragment.get_relations("translation")
+            fragment = related[self.step]
+            return fragment.get_data("fragment")
         else:
-            return self.fragment
+            return self.fragment.identifier
 
     # Output methods.
 
@@ -165,50 +115,51 @@ class Explorer:
 
         "Show all the fragment identifiers."
 
-        fragments = self.get_fragments()
-        fragments.sort()
-        for fragment in fragments:
-            print >>self.out, fragment
+        identifiers = self.get_fragments()
+        identifiers.sort()
 
-    def show_fragment(self, fragment=None):
+        for identifier in identifiers:
+            print >>self.out, identifier
 
-        "Show the given 'fragment' details or those of the current fragment."
+    def show_fragment(self, identifier=None):
 
-        fragment = fragment or self.fragment
+        """
+        Show the given fragment details for the given 'identifier' or those of
+        the current fragment.
+        """
 
-        if fragment in self.visited:
+        fragment = identifier and self.open_fragment(identifier) or self.fragment
+
+        if fragment.identifier in self.visited:
             print >>self.out, "VISITED!"
             print >>self.out
         else:
-            print >>self.out, fragment
-            print >>self.out, self.get_fragment_data(fragment, "category")
+            print >>self.out, fragment.identifier
+            print >>self.out, fragment.get_data("category")
             print >>self.out
-            print >>self.out, self.get_fragment_data(fragment, "text")
+            print >>self.out, fragment.get_data("text")
             print >>self.out
 
         if self.step is None:
-            print >>self.out, "%d fragments ahead." % self.get_num_related_fragments(fragment, "translation")
+            related = fragment.get_relations("translation")
+            print >>self.out, "%d fragments ahead." % len(related)
             print >>self.out
 
         # Remember this fragment as having been visited.
 
-        self.visited.append(fragment)
+        self.visited.append(fragment.identifier)
 
-    def show_similarity(self, kind, n):
+    def show_similarity(self, fragment):
 
-        """
-        Show similarity to the current fragment for the related fragment of the
-        given 'kind' in position 'n'.
-        """
+        "Show similarity to the given related 'fragment'."
 
-        if n is not None:
-            print >>self.out, "Measure:", self.get_related_fragment_data(self.fragment, kind, n, "measure")
-            print >>self.out, "Similarity:", self.get_related_fragment_data(self.fragment, kind, n, "similarity")
-            print >>self.out
+        print >>self.out, "Measure:", fragment.get_data("measure")
+        print >>self.out, "Similarity:", fragment.get_data("similarity")
+        print >>self.out
 
     # Navigation methods.
 
-    def move_forward(self):
+    def forward(self):
 
         """
         Move forward from the current fragment, showing fragment details in the
@@ -228,16 +179,18 @@ class Explorer:
         # limit, select the final fragment in the sequence and step forward from
         # it.
 
-        limit = self.get_limit_related_fragments(self.fragment, "translation")
+        related = self.fragment.get_relations("translation")
 
-        if limit is not None:
+        if related:
+            limit = len(related) - 1
+
             if self.step is None:
                 self.step = 0
             elif self.step < limit:
                 self.step += 1
             
             print >>self.out, "Step #%d..." % self.step
-            self.show_similarity("translation", self.step)
+            self.show_similarity(related[self.step])
 
             if self.step == limit:
                 self.select_fragment(self.get_step_fragment())
@@ -265,9 +218,11 @@ class Explorer:
 
         # Cycle through the available fragments.
 
-        limit = self.get_limit_related_fragments(self.fragment, "rotation")
+        related = self.fragment.get_relations("rotation")
 
-        if limit is not None:
+        if related:
+            limit = len(related) - 1
+
             if direction < 0:
                 if self.rotation is None:
                     self.rotation = limit
@@ -284,7 +239,9 @@ class Explorer:
                 else:
                     self.rotation = None
 
-        self.show_similarity("rotation", self.rotation)
+        if self.rotation is not None:
+            self.show_similarity(related[self.rotation])
+
         self.show_fragment(self.get_rotation_fragment())
 
     def stop(self):
@@ -295,6 +252,58 @@ class Explorer:
             self.select_fragment(self.get_step_fragment())
 
         self.show_fragment()
+
+class Fragment:
+
+    "A fragment abstraction employing a directory."
+
+    def __init__(self, identifier, datadir):
+        self.identifier = identifier
+        self.datadir = datadir
+
+        # Initialise the fragment identifier from a file if appropriate.
+
+        if self.identifier is None:
+            self.identifier = self.get_data("fragment")
+
+    # Fragment directory contents.
+
+    def get_data(self, datatype):
+
+        "Return the textual content for the fragment of the given 'datatype'."
+
+        textfile = join(self.datadir, datatype)
+        return readfile(textfile)
+
+    def get_relations(self, kind):
+
+        "Return a collection of relations of the given 'kind'."
+
+        return Related(join(self.datadir, kind))
+
+class Related:
+
+    "Collections of related fragments."
+
+    def __init__(self, datadir):
+        self.datadir = datadir
+
+    def __getitem__(self, n):
+
+        "Return an object to access the related fragment in position 'n'."
+
+        return Fragment(None, join(self.datadir, str(n)))
+
+    def __len__(self):
+
+        "Return the number of related fragments of this collection's kind."
+
+        return isdir(self.datadir) and len(listdir(self.datadir)) or 0
+
+    def __nonzero__(self):
+        return len(self) and True or False
+
+# Interface classes.
 
 class Prompter:
 
@@ -337,12 +346,14 @@ def backtrack(explorer, prompter):
 
         try:
             i = int(i)
-            fragment = explorer.visited[i]
+            identifier = explorer.visited[i]
             del explorer.visited[i:]
-            explorer.select_fragment(fragment)
-            break
+            explorer.select_fragment(identifier)
         except (IndexError, ValueError):
             print >>out, "Bad position."
+
+        if explorer.fragment:
+            break
 
     explorer.show_fragment()
 
@@ -351,10 +362,10 @@ def jump(explorer, prompter):
     "Obtain a fragment identifier for the 'explorer'."
 
     while True:
-        fragment = prompter.get_input("fragment> ")
+        identifier = prompter.get_input("fragment> ")
 
-        if fragment:
-            explorer.select_fragment(fragment)
+        if identifier:
+            explorer.select_fragment(identifier)
         else:
             explorer.select_random_fragment()
 
@@ -369,8 +380,8 @@ def show_visited(explorer, prompter):
 
     out = prompter.out
 
-    for i, fragment in enumerate(explorer.visited):
-        print >>out, "%s) %s" % (i, fragment)
+    for i, identifier in enumerate(explorer.visited):
+        print >>out, "%s) %s" % (i, identifier)
 
     print >>out
 
@@ -420,7 +431,7 @@ if __name__ == "__main__":
         if command in ("q", "quit"):
             break
         elif command in ("f", "forward"):
-            explorer.move_forward()
+            explorer.forward()
         elif command in ("s", "stop"):
             explorer.stop()
         elif command in ("l", "left"):
