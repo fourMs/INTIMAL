@@ -9,6 +9,7 @@ from os import listdir
 from os.path import isdir, join
 from locale import getlocale, setlocale, LC_CTYPE
 import codecs
+import random
 import sys
 
 encoding = "utf-8"
@@ -67,6 +68,14 @@ class Explorer:
         self.fragment = fragment
         self.step = None
         self.rotation = None
+
+    def select_random_fragment(self):
+
+        "Select a random 'fragment'."
+
+        l = random.sample(self.get_fragments(), 1)
+        if l:
+            self.select_fragment(l[0])
 
     # Fragment directory contents.
 
@@ -318,7 +327,12 @@ def jump(explorer, prompter):
 
     while True:
         fragment = prompter.get_input("fragment> ")
-        explorer.select_fragment(fragment)
+
+        if fragment:
+            explorer.select_fragment(fragment)
+        else:
+            explorer.select_random_fragment()
+
         if explorer.fragment:
             break
 
@@ -353,7 +367,7 @@ if __name__ == "__main__":
 
     # Choose a fragment to begin with.
 
-    print >>out, "Select a fragment to start."
+    print >>out, "Select a fragment to start or press Enter/Return for a random fragment."
     explorer.show_fragments()
     jump(explorer, prompter)
 
@@ -378,6 +392,7 @@ if __name__ == "__main__":
         elif command in ("r", "right"):
             explorer.rotate(1)
         elif command in ("j", "jump"):
+            print >>out, "Select a fragment or press Enter/Return for a random fragment."
             jump(explorer, prompter)
         else:
             print >>out, "Bad command."
