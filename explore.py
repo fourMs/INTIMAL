@@ -121,7 +121,7 @@ class Explorer:
         for identifier in identifiers:
             print >>self.out, identifier
 
-    def show_fragment(self, identifier=None):
+    def show_fragment(self, identifier=None, view=False):
 
         """
         Show the given fragment details for the given 'identifier' or those of
@@ -130,7 +130,7 @@ class Explorer:
 
         fragment = identifier and self.open_fragment(identifier) or self.fragment
 
-        if fragment.identifier in self.visited:
+        if not view and fragment.identifier in self.visited:
             print >>self.out, "VISITED!"
             print >>self.out
         else:
@@ -148,7 +148,16 @@ class Explorer:
 
         # Remember this fragment as having been visited.
 
-        self.visited.append(fragment.identifier)
+        if not view:
+            self.visited.append(fragment.identifier)
+
+    def show_viewed_fragment(self):
+
+        "Show the viewed fragment regardless of whether it has been visited."
+
+        identifier = self.get_rotation_fragment() or self.get_step_fragment()
+
+        self.show_fragment(identifier, view=True)
 
     def show_similarity(self, fragment):
 
@@ -428,7 +437,7 @@ if __name__ == "__main__":
     while True:
         print >>out, "Which way? (%d fragments visited, %d different)" % \
                      (len(explorer.visited), len(set(explorer.visited)))
-        print >>out, "(b)acktrack, (f)orward, (l)eft, (r)ight, %s(j)ump, (v)isited, (q)uit" % \
+        print >>out, "(b)acktrack, (f)orward, (l)eft, (r)ight, %s(j)ump, (t)ext, (v)isited, (q)uit" % \
                      (explorer.have_step() and "(s)top, " or "")
 
         command = prompter.get_input("> ")
@@ -453,6 +462,11 @@ if __name__ == "__main__":
             show_visited(explorer, prompter)
         elif command in ("b", "back", "backtrack"):
             backtrack(explorer, prompter)
+
+        # Informational commands.
+
+        elif command in ("t", "text"):
+            explorer.show_viewed_fragment()
 
         # Exit or unrecognised commands.
 
