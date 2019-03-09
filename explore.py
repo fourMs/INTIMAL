@@ -43,7 +43,7 @@ class Explorer:
 
         # Remember visited fragments.
 
-        self.visited = set()
+        self.visited = []
 
     def have_step(self):
         return self.step is not None
@@ -192,7 +192,7 @@ class Explorer:
 
         # Remember this fragment as having been visited.
 
-        self.visited.add(fragment)
+        self.visited.append(fragment)
 
     def show_similarity(self, kind, n):
 
@@ -321,6 +321,31 @@ class Prompter:
         print >>self.out
         return unicode(s, self.encoding)
 
+# Interface functions.
+
+def backtrack(explorer, prompter):
+
+    "Remove recent history from the 'explorer'."
+
+    out = prompter.out
+    show_visited(explorer, prompter)
+
+    while True:
+        i = prompter.get_input("position> ")
+        if not i:
+            break
+
+        try:
+            i = int(i)
+            fragment = explorer.visited[i]
+            del explorer.visited[i:]
+            explorer.select_fragment(fragment)
+            break
+        except (IndexError, ValueError):
+            print >>out, "Bad position."
+
+    explorer.show_fragment()
+
 def jump(explorer, prompter):
 
     "Obtain a fragment identifier for the 'explorer'."
@@ -337,6 +362,17 @@ def jump(explorer, prompter):
             break
 
     explorer.show_fragment()
+
+def show_visited(explorer, prompter):
+
+    "Show visited fragments in the 'explorer'."
+
+    out = prompter.out
+
+    for i, fragment in enumerate(explorer.visited):
+        print >>out, "%s) %s" % (i, fragment)
+
+    print >>out
 
 # Main program.
 
@@ -376,7 +412,7 @@ if __name__ == "__main__":
     while True:
         print >>out, "Which way? (%d fragments visited)" % \
                      len(explorer.visited)
-        print >>out, "(f)orward, (l)eft, (r)ight, %s(j)ump, (q)uit" % \
+        print >>out, "(b)acktrack, (f)orward, (l)eft, (r)ight, %s(j)ump, (v)isited, (q)uit" % \
                      (explorer.have_step() and "(s)top, " or "")
 
         command = prompter.get_input("> ")
@@ -394,6 +430,10 @@ if __name__ == "__main__":
         elif command in ("j", "jump"):
             print >>out, "Select a fragment or press Enter/Return for a random fragment."
             jump(explorer, prompter)
+        elif command in ("v", "visited"):
+            show_visited(explorer, prompter)
+        elif command in ("b", "back", "backtrack"):
+            backtrack(explorer, prompter)
         else:
             print >>out, "Bad command."
 
