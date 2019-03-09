@@ -142,7 +142,8 @@ class Explorer:
 
         if self.step is None:
             related = fragment.get_relations("translation")
-            print >>self.out, "%d fragments ahead." % len(related)
+            unvisited = set(map(lambda f: f.identifier, related)).difference(self.visited)
+            print >>self.out, "%d fragments ahead (%d unseen)." % (len(related), len(unvisited))
             print >>self.out
 
         # Remember this fragment as having been visited.
@@ -287,10 +288,14 @@ class Related:
 
     def __init__(self, datadir):
         self.datadir = datadir
+        self.length = isdir(self.datadir) and len(listdir(self.datadir)) or 0
 
     def __getitem__(self, n):
 
         "Return an object to access the related fragment in position 'n'."
+
+        if n >= len(self):
+            raise IndexError, n
 
         return Fragment(None, join(self.datadir, str(n)))
 
@@ -298,7 +303,7 @@ class Related:
 
         "Return the number of related fragments of this collection's kind."
 
-        return isdir(self.datadir) and len(listdir(self.datadir)) or 0
+        return self.length
 
     def __nonzero__(self):
         return len(self) and True or False
@@ -421,16 +426,16 @@ if __name__ == "__main__":
     # Loop, accepting commands, and performing movements.
 
     while True:
-        print >>out, "Which way? (%d fragments visited)" % \
-                     len(explorer.visited)
+        print >>out, "Which way? (%d fragments visited, %d different)" % \
+                     (len(explorer.visited), len(set(explorer.visited)))
         print >>out, "(b)acktrack, (f)orward, (l)eft, (r)ight, %s(j)ump, (v)isited, (q)uit" % \
                      (explorer.have_step() and "(s)top, " or "")
 
         command = prompter.get_input("> ")
 
-        if command in ("q", "quit"):
-            break
-        elif command in ("f", "forward"):
+        # Movement commands.
+
+        if command in ("f", "forward"):
             explorer.forward()
         elif command in ("s", "stop"):
             explorer.stop()
@@ -438,6 +443,9 @@ if __name__ == "__main__":
             explorer.rotate(-1)
         elif command in ("r", "right"):
             explorer.rotate(1)
+
+        # Navigation commands.
+
         elif command in ("j", "jump"):
             print >>out, "Select a fragment or press Enter/Return for a random fragment."
             jump(explorer, prompter)
@@ -445,7 +453,13 @@ if __name__ == "__main__":
             show_visited(explorer, prompter)
         elif command in ("b", "back", "backtrack"):
             backtrack(explorer, prompter)
+
+        # Exit or unrecognised commands.
+
+        elif command in ("q", "quit"):
+            break
         else:
             print >>out, "Bad command."
+            print >>out
 
 # vim: tabstop=4 expandtab shiftwidth=4
