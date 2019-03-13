@@ -1,0 +1,2 @@
+# INTIMAL
+INTIMAL project
