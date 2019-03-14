@@ -126,17 +126,20 @@ All such functions are mentioned in the help text but include the following:
 
  * `any` - selects fragments without any constraints
 
- * `rotation` - selects fragments having the same category but a distinct
-   subcategory from others in the collection
-
- * `translation` - selects fragments having a distinct participant from others
+ * `forward` - selects fragments having a distinct participant from others
    in the collection
 
-To generate separate related fragment collections for "rotation" and
-"translation", the following command could be used:
+ * `left` - selects fragments having the same participant as others in the
+   collection
+
+ * `right` - selects fragments having the same category but a distinct
+   subcategory from others in the collection
+
+To generate separate related fragment collections for "left" and "right", the
+following command could be used:
 
 {{{
-./export.py --select rotation --select translation OUTPUT
+./export.py --select left --select right OUTPUT
 }}}
 
 Selection functions can be combined, so that if fragments were to be selected
@@ -145,11 +148,20 @@ a distinct participant from the other fragments in the collection, the
 following command might be used:
 
 {{{
-./export.py --select rotation,translation OUTPUT
+./export.py --select forward,right OUTPUT
 }}}
 
 Other functions could be defined and used to generate new kinds of collections
 or for combination with functions already being used to generate collections.
+
+To generate collections for all of the individual functions, the following
+would be used:
+
+{{{
+./export.py --select all OUTPUT
+}}}
+
+Here, `all` is a special value indicating all functions.
 
 === Statistics Generation ===
 

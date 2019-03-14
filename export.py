@@ -113,6 +113,13 @@ def process_relations(connections, config, out):
 
     for criteria in config.get("select"):
 
+        # Handle the special case "all".
+
+        if criteria == "all":
+            for criteria, selectors in related_fragment_selectors.items():
+                all_related.append((criteria, select_related_fragments(related, num, selectors)))
+            continue
+
         # Obtain the functions from their names.
 
         names = criteria.split(",")
@@ -200,6 +207,8 @@ Related fragments can be selected by combining criteria specified using a list
 of functions chosen from the following:
 
 %s
+
+Specifying "all" will generate related fragments for all of these functions.
 
 The output directory will be populated with files containing the following:
 

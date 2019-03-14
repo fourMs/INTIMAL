@@ -68,9 +68,10 @@ data, the following directories (denoted using `<related fragment selector>`)
 will appear alongside `text`:
 
 || '''Directory''' || '''Description'''                                       ||
-|| `any`           ||<|3> Directories containing related fragment details     ||
-|| `rotation`      ||
-|| `translation`   ||
+|| `any`           ||<|4> Directories containing related fragment details     ||
+|| `forward`       ||
+|| `left`          ||
+|| `right`         ||
 
 These directories each contain directories (denoted using `<related fragment
 index>`) labelled with fragment index numbers, starting from 0, indicating the
@@ -83,12 +84,12 @@ the following files:
 || `measure`       || A file containing the overall similarity measure        ||
 || `similarity`    || A file containing fragment similarity details           ||
 
-Thus, to identify the most closely related `rotation` fragment of an
+Thus, to identify the most closely related left-rotation fragment of an
 identified fragment, the following file within the output directory would be
 read:
 
 {{{
-data/<fragment>/rotation/0/fragment
+data/<fragment>/left/0/fragment
 }}}
 
 The contents of this file would then be used to identify a directory within

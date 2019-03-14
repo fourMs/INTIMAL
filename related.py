@@ -151,8 +151,9 @@ def get_related_fragment_selectors(names):
 
 related_fragment_selectors = {
     "any"           : [get_any_fragment],
-    "translation"   : [get_distinct_participant],
-    "rotation"      : [get_distinct_subcategory, get_same_participant],
+    "forward"       : [get_distinct_participant],
+    "left"          : [get_same_participant],
+    "right"         : [get_distinct_subcategory],
     }
 
 # Analysis functions.

@@ -39,11 +39,15 @@ class Explorer:
 
         self.fragment = None
         self.step = None
-        self.rotation = None
+        self.left_rotation = None
+        self.right_rotation = None
 
         # Remember visited fragments.
 
         self.visited = []
+
+    def have_rotation(self):
+        return self.left_rotation is not None or self.right_rotation is not None
 
     def have_step(self):
         return self.step is not None
@@ -67,7 +71,8 @@ class Explorer:
 
         self.fragment = self.open_fragment(identifier)
         self.step = None
-        self.rotation = None
+        self.left_rotation = None
+        self.right_rotation = None
 
     def select_random_fragment(self):
 
@@ -91,19 +96,24 @@ class Explorer:
 
         "Return the identifier of the current rotation fragment."
 
-        if self.rotation is not None:
-            related = self.fragment.get_relations("rotation")
-            fragment = related[self.rotation]
-            return fragment.get_data("fragment")
+        if self.left_rotation is not None:
+            sequence = "left"
+            i = self.left_rotation
+        elif self.right_rotation is not None:
+            sequence = "right"
+            i = self.right_rotation
         else:
             return self.fragment.identifier
+
+        related = self.fragment.get_relations(sequence)
+        return related[i].get_data("fragment")
 
     def get_step_fragment(self):
 
         "Return the identifier of the current step fragment."
 
         if self.have_step():
-            related = self.fragment.get_relations("translation")
+            related = self.fragment.get_relations("forward")
             fragment = related[self.step]
             return fragment.get_data("fragment")
         else:
@@ -141,7 +151,7 @@ class Explorer:
             print >>self.out
 
         if self.step is None:
-            related = fragment.get_relations("translation")
+            related = fragment.get_relations("forward")
             unvisited = set(map(lambda f: f.identifier, related)).difference(self.visited)
             print >>self.out, "%d fragments ahead (%d unseen)." % (len(related), len(unvisited))
             print >>self.out
@@ -182,14 +192,14 @@ class Explorer:
 
         # If rotating, select the currently-viewed fragment first.
 
-        if self.rotation is not None:
+        if self.have_rotation():
             self.select_fragment(self.get_rotation_fragment())
 
         # Step forward to the first or subsequent fragments. If reaching the
         # limit, select the final fragment in the sequence and step forward from
         # it.
 
-        related = self.fragment.get_relations("translation")
+        related = self.fragment.get_relations("forward")
 
         if related:
             limit = len(related) - 1
@@ -226,31 +236,56 @@ class Explorer:
         if self.step is not None:
             self.select_fragment(self.get_step_fragment())
 
+        # If changing rotation direction, select the currently-viewed fragment.
+
+        elif self.left_rotation is not None and direction > 0 or \
+             self.right_rotation is not None and direction < 0:
+
+            self.select_fragment(self.get_rotation_fragment())
+
+        # Choose the sequence of fragments.
+
+        if direction < 0:
+            sequence = "left"
+            i = self.left_rotation
+        else:
+            sequence = "right"
+            i = self.right_rotation
+
         # Cycle through the available fragments.
 
-        related = self.fragment.get_relations("rotation")
+        related = self.fragment.get_relations(sequence)
 
         if related:
             limit = len(related) - 1
 
             if direction < 0:
-                if self.rotation is None:
-                    self.rotation = limit
-                elif self.rotation > 0:
-                    self.rotation -= 1
+                if i is None:
+                    i = limit
+                elif i > 0:
+                    i -= 1
                 else:
-                    self.rotation = None
+                    i = None
 
             elif direction > 0:
-                if self.rotation is None:
-                    self.rotation = 0
-                elif self.rotation < limit:
-                    self.rotation += 1
+                if i is None:
+                    i = 0
+                elif i < limit:
+                    i += 1
                 else:
-                    self.rotation = None
+                    i = None
 
-        if self.rotation is not None:
-            self.show_similarity(related[self.rotation])
+        # Show similarity to the selected fragment.
+
+        if i is not None:
+            self.show_similarity(related[i])
+
+        # Update the position in the sequence.
+
+        if direction < 0:
+            self.left_rotation = i
+        else:
+            self.right_rotation = i
 
         self.show_fragment(self.get_rotation_fragment())
 
