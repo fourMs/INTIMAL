@@ -385,6 +385,17 @@ def get_all_words(fragments):
     l.sort()
     return l
 
+def get_fragment_categories(fragments):
+
+    "Return a mapping of categories to 'fragments'."
+
+    d = defaultdict(list)
+
+    for fragment in fragments:
+        d[fragment.category].append(fragment)
+
+    return d
+
 def get_fragment_pairs(fragments, terms_to_fragments=None):
 
     "Get pairs of 'fragments' to compare."

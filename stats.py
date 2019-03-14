@@ -5,7 +5,8 @@
 Statistics generation for fragments.
 """
 
-from objects import get_common_terms, get_fragment_terms, \
+from objects import get_common_terms, \
+                    get_fragment_categories, get_fragment_terms, \
                     inverse_document_frequencies, \
                     word_document_frequencies, word_frequencies
 
@@ -18,6 +19,10 @@ import outputs
 def process_statistics(fragments, out):
 
     "Process 'fragments' to obtain statistics, registering output with 'out'."
+
+    # Get fragments in each category.
+
+    category_fragments = get_fragment_categories(fragments)
 
     # Get terms used by each category for inspection.
 
@@ -41,6 +46,7 @@ def process_statistics(fragments, out):
 
     # Register some output data.
 
+    out["category_fragments"] = category_fragments
     out["category_terms"] = category_terms
     out["common_category_terms"] = common_category_terms
     out["common_fragment_terms"] = common_fragment_terms
@@ -56,6 +62,7 @@ def emit_statistics_output(out):
 
     # Emit term details for inspection.
 
+    outputs.show_common_terms(out["category_fragments"], outfile("category_fragments.txt"))
     outputs.show_category_terms(out["category_terms"], outfile("terms.txt"))
     outputs.show_common_terms(out["common_category_terms"], outfile("term_categories.txt"))
     outputs.show_common_terms(out["common_fragment_terms"], outfile("term_fragments.txt"))

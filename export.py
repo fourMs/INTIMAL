@@ -219,6 +219,7 @@ processed data in a structured form.
 
 If --stats is indicated, the following statistical reports are produced:
 
+ * category fragments (fragments found in each category)
  * category terms (terms found in each category)
  * common category terms (categories associated with each term)
  * common fragment terms (fragments associated with each term)
