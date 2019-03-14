@@ -7,7 +7,7 @@ Explore the generated data.
 
 from os import listdir
 from os.path import isdir, join
-from locale import getlocale, setlocale, LC_CTYPE
+from locale import getlocale, resetlocale, LC_CTYPE
 import codecs
 import random
 import sys
@@ -405,8 +405,11 @@ if __name__ == "__main__":
 
     # Obtain locale details.
 
-    setlocale(LC_CTYPE, "")
-    lang, console_encoding = getlocale(LC_CTYPE)
+    try:
+        resetlocale(LC_CTYPE)
+        _lang, console_encoding = getlocale(LC_CTYPE)
+    except ValueError:
+        console_encoding = "UTF-8"
 
     # Obtain the output directory.
 
