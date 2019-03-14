@@ -295,8 +295,10 @@ class Explorer:
 
         if self.have_step():
             self.select_fragment(self.get_step_fragment())
+        elif self.have_rotation():
+            self.select_fragment(self.get_rotation_fragment())
 
-        self.show_fragment()
+        self.show_viewed_fragment()
 
 class Fragment:
 
@@ -475,8 +477,7 @@ if __name__ == "__main__":
     while True:
         print >>out, "Which way? (%d fragments visited, %d different)" % \
                      (len(explorer.visited), len(set(explorer.visited)))
-        print >>out, "(b)acktrack, (f)orward, (l)eft, (r)ight, %s(j)ump, (t)ext, (v)isited, (q)uit" % \
-                     (explorer.have_step() and "(s)top, " or "")
+        print >>out, "(b)acktrack, (f)orward, (j)ump, (l)eft, (r)ight, (s)top, (t)ext, (v)isited, (q)uit"
 
         command = prompter.get_input("> ")
 
