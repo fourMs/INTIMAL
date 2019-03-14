@@ -152,7 +152,7 @@ def get_related_fragment_selectors(names):
 related_fragment_selectors = {
     "any"           : [get_any_fragment],
     "forward"       : [get_distinct_participant],
-    "left"          : [get_same_participant],
+    "left"          : [get_same_participant, get_distinct_subcategory],
     "right"         : [get_distinct_subcategory],
     }
 
