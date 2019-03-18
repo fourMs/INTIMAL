@@ -23,6 +23,7 @@ The following basic information files are generated:
 The following report files are generated:
 
 || '''File'''                     || '''Description'''                        ||
+|| `category_fragments.txt`       || fragments associated with each category  ||
 || `related.txt`                  || fragments and those most closely related ||
 || `related_by_category.txt`      || related fragments in the same category   ||
 || `term_categories.txt`          || the categories associated with each term ||

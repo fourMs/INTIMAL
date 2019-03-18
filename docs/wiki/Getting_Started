@@ -10,7 +10,7 @@ To actually run the software, commands of the following form should work:
 
 {{{
 ./build.py OUTPUT DATA/*.xml
-./export.py OUTPUT
+./export.py --select all OUTPUT
 }}}
 
 Here, a directory for output data is supplied as `OUTPUT`. Meanwhile, input
@@ -52,6 +52,10 @@ for processing. For example:
 {{{
 Hostland Host_Land
 }}}
+
+It may be easier to fix inconsistencies in the categories used directly in the
+source data. The `category_fragments.txt` file in the [[Output Data|output
+data]] may be helpful in this regard.
 
 === Term Selection ===
 

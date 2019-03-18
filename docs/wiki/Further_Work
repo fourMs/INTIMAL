@@ -29,6 +29,22 @@ input filenames, but it might be useful to employ logic already present in the
 software to associate filenames with archive participants and to allow users
 to indicate participant identifiers instead of filenames.
 
+== Finding Fragments using Terms ==
+
+Since the `term_fragments.txt` [[Output Data|output file]] maps terms to
+fragments, it might be useful to allow this file to be used to find fragments
+using terms so that exploration of the data may start from a particular point
+of interest. It may be necessary to adjust this file or provide a more usable
+version that employs the root forms of terms, since not all of the different
+forms are provided in the existing file.
+
+However, a reliable way of generating the root forms would be needed from the
+search terms, with such forms being a consequence of part-of-speech tagging
+and potentially needing more than just the individual terms of interest as
+input. It might then be an alternative to record all occurring forms instead
+of a single form in such a file so that search input may be more easily
+matched.
+
 == Word Lists ==
 
 The words or terms in word lists must be specific forms and not root (or
