@@ -135,7 +135,7 @@ def show_category_terms(category_terms, filename):
     finally:
         out.close()
 
-def show_common_terms(common_terms, filename):
+def show_common_terms(common_terms, filename, delimiter=" "):
 
     """
     Show 'common_terms' in 'filename', this illustrating each term together with
@@ -156,7 +156,8 @@ def show_common_terms(common_terms, filename):
             entities = list(set(entities))
             entities.sort()
 
-            print >>out, unicode(term), ",".join(map(lambda e: e and unicode(e) or "null", entities))
+            print >>out, u"%s%s%s" % (unicode(term), delimiter,
+                                      ",".join(map(lambda e: e and unicode(e) or "null", entities)))
     finally:
         out.close()
 

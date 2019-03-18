@@ -62,7 +62,7 @@ def emit_statistics_output(out):
 
     # Emit term details for inspection.
 
-    outputs.show_common_terms(out["category_fragments"], outfile("category_fragments.txt"))
+    outputs.show_common_terms(out["category_fragments"], outfile("category_fragments.txt"), "\t")
     outputs.show_category_terms(out["category_terms"], outfile("terms.txt"))
     outputs.show_common_terms(out["common_category_terms"], outfile("term_categories.txt"))
     outputs.show_common_terms(out["common_fragment_terms"], outfile("term_fragments.txt"))
