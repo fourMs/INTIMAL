@@ -20,7 +20,7 @@ Unix-like platforms.
 == A Note about Python Packaging ==
 
 Some operating system distributions do not provide the `pip` utility either as
-a module (featured above) or as a standalone program. See the
+a module or as a standalone program. See the
 [[https://packaging.python.org/tutorials/installing-packages/|Installing
 Packages]] section of the [[https://packaging.python.org/|Python Packaging
 User Guide]] for advice about setting up `pip`:
