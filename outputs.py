@@ -218,6 +218,21 @@ def show_frequencies(frequencies, filename):
     finally:
         out.close()
 
+def show_fragment_accessibility(accessibility, filename):
+
+    """
+    Show the 'accessibility' mapping in summary form, indicating the number of
+    fragments able to access each given fragment, writing the results to
+    'filename'.
+    """
+
+    out = codecs.open(filename, "w", encoding="utf-8")
+    try:
+        for fragment, related in accessibility.items():
+            print >>out, unicode(fragment.source), len(related)
+    finally:
+        out.close()
+
 def show_related_fragments(related, filename, shown_relations=5):
 
     """

@@ -26,7 +26,10 @@ from objects import process_fragments, \
                     process_term_vectors, \
                     recompute_connections
 
-from related import get_related_fragments, \
+from related import get_accessing_fragments, \
+                    combine_related_fragments, \
+                    find_all_fragments, \
+                    get_related_fragments, \
                     get_related_fragment_selectors, \
                     related_fragment_selectors, \
                     select_related_fragments, \
@@ -133,6 +136,33 @@ def process_relations(connections, config, out):
 
     return related
 
+def process_accessibility(fragments, out):
+
+    """
+    For all 'fragments', assess their accessibility using related fragment
+    information from 'out'.
+    """
+
+    # Get the related fragment mapping from (criteria, mapping) tuples.
+
+    all_related = map(lambda i: i[1], out["all_related"])
+
+    # Combine the mappings to obtain relationships.
+
+    combined = combine_related_fragments(all_related)
+
+    # Obtain the accessibility map for each fragment.
+
+    out["accessibility"] = find_all_fragments(fragments, combined)
+
+    # Obtain the mapping from fragments to those accessing them.
+
+    accessing = get_accessing_fragments(combined)
+
+    # Obtain the unreachable fragments. These would be suitable starting points.
+
+    out["unreachable"] = set(fragments).difference(accessing.keys())
+
 
 
 # Output data production.
@@ -164,6 +194,11 @@ def emit_relation_output(out):
         outputs.show_related_fragments(dataset, outfile(criteria))
 
     outputs.write_fragment_data(datasets, outfile("data"))
+
+    # Emit an accessibility report for fragments.
+
+    outputs.show_fragment_accessibility(out["accessibility"], outfile("accessibility"))
+    outputs.show_all_words(out["unreachable"], outfile("unreachable"))
 
 
 
@@ -276,6 +311,7 @@ if __name__ == "__main__":
     # Process relation data.
 
     process_relations(connections, config, out)
+    process_accessibility(fragments, out)
 
     # Emit output.
 
