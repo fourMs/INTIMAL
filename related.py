@@ -170,7 +170,7 @@ def get_accessing_fragments(related):
 
     for primary, connections in related.items():
         for connection in connections:
-            d[fragment.relation(primary)].add(primary)
+            d[connection.relation(primary)].add(primary)
 
     return d
 
@@ -195,5 +195,16 @@ def find_fragments(fragment, related, visited=None):
                 find_fragments(f, related, visited)
 
     return visited
+
+def find_all_fragments(fragments, related):
+
+    "Return a mapping from all fragments to accessible fragments in 'related'."
+
+    accessibility = {}
+
+    for fragment in fragments:
+        accessibility[fragment] = find_fragments(fragment, related)
+
+    return accessibility
 
 # vim: tabstop=4 expandtab shiftwidth=4
