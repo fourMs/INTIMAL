@@ -135,11 +135,14 @@ def show_category_terms(category_terms, filename):
     finally:
         out.close()
 
-def show_common_terms(common_terms, filename, delimiter=" "):
+def show_common_terms(common_terms, filename, delimiter=" ", summary=False):
 
     """
     Show 'common_terms' in 'filename', this illustrating each term together with
-    the entities (categories or fragments) in which it appears.
+    the entities (categories or fragments) in which it appears. If 'delimiter'
+    is specified then it is used to separate the terms and entities. If
+    'summary' is specified and has a true value, the number of entities will be
+    shown, not the actual entities themselves.
     """
 
     # Sort the terms and entities by increasing number of entities and by terms.
@@ -150,14 +153,16 @@ def show_common_terms(common_terms, filename, delimiter=" "):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for term, entities in l:
+            if summary:
+                print >>out, u"%s%s%s" % (unicode(term), delimiter, len(entities))
+            else:
+                # Sort a list of distinct entities.
 
-            # Sort a list of distinct entities.
+                entities = list(set(entities))
+                entities.sort()
 
-            entities = list(set(entities))
-            entities.sort()
-
-            print >>out, u"%s%s%s" % (unicode(term), delimiter,
-                                      ",".join(map(lambda e: e and unicode(e) or "null", entities)))
+                labels = map(lambda e: e and unicode(e) or "null", entities)
+                print >>out, u"%s%s%s" % (unicode(term), delimiter, ",".join(labels))
     finally:
         out.close()
 
