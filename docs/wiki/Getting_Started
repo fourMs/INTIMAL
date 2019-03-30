@@ -93,6 +93,20 @@ Running the program with the `--help` option provides usage instructions:
 
 A number of options are available for influencing the generated output data.
 
+=== Category Weights ===
+
+The computation of similarities between fragments can be configured to take
+the frequency of categories into account. Where many fragments belong to a
+particular category, this category and thus these fragments can be assigned a
+weight that is less than the fragments belonging to a less common category.
+
+To employ this adjustment, the following would be used (together with some
+selection criteria):
+
+{{{
+./export.py --category-weights --select any OUTPUT
+}}}
+
 === Related Fragment Selection ===
 
 The most significant output product of the `export.py` program is data

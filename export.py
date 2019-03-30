@@ -24,7 +24,8 @@ import os, sys
 
 from objects import process_fragments, \
                     process_term_vectors, \
-                    recompute_connections
+                    recompute_connections, \
+                    scale_connections
 
 from related import get_accessing_fragments, \
                     combine_related_fragments, \
@@ -70,6 +71,11 @@ def restore_connections(fragments, config, out):
     # Recompute the similarities.
 
     connections = recompute_connections(connections)
+
+    # Scale the similarities according to category weights.
+
+    if config.get("category_weights"):
+        scale_connections(connections, out["category_inv_doc_frequencies"])
 
     return connections
 
@@ -225,6 +231,8 @@ Input file processing options:
 
 Output options:
 
+--category-weights      Apply category weights to similarity scores
+
 --no-output             Suppress output for testing purposes
 
 --num-related <number>  Indicate the maximum number of related fragments to be
@@ -277,6 +285,7 @@ if __name__ == "__main__":
 
     config = {}
 
+    config["category_weights"] = get_flag("--category-weights")
     config["num_related_fragments"] = get_option("--num-related", 4, 4, int)
     config["select"] = get_options("--select")
     config["term_presence_only"] = get_flag("--term-presence-only")

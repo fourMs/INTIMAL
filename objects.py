@@ -72,8 +72,9 @@ class Connection:
         if fragments and len(fragments) != 2:
             raise ValueError, fragments
 
-        self.similarity = similarity
         self.fragments = fragments
+        self.similarity = similarity
+        self.similarity_measure = None
 
     def __cmp__(self, other):
 
@@ -113,8 +114,11 @@ class Connection:
         Return an overall similarity measure using the full similarity details.
         """
 
-        vectors = get_term_vectors(self.fragments)
-        return get_term_vector_similarity(vectors, self.similarity)
+        if self.similarity_measure is None:
+            vectors = get_term_vectors(self.fragments)
+            self.similarity_measure = get_term_vector_similarity(vectors, self.similarity)
+
+        return self.similarity_measure
 
     def relation(self, fragment):
 
@@ -507,6 +511,16 @@ def recompute_connections(connections):
     # have been excluded using a word list.
 
     return filter(lambda c: c.measure(), connections)
+
+def scale_connections(connections, mapping=None):
+
+    "Scale all 'connections' using a 'mapping' from categories to weights."
+
+    if mapping:
+        for connection in connections:
+            for fragment in connection.fragments:
+                connection.similarity_measure = connection.measure() * \
+                                                (mapping.get(fragment.category) or 1)
 
 def scale_term_vector(vector, mapping=None):
 
