@@ -24,6 +24,11 @@ def process_statistics(fragments, out):
 
     category_fragments = get_fragment_categories(fragments)
 
+    # Get category frequencies.
+
+    category_doc_frequencies = dict(map(lambda i: (i[0], len(i[1])), category_fragments.items()))
+    category_inv_doc_frequencies = inverse_document_frequencies(category_doc_frequencies, len(fragments))
+
     # Get terms used by each category for inspection.
 
     category_terms = get_fragment_terms(fragments, lambda fragment:
@@ -47,9 +52,12 @@ def process_statistics(fragments, out):
     # Register some output data.
 
     out["category_fragments"] = category_fragments
+    out["category_inv_doc_frequencies"] = category_inv_doc_frequencies
+
     out["category_terms"] = category_terms
     out["common_category_terms"] = common_category_terms
     out["common_fragment_terms"] = common_fragment_terms
+
     out["frequencies"] = frequencies
     out["doc_frequencies"] = doc_frequencies
     out["inv_doc_frequencies"] = inv_doc_frequencies
@@ -64,6 +72,7 @@ def emit_statistics_output(out):
 
     outputs.show_common_terms(out["category_fragments"], outfile("category_fragments.txt"), "\t")
     outputs.show_common_terms(out["category_fragments"], outfile("category_fragments_summary.txt"), summary=True)
+    outputs.show_frequencies(out["category_inv_doc_frequencies"], outfile("category_inv_doc_frequencies.txt"))
     outputs.show_category_terms(out["category_terms"], outfile("terms.txt"))
     outputs.show_common_terms(out["common_category_terms"], outfile("term_categories.txt"))
     outputs.show_common_terms(out["common_fragment_terms"], outfile("term_fragments.txt"))
