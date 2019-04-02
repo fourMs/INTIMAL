@@ -1,0 +1,25 @@
+= Data Exploration =
+
+The `explore.py` program can be used with an output data directory to
+investigate and explore the generated data. For example, with the output
+directory called `OUTPUT`:
+
+{{{
+./explore.py OUTPUT
+}}}
+
+This program provides an interactive interface that permits the viewing of
+fragments and navigation between related fragments.
+
+== Choosing a Starting Fragment ==
+
+Upon starting the program, a list of all known fragment identifiers is
+presented. A prompt then appears to invite the user to specify a fragment
+identifier to start exploring from:
+
+{{{
+fragment>
+}}}
+
+Here, one of the many identifiers can be entered exactly as it appears.
+Otherwise, a fragment can be chosen at random by pressing Enter/Return.

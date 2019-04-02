@@ -1,0 +1,97 @@
+= Output Data =
+
+When the software is run on suitable [[Required Data|input data]], two kinds
+of output data products are generated in the output directory:
+
+ * Reports, providing an overview of the nature of the data
+ * Structured data, for use by other programs
+
+These products are a consequence of the modelling and [[Data Processing|
+processing]] of the input data.
+
+== Basic Information ==
+
+The following basic information files are generated:
+
+|| '''File'''                     || '''Description'''                        ||
+|| `connections.txt`              || connections of pairs of fragments        ||
+|| `fragments.txt`                || details of each textual fragment         ||
+|| `words.txt`                    || all known words in their original form   ||
+
+== Reports ==
+
+The following report files are generated:
+
+|| '''File'''                     || '''Description'''                        ||
+|| `category_fragments.txt`       || fragments associated with each category  ||
+|| `related.txt`                  || fragments and those most closely related ||
+|| `related_by_category.txt`      || related fragments in the same category   ||
+|| `term_categories.txt`          || the categories associated with each term ||
+|| `term_fragments.txt`           || the fragments associated with each term  ||
+|| `term_frequencies.txt`         || term frequencies across all fragments    ||
+|| `term_doc_frequencies.txt`     || term document frequencies                ||
+|| `term_inv_doc_frequencies.txt` || term inverse document frequencies        ||
+|| `terms.txt`                    || the terms found in each category         ||
+
+== Structured Data ==
+
+Although the reports aim to be informative, they are not intended to be
+machine-readable. Consequently, a `data` directory within the output directory
+is populated with structured data for interpretation by other programs.
+
+Within the `data` directory are a number of other directories, each bearing a
+fragment identifier for all processed fragments. The general form of this
+directory hierarchy is as follows:
+
+{{{
+<output directory>
+  data
+    <fragment identifier>
+      text
+      <related fragment selector>
+        <related fragment index>
+          fragment
+          measure
+          similarity
+        ...
+      ...
+    ...
+}}}
+
+Each fragment-specific subdirectory of `data` (denoted using `<fragment
+identifier>` above) contains the following:
+
+|| '''File'''      || '''Description'''                                       ||
+|| `text`          || A file containing the original fragment text            ||
+
+In addition, depending on the options specified when producing the output
+data, the following directories (denoted using `<related fragment selector>`)
+will appear alongside `text`:
+
+|| '''Directory''' || '''Description'''                                       ||
+|| `any`           ||<|4> Directories containing related fragment details     ||
+|| `forward`       ||
+|| `left`          ||
+|| `right`         ||
+
+These directories each contain directories (denoted using `<related fragment
+index>`) labelled with fragment index numbers, starting from 0, indicating the
+most closely related fragments in descending order of similarity to the
+fragment identified by the parent directory. In each of these directories are
+the following files:
+
+|| '''File'''      || '''Description'''                                       ||
+|| `fragment`      || A file containing the related fragment identifier       ||
+|| `measure`       || A file containing the overall similarity measure        ||
+|| `similarity`    || A file containing fragment similarity details           ||
+
+Thus, to identify the most closely related left-rotation fragment of an
+identified fragment, the following file within the output directory would be
+read:
+
+{{{
+data/<fragment>/left/0/fragment
+}}}
+
+The contents of this file would then be used to identify a directory within
+the `data` directory containing the details of the related fragment.

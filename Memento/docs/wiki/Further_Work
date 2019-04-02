@@ -1,0 +1,53 @@
+= Further Work =
+
+This software is necessarily limited in functionality and scope. This document
+aims to describe limitations and potential improvements.
+
+<<TableOfContents(2)>>
+
+== Database Representations ==
+
+The software generates a serialised form of the input data that is easier to
+work with, permitting further querying and export operations without having to
+parse the input data again or to establish the maximal presence of connections
+between fragments. However, the serialised form makes some assumptions for
+convenience, and where terms might have a more varied form, the format
+employed would need adjusting.
+
+One approach that would alleviate such concerns and be appropriate for a
+slightly more ambitious project would involve introducing a formal database
+system, perhaps using a relational model. This would also permit more
+flexibility with regard to tools and querying. Although some database systems
+also provide support for certain information retrieval activities, it may
+still be advisible to perform some of these outside the database system and
+then import the processed data into a database for subsequent processing.
+
+== Exposing Concepts in Command Invocation ==
+
+The commands used to [[Getting Started|operate the software]] accept plain
+input filenames, but it might be useful to employ logic already present in the
+software to associate filenames with archive participants and to allow users
+to indicate participant identifiers instead of filenames.
+
+== Finding Fragments using Terms ==
+
+Since the `term_fragments.txt` [[Output Data|output file]] maps terms to
+fragments, it might be useful to allow this file to be used to find fragments
+using terms so that exploration of the data may start from a particular point
+of interest. It may be necessary to adjust this file or provide a more usable
+version that employs the root forms of terms, since not all of the different
+forms are provided in the existing file.
+
+However, a reliable way of generating the root forms would be needed from the
+search terms, with such forms being a consequence of part-of-speech tagging
+and potentially needing more than just the individual terms of interest as
+input. It might then be an alternative to record all occurring forms instead
+of a single form in such a file so that search input may be more easily
+matched.
+
+== Word Lists ==
+
+The words or terms in word lists must be specific forms and not root (or
+normalised) forms of more general words. Such lists could be enhanced to
+support root forms and indicate the part-of-speech role of the word, thus
+allowing such forms to match terms in the input data.
