@@ -411,7 +411,7 @@ def backtrack(explorer, prompter):
             del explorer.visited[i:]
             explorer.select_fragment(identifier)
         except (IndexError, ValueError):
-            print("Bad position.", file=self.out)
+            print("Bad position.", file=out)
 
         if explorer.fragment:
             break
