@@ -92,7 +92,8 @@ class Explorer:
 
         "Select a random fragment."
 
-        l = random.sample(self.get_fragments(), 1)
+        unvisited = set(self.get_fragments()).difference(self.visited)
+        l = random.sample(unvisited, 1)
         if l:
             self.select_fragment(l[0])
 
