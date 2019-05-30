@@ -35,6 +35,8 @@ from serialised import get_serialised_connections, get_serialised_fragments
 
 from wordlist import get_wordlist_from_file
 
+import graph
+
 import outputs
 
 import os, sys
@@ -227,6 +229,23 @@ def emit_relation_output(out):
 
 
 
+# Graph data production.
+
+def emit_graph(out):
+
+    "Using 'out', emit a graph description."
+
+    outfile = out.filename
+    datasets = out.get("all_related")
+
+    if not datasets:
+        return
+
+    all_relations = combine_related_fragments(map(lambda i: i[1], datasets))
+    graph.write_graph(all_relations, outfile("graph.txt"))
+
+
+
 # Help text for program invocation.
 
 progname = os.path.split(sys.argv[0])[-1]
@@ -251,6 +270,8 @@ Input file processing options:
 Output options:
 
 --category-weights      Apply category weights to similarity scores
+
+--graph                 Generate a graph of the data
 
 --no-output             Suppress output for testing purposes
 
@@ -310,6 +331,7 @@ if __name__ == "__main__":
     config["term_presence_only"] = get_flag("--term-presence-only")
     config["wordlist"] = get_wordlist_from_file(get_option("--word-list"))
 
+    make_graph = get_flag("--graph")
     no_output = get_flag("--no-output")
     statistics_output = get_flag("--stats")
 
@@ -355,5 +377,10 @@ if __name__ == "__main__":
 
         if statistics_output:
             emit_statistics_output(out)
+
+    # Produce a graph.
+
+    if make_graph:
+        emit_graph(out)
 
 # vim: tabstop=4 expandtab shiftwidth=4
