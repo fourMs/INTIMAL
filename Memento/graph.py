@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License along with
 this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from related import get_accessing_fragments
+
 import codecs
 
 graph_template = """\
@@ -51,21 +53,19 @@ def write_graph(relations, filename, directed=True, labels=False):
 
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
-        # Determine the unreachable nodes.
+        # Determine accessing fragments and thus unreachable nodes.
 
-        reachable = set()
-
-        for fragment, connections in relations.items():
-            for connection in connections:
-                reachable.add(connection.relation(fragment))
-
-        unreachable = set(relations.keys()).difference(reachable)
+        accessing = get_accessing_fragments(relations)
+        unreachable = set(relations.keys()).difference(accessing.keys())
         unreachable_relations = set()
 
         # Produce edge definitions using the template.
 
         edges = []
         for fragment, connections in relations.items():
+
+            # Emphasise edges from unreachable nodes.
+
             colour = fragment in unreachable and "#00000077" or "#00000011"
 
             for connection in connections:
@@ -88,7 +88,11 @@ def write_graph(relations, filename, directed=True, labels=False):
 
         nodes = []
 
-        for fragment in relations.keys():
+        for fragment, connections in relations.items():
+
+            label = ""
+            colour = "#00000077"
+            fill_colour = "none"
 
             # Only label unreachable fragments.
 
@@ -96,15 +100,17 @@ def write_graph(relations, filename, directed=True, labels=False):
                 label = labels and fragment.label().replace(":", "\\n") or ""
                 colour = "#000000ff"
                 fill_colour = "#ff0000ff"
-            elif fragment in unreachable_relations:
-                label = ""
-                colour = "#00000077"
-                fill_colour = "#ff000033"
-            else:
-                label = ""
-                colour = "#00000077"
-                fill_colour = "none"
 
+            # Unreachable partners.
+
+            elif fragment in unreachable_relations:
+                fill_colour = "#ff000033"
+
+            # End nodes.
+
+            elif not connections:
+                fill_colour = "#0000ff33"
+    
             # Define the node.
 
             nodes.append(node_template % (id(fragment), label, colour, fill_colour))
