@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 """
@@ -35,7 +35,7 @@ def combine_term_vectors(vectors):
     # Take each vector in turn, trying to find terms in the other vectors.
 
     for vector in vectors[1:]:
-        for term in d.keys():
+        for term in list(d.keys()):
 
             # Remove absent terms from the result.
 
@@ -55,7 +55,7 @@ def get_term_vector_similarity(vectors, similarity=None):
 
     d = similarity or combine_term_vectors(vectors)
     dp = sum(d.values())
-    mp = product(map(magnitude, vectors))
+    mp = product(list(map(magnitude, vectors)))
     return dp / mp
 
 # Utility functions.
@@ -75,6 +75,9 @@ def product(values):
 
     "Return the product of 'values'."
 
-    return reduce(lambda a, b: a * b, values)
+    result = values[0]
+    for value in values[1:]:
+        result *= value
+    return result
 
 # vim: tabstop=4 expandtab shiftwidth=4

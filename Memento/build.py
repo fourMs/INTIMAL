@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 """
@@ -76,12 +76,12 @@ def process_input_data(filenames, config, out):
 
     # Discard empty fragments.
 
-    fragments = filter(None, fragments)
+    fragments = list(filter(None, fragments))
 
     # Discard uncategorised fragments.
 
     if not config.get("all_fragments"):
-        fragments = filter(lambda f: f.category and f.category.complete(), fragments)
+        fragments = list(filter(lambda f: f.category and f.category.complete(), fragments))
 
     # Fix fragment categories.
 
@@ -227,7 +227,7 @@ if __name__ == "__main__":
     # Show the help message if requested.
 
     if get_flag("--help"):
-        print >>sys.stderr, helptext
+        print(helptext, file=sys.stderr)
         sys.exit(0)
 
     config = {}
@@ -248,7 +248,7 @@ if __name__ == "__main__":
     # Show the help message and exit if the arguments are incorrect.
 
     except (IndexError, ValueError):
-        print >>sys.stderr, helptext
+        print(helptext, file=sys.stderr)
         sys.exit(1)
 
     # Derive filenames for output files.

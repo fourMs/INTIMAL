@@ -10,21 +10,21 @@ from objects import Category, Fragment, Source
 
 # Test data.
 
-t1 = u"hombre"
-t2 = u"niño"
-t3 = u"mujer"
-t4 = u"esposo"
+t1 = "hombre"
+t2 = "niño"
+t3 = "mujer"
+t4 = "esposo"
 
 cat1 = Category("Parent", "Category")
 cat2 = Category("Parent", "Different category")
 cat3 = Category("P", "C")
 
-f1 = Fragment(Source("A1", 10, 20), cat1, [u"un", u"hombre"])
-f2 = Fragment(Source("A1", 40, 50), cat1, [u"un", t2])
+f1 = Fragment(Source("A1", 10, 20), cat1, ["un", "hombre"])
+f2 = Fragment(Source("A1", 40, 50), cat1, ["un", t2])
 f3 = Fragment(Source("A2", 10, 20), cat1)
 f4 = Fragment(Source("A2", 10, 20), cat2)
-f5 = Fragment(Source("A1", 40, 50), cat1, [u"un", t1])
-f6 = Fragment(Source("A3", 100, 200), cat3, [u"un", t4])
+f5 = Fragment(Source("A1", 40, 50), cat1, ["un", t1])
+f6 = Fragment(Source("A3", 100, 200), cat3, ["un", t4])
 
 # Test cases.
 
@@ -73,8 +73,8 @@ def test_truth():
     show("bool(%r)" % f4, bool(f4), False)
 
 def test_vector():
-    show("%r.get_term_vector()" % f1, f1.get_term_vector(), {u"un" : 1, u"hombre" : 1})
-    show("%r.get_term_vector()" % f2, f2.get_term_vector(), {u"un" : 1, t2 : 1})
+    show("%r.get_term_vector()" % f1, f1.get_term_vector(), {"un" : 1, "hombre" : 1})
+    show("%r.get_term_vector()" % f2, f2.get_term_vector(), {"un" : 1, t2 : 1})
     show("%r.get_term_vector()" % f3, f3.get_term_vector(), {})
 
 def main():

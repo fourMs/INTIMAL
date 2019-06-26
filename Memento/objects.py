@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 """
@@ -21,7 +21,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from text import text_from_words
-from utils import CountingDict
+from utils import Comparable, CountingDict
 from vectors import combine_term_vectors, get_term_vector_similarity
 
 from collections import defaultdict
@@ -30,7 +30,7 @@ from math import log
 import re
 import os.path
 
-class Category:
+class Category(Comparable):
 
     "A complete category description featuring a parent and child category."
 
@@ -38,8 +38,8 @@ class Category:
         self.parent = parent
         self.category = category
 
-    def __cmp__(self, other):
-        return cmp(self.as_tuple(), other and other.as_tuple())
+    def to_operand(self, value):
+        return value and value.as_tuple()
 
     def __hash__(self):
         return hash(self.as_tuple())
@@ -48,9 +48,6 @@ class Category:
         return "Category(%r, %r)" % self.as_tuple()
 
     def __str__(self):
-        return unicode(self)
-
-    def __unicode__(self):
         return "%s-%s" % self.as_tuple()
 
     def as_tuple(self):
@@ -68,9 +65,9 @@ class Category:
     # Graph methods.
 
     def label(self):
-        return unicode(self)
+        return str(self)
 
-class Connection:
+class Connection(Comparable):
 
     "A connection between textual fragments."
 
@@ -85,23 +82,20 @@ class Connection:
         # testing the fragments otherwise.
 
         if fragments and len(fragments) != 2:
-            raise ValueError, fragments
+            raise ValueError(fragments)
 
         self.fragments = fragments
         self.similarity = similarity
         self.similarity_measure = None
 
-    def __cmp__(self, other):
+    def to_operand(self, value):
 
         """
-        Compare this connection to another, using the overall measure of
-        fragment similarity between the connected fragments as the primary
-        value for comparison.
+        For comparisons, use the overall measure of fragment similarity between
+        the connected fragments as the primary value for comparison.
         """
 
-        key = self.measure(), self.similarity
-        other_key = other.measure(), other.similarity
-        return cmp(key, other_key)
+        return value.measure(), value.similarity
 
     def __hash__(self):
 
@@ -109,7 +103,7 @@ class Connection:
 
         return hash(tuple(map(hash, self.fragments)))
 
-    def __nonzero__(self):
+    def __bool__(self):
 
         "Return the truth or non-emptiness of the connection."
 
@@ -150,7 +144,7 @@ class Connection:
 
         return self.measure()
 
-class Fragment:
+class Fragment(Comparable):
 
     "A fragment of text from a transcript."
 
@@ -168,15 +162,14 @@ class Fragment:
         self.text = text
         self.vector = None
 
-    def __cmp__(self, other):
+    def to_operand(self, value):
 
         """
-        Compare this fragment to 'other' using the origin details of the
-        fragment. This is used to order the fragments chronologically within
-        source transcripts.
+        For comparisons, use the origin details of the fragment. This is used to
+        order the fragments chronologically within source transcripts.
         """
 
-        return cmp(self.source, other.source)
+        return value.source
 
     def __contains__(self, other):
 
@@ -190,7 +183,7 @@ class Fragment:
 
         return hash(self.source)
 
-    def __nonzero__(self):
+    def __bool__(self):
 
         "Return the truth or non-emptiness of the fragment."
 
@@ -200,10 +193,7 @@ class Fragment:
         return "Fragment(%r, %r, %r, %r)" % self.as_tuple()
 
     def __str__(self):
-        return unicode(self)
-
-    def __unicode__(self):
-        return unicode(self.source)
+        return str(self.source)
 
     def as_tuple(self):
         return (self.source, self.category, self.words, self.text)
@@ -257,9 +247,9 @@ class Fragment:
     # Graph methods.
 
     def label(self):
-        return unicode(self)
+        return str(self)
 
-class Source:
+class Source(Comparable):
 
     "A fragment source."
 
@@ -274,13 +264,11 @@ class Source:
         self.start = start
         self.end = end
 
-    def __cmp__(self, other):
+    def to_operand(self, value):
 
-        "Compare this source to 'other'."
+        "For comparisons, treat a 'value' as a tuple."
 
-        key = self.as_tuple()
-        other_key = other.as_tuple()
-        return cmp(key, other_key)
+        return value.as_tuple()
 
     def __hash__(self):
 
@@ -292,10 +280,7 @@ class Source:
         return "Source(%r, %r, %r)" % self.as_tuple()
 
     def __str__(self):
-        return unicode(self)
-
-    def __unicode__(self):
-        return u"%s:%s-%s" % self.as_tuple()
+        return "%s:%s-%s" % self.as_tuple()
 
     def as_tuple(self):
         return (self.filename, self.start, self.end)
@@ -313,9 +298,9 @@ class Source:
     # Graph methods.
 
     def label(self):
-        return unicode(self)
+        return str(self)
 
-class Term:
+class Term(Comparable):
 
     "A simple tagged term."
 
@@ -330,25 +315,22 @@ class Term:
         self.tag = tag
         self.normalised = normalised
 
-    def __cmp__(self, other):
+    def to_operand(self, value):
 
-        "Compare with 'other' using the normalised forms if possible."
+        "For comparisons, use the normalised forms if possible."
 
-        if self.normalised and isinstance(other, Term) and other.normalised:
-            return cmp(self.normalised, other.normalised)
+        if self.normalised and isinstance(value, Term) and value.normalised:
+            return value.normalised
         else:
-            return cmp(unicode(self), unicode(other))
+            return str(value)
 
     def __hash__(self):
-        return hash(self.normalised or unicode(self))
+        return hash(self.normalised or str(self))
 
     def __repr__(self):
         return "Term(%r, %r, %r)" % (self.word, self.tag, self.normalised)
 
     def __str__(self):
-        return unicode(self)
-
-    def __unicode__(self):
         return self.word
 
 # Fragment collection operations.
@@ -478,7 +460,7 @@ def get_term_vectors(fragments):
 
     "Return the term vectors for 'fragments'."
 
-    return map(lambda f: f.vector, fragments)
+    return list(map(lambda f: f.vector, fragments))
 
 def inverse_document_frequencies(frequencies, numdocs):
 
@@ -525,7 +507,7 @@ def recompute_connections(connections):
     # Eliminate connections without any similarity. This may occur if words
     # have been excluded using a word list.
 
-    return filter(lambda c: c.measure(), connections)
+    return list(filter(lambda c: c.measure(), connections))
 
 def scale_connections(connections, mapping=None):
 

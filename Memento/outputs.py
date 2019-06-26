@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 """
@@ -43,6 +43,9 @@ class Output:
 
     # Data retention methods.
 
+    def __contains__(self, key):
+        return key in self.data
+
     def __delitem__(self, key):
         del self.data[key]
 
@@ -56,7 +59,7 @@ class Output:
         return self.data.get(key, default)
 
     def has_key(self, key):
-        return self.data.has_key(key)
+        return key in self.data
 
     def keys(self):
         return self.data.keys()
@@ -112,7 +115,7 @@ def show_all_words(words, filename):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for word in words:
-            print >>out, word
+            print(word, file=out)
     finally:
         out.close()
 
@@ -124,7 +127,7 @@ def show_category_terms(category_terms, filename):
     associated with the category.
     """
 
-    l = category_terms.items()
+    l = list(category_terms.items())
     l.sort()
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
@@ -137,16 +140,16 @@ def show_category_terms(category_terms, filename):
 
             # Show a category heading.
 
-            s = unicode(category)
-            print >>out, s
-            print >>out, "-" * len(s)
+            s = str(category)
+            print(s, file=out)
+            print("-" * len(s), file=out)
 
             # Show the terms.
 
             for term in terms:
-                print >>out, unicode(term)
+                print(str(term), file=out)
 
-            print >>out
+            print(file=out)
     finally:
         out.close()
 
@@ -162,22 +165,22 @@ def show_common_terms(common_terms, filename, delimiter=" ", summary=False):
 
     # Sort the terms and entities by increasing number of entities and by terms.
 
-    l = common_terms.items()
+    l = list(common_terms.items())
     l.sort(cmp=cmp_value_lengths_and_keys)
 
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for term, entities in l:
             if summary:
-                print >>out, u"%s%s%s" % (unicode(term), delimiter, len(entities))
+                print("%s%s%s" % (str(term), delimiter, len(entities)), file=out)
             else:
                 # Sort a list of distinct entities.
 
                 entities = list(set(entities))
                 entities.sort()
 
-                labels = map(lambda e: e and unicode(e) or "null", entities)
-                print >>out, u"%s%s%s" % (unicode(term), delimiter, ",".join(labels))
+                labels = map(lambda e: e and str(e) or "null", entities)
+                print("%s%s%s" % (str(term), delimiter, ",".join(labels)), file=out)
     finally:
         out.close()
 
@@ -196,7 +199,7 @@ def show_connections(connections, filename, brief=False):
 
             if not brief:
                 show_similarity(connection, out)
-                print >>out
+                print(file=out)
 
             # Show the connected fragments.
 
@@ -205,11 +208,11 @@ def show_connections(connections, filename, brief=False):
                 # For brief output, just show the source details.
 
                 if brief:
-                    print >>out, j("Source:"), unicode(fragment.source)
+                    print(j("Source:"), str(fragment.source), file=out)
                 else:
                     show_fragment(fragment, out)
 
-            print >>out
+            print(file=out)
     finally:
         out.close()
 
@@ -221,7 +224,7 @@ def show_fragments(fragments, filename):
     try:
         for fragment in fragments:
             show_fragment(fragment, out, terms=True)
-            print >>out
+            print(file=out)
     finally:
         out.close()
 
@@ -229,12 +232,12 @@ def show_frequencies(frequencies, filename):
 
     "Write the mapping of term 'frequencies' to 'filename'."
 
-    l = frequencies.items()
+    l = list(frequencies.items())
     l.sort(cmp=cmp_values_and_keys)
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for term, occurrences in l:
-            print >>out, unicode(term), occurrences
+            print(str(term), occurrences, file=out)
     finally:
         out.close()
 
@@ -249,7 +252,7 @@ def show_fragment_accessibility(accessibility, filename):
     out = codecs.open(filename, "w", encoding="utf-8")
     try:
         for fragment, related in accessibility.items():
-            print >>out, unicode(fragment.source), len(related)
+            print(str(fragment.source), len(related), file=out)
     finally:
         out.close()
 
@@ -264,7 +267,7 @@ def show_related_fragments(related, filename, shown_relations=5):
     try:
         # Sort the fragments for output.
 
-        related_items = related.items()
+        related_items = list(related.items())
         related_items.sort()
 
         for fragment, connections in related_items:
@@ -272,7 +275,7 @@ def show_related_fragments(related, filename, shown_relations=5):
             # Show the principal details of each fragment.
 
             show_fragment(fragment, out)
-            print >>out
+            print(file=out)
 
             # For each related fragment, show details including the similarity
             # information.
@@ -286,9 +289,9 @@ def show_related_fragments(related, filename, shown_relations=5):
                 relation = connection.relation(fragment)
 
                 show_similarity(connection, out)
-                print >>out
+                print(file=out)
                 show_fragment(relation, out)
-                print >>out
+                print(file=out)
 
                 to_show -= 1
 
@@ -296,12 +299,12 @@ def show_related_fragments(related, filename, shown_relations=5):
             # to the parameterised number.
 
             if len(connections) > shown_relations:
-                print >>out, "%d related fragments not shown." % (len(connections) - shown_relations)
+                print("%d related fragments not shown." % (len(connections) - shown_relations), file=out)
 
             # Make a separator after the fragments.
 
-            print >>out, "----"
-            print >>out
+            print("----", file=out)
+            print(file=out)
 
     finally:
         out.close()
@@ -312,12 +315,12 @@ def show_fragment(fragment, out, terms=False):
 
     j = rjust
 
-    print >>out, j("Source:"), unicode(fragment.source)
-    print >>out, j("Category:"), unicode(fragment.category)
-    print >>out, j("Text:"), fragment.text
+    print(j("Source:"), str(fragment.source), file=out)
+    print(j("Category:"), str(fragment.category), file=out)
+    print(j("Text:"), fragment.text, file=out)
 
     if terms:
-        print >>out, j("Terms:"), u" ".join(map(term_summary, fragment.words))
+        print(j("Terms:"), " ".join(map(term_summary, fragment.words)), file=out)
 
 def show_similarity(connection, out):
 
@@ -325,8 +328,8 @@ def show_similarity(connection, out):
 
     j = rjust
 
-    print >>out, j("Sim:"), "%.2f" % connection.measure(),
-    print >>out, similarity_details(connection)
+    print(j("Sim:"), "%.2f" % connection.measure(), end=" ", file=out)
+    print(similarity_details(connection), file=out)
 
 # Output utilities.
 
@@ -340,15 +343,15 @@ def similarity_details(connection):
 
     "Return a string containing the similarity details for 'connection'."
 
-    similarities = connection.similarity.items()
+    similarities = list(connection.similarity.items())
     similarities.sort()
 
     l = []
 
     for term, score in similarities:
-        l.append(u"%s (%.2f)" % (quoted(term), score))
+        l.append("%s (%.2f)" % (quoted(term), score))
 
-    return u" ".join(l)
+    return " ".join(l)
 
 def term_summary(term):
 
@@ -357,7 +360,7 @@ def term_summary(term):
     if isinstance(term, Term):
         tag = term.tag and ":%s" % term.tag or ""
         norm = term.normalised and ":%s" % quoted(term.normalised) or ""
-        return u"%s%s%s" % (quoted(term.word), tag, norm)
+        return "%s%s%s" % (quoted(term.word), tag, norm)
     else:
         return quoted(term)
 
@@ -365,7 +368,7 @@ def quoted(term):
 
     "Quote the 'term' using quotation marks where spaces appear in the term."
 
-    s = unicode(term)
+    s = str(term)
     if " " in s:
         return u'"%s"' % s
     else:
@@ -394,7 +397,7 @@ def write_fragment_data(datasets, dirname):
 
             if not fragment_out.exists("text"):
                 writefile(fragment_out.filename("text"), fragment.text)
-                writefile(fragment_out.filename("category"), unicode(fragment.category))
+                writefile(fragment_out.filename("category"), str(fragment.category))
 
             # Write connection information for the dataset in a new subdirectory.
 

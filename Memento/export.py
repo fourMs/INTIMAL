@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 """
@@ -133,7 +133,7 @@ def process_relations(connections, config, out):
 
     # Only restrict the related fragments if requested.
 
-    if not config.has_key("select"):
+    if not "select" in config:
         return related
 
     num = config.get("num_related_fragments")
@@ -172,7 +172,7 @@ def process_accessibility(fragments, out):
 
     # Get the related fragment mapping from (criteria, mapping) tuples.
 
-    all_related = map(lambda i: i[1], out["all_related"])
+    all_related = list(map(lambda i: i[1], out["all_related"]))
 
     # Combine the mappings to obtain relationships.
 
@@ -202,7 +202,7 @@ def emit_filtered_output(out):
 
     # Emit the fragments for inspection and potential recovery.
 
-    if out.has_key("fragments_filtered"):
+    if "fragments_filtered" in out:
         outputs.show_fragments(out["fragments_filtered"], outfile("fragments_filtered.txt"))
 
 def emit_relation_output(out):
@@ -241,7 +241,7 @@ def emit_graph(out):
     if not datasets:
         return
 
-    all_relations = combine_related_fragments(map(lambda i: i[1], datasets))
+    all_relations = combine_related_fragments(list(map(lambda i: i[1], datasets)))
     graph.write_graph(all_relations, outfile("graph.txt"))
 
 
@@ -320,7 +320,7 @@ if __name__ == "__main__":
     # Show the help message if requested.
 
     if get_flag("--help"):
-        print >>sys.stderr, helptext
+        print(helptext, file=sys.stderr)
         sys.exit(0)
 
     config = {}
@@ -343,7 +343,7 @@ if __name__ == "__main__":
     # Show the help message and exit if the arguments are incorrect.
 
     except (IndexError, ValueError):
-        print >>sys.stderr, helptext
+        print(helptext, file=sys.stderr)
         sys.exit(1)
 
     # Derive filenames for output files.

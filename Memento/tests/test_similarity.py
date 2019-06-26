@@ -20,7 +20,7 @@ import re
 
 source = "22065"
 
-sentences = u"""\
+sentences = """\
 Un día un pollo entra en un bosque.
 Una bellota cae en su cabeza.
 El pobre pollo cree que el cielo ha caído sobre él.
@@ -55,7 +55,7 @@ fragments = []
 for i, sentence in enumerate(sentences):
     words = split_words(sentence)
     words = only_words(words)
-    words = map(lambda s: s.lower(), words)
+    words = list(map(lambda s: s.lower(), words))
     fragments.append(Fragment(Source(source, i, i+1), category, words, sentence))
 
 # Prepare connections for testing.
@@ -69,10 +69,10 @@ connections = compare_fragments(fragments)
 
 def show_connections():
     for c in connections:
-        print c.measure(), c.similarity
+        print(c.measure(), c.similarity)
         for f in c.fragments:
-            print f.text
-        print
+            print(f.text)
+        print()
 
 
 
@@ -81,28 +81,28 @@ def show_connections():
 def test_similarity():
     show("get_fragment_similarity([%r, %r])" % (fragments[0], fragments[2]),
          get_fragment_similarity([fragments[0], fragments[2]]),
-         {u"pollo" : 1})
+         {"pollo" : 1})
 
     show("get_fragment_similarity([%r, %r])" % (fragments[0], fragments[-2]),
          get_fragment_similarity([fragments[0], fragments[-2]]),
-         {u"pollo" : 1})
+         {"pollo" : 1})
 
     show("get_fragment_similarity([%r, %r])" % (fragments[2], fragments[-2]),
          get_fragment_similarity([fragments[2], fragments[-2]]),
-         {u"el" : 10, u"pobre" : 1, u"pollo" : 1})
+         {"el" : 10, "pobre" : 1, "pollo" : 1})
 
 def test_frequencies():
     show("word_frequencies([%r, %r])" % (fragments[0], fragments[2]),
          word_frequencies([fragments[0], fragments[2]]),
-         {u"un" : 3, u"día" : 1, u"pollo" : 2, u"entra" : 1, u"en" : 1,
-          u"bosque" : 1, u"el" : 2, u"pobre" : 1, u"cree" : 1, u"que" : 1,
-          u"cielo" : 1, u"ha" : 1, u"caído" : 1, u"sobre" : 1, u"él" : 1})
+         {"un" : 3, "día" : 1, "pollo" : 2, "entra" : 1, "en" : 1,
+          "bosque" : 1, "el" : 2, "pobre" : 1, "cree" : 1, "que" : 1,
+          "cielo" : 1, "ha" : 1, "caído" : 1, "sobre" : 1, "él" : 1})
 
     show("word_document_frequencies([%r, %r])" % (fragments[0], fragments[2]),
          word_document_frequencies([fragments[0], fragments[2]]),
-         {u"un" : 1, u"día" : 1, u"pollo" : 2, u"entra" : 1, u"en" : 1,
-          u"bosque" : 1, u"el" : 1, u"pobre" : 1, u"cree" : 1, u"que" : 1,
-          u"cielo" : 1, u"ha" : 1, u"caído" : 1, u"sobre" : 1, u"él" : 1})
+         {"un" : 1, "día" : 1, "pollo" : 2, "entra" : 1, "en" : 1,
+          "bosque" : 1, "el" : 1, "pobre" : 1, "cree" : 1, "que" : 1,
+          "cielo" : 1, "ha" : 1, "caído" : 1, "sobre" : 1, "él" : 1})
 
 
 

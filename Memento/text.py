@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 """
@@ -44,9 +44,9 @@ def _normalise_accents(s):
     "Convert in 's' all grave accents to acute accents."
 
     return unicodedata.normalize("NFC",
-        unicodedata.normalize("NFD", s).replace(u"\u0300", u"\u0301"))
+        unicodedata.normalize("NFD", s).replace("\u0300", "\u0301"))
 
-normalise_accents = lambda l: map(_normalise_accents, map(unicode, l))
+normalise_accents = lambda l: list(map(_normalise_accents, map(str, l)))
 
 punctuation = "-,;.:?!"
 
@@ -72,7 +72,7 @@ def remove_punctuation_from_words(terms):
 
     "Remove any punctuation from 'terms'."
 
-    return map(remove_punctuation_from_word, terms)
+    return list(map(remove_punctuation_from_word, terms))
 
 def only_words(terms):
 
@@ -80,7 +80,7 @@ def only_words(terms):
 
     l = []
     for term in terms:
-        if remove_punctuation(unicode(term)).strip():
+        if remove_punctuation(str(term)).strip():
             l.append(term)
     return l
 
@@ -120,16 +120,16 @@ def text_from_words(words):
     "Join 'words' in order to produce a reasonable text string."
 
     if not words:
-        return u""
+        return ""
 
     l = [words[0]]
 
     for word in words[1:]:
         if not is_punctuation(word):
-            l.append(u" ")
+            l.append(" ")
         l.append(word)
 
-    return u"".join(l)
+    return "".join(l)
 
 def to_text(i):
 
@@ -138,6 +138,6 @@ def to_text(i):
     if isinstance(i, (list, tuple)):
         return " ".join(map(to_text, i))
     else:
-        return unicode(i).encode("utf-8")
+        return str(i).encode("utf-8")
 
 # vim: tabstop=4 expandtab shiftwidth=4

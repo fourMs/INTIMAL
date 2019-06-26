@@ -366,7 +366,7 @@ class Related:
 
         return self.length
 
-    def __nonzero__(self):
+    def __bool__(self):
         return len(self) and True or False
 
 # Interface classes.

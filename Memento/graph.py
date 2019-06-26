@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 """
@@ -117,9 +117,10 @@ def write_graph(relations, filename, directed=True, labels=False):
 
         # Produce a graph description, combining the node and edge definitions.
 
-        print >>out, graph_template % (directed and "digraph" or "graph",
-                                       "".join(nodes),
-                                       "".join(edges))
+        print(graph_template % (directed and "digraph" or "graph",
+                                "".join(nodes),
+                                "".join(edges)),
+              file=out)
 
     finally:
         out.close()

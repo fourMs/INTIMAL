@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 """
@@ -21,6 +21,7 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from collections import defaultdict
+import operator
 
 class CountingDict(defaultdict):
 
@@ -37,7 +38,52 @@ class CountingDict(defaultdict):
             l.append("%r: %r" % (key, value))
         return "{%s}" % ", ".join(l)
 
+    def has_key(self, key):
+        return key in self
+
+class Comparable:
+
+    "A helper class providing comparison methods."
+
+    def compare(self, op, other):
+        return op(self.to_operand(self), self.to_operand(other))
+
+    def to_operand(self, value):
+        return value
+
+    def __lt__(self, other):
+        return self.compare(operator.lt, other)
+
+    def __le__(self, other):
+        return self.compare(operator.le, other)
+
+    def __gt__(self, other):
+        return self.compare(operator.gt, other)
+
+    def __ge__(self, other):
+        return self.compare(operator.ge, other)
+
+    def __eq__(self, other):
+        return self.compare(operator.eq, other)
+
+    def __ne__(self, other):
+        return self.compare(operator.ne, other)
+
 # Comparison functions.
+
+def cmp(a, b):
+
+    """
+    Return -1 if 'a' is less than 'b', 1 if 'a' is greater than 'b', 0
+    otherwise.
+    """
+
+    if a < b:
+        return -1
+    elif a > b:
+        return 1
+    else:
+        return 0
 
 def cmp_value_lengths(a, b):
 

@@ -86,9 +86,9 @@ def test_populated_fragments():
     show("len(fragments[1].words)", len(fragments[1].words), 3)
     show("len(fragments[2].words)", len(fragments[2].words), 4)
 
-    show("fragments[0].words[0]", fragments[0].words[0], u"Un")
-    show("fragments[2].words[-1]", fragments[2].words[-1], u".")
-    show("fragments[4].words", fragments[4].words, [u"su", u"cabeza"])
+    show("fragments[0].words[0]", fragments[0].words[0], "Un")
+    show("fragments[2].words[-1]", fragments[2].words[-1], ".")
+    show("fragments[4].words", fragments[4].words, ["su", "cabeza"])
 
 def main():
     test_categorised_fragments()

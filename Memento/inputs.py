@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 """
@@ -146,7 +146,7 @@ def populate_fragments(fragments, textdoc, source):
 
         while current is None or start >= current.source.end:
             try:
-                current = it.next()
+                current = it.__next__()
             except StopIteration:
                 return
 

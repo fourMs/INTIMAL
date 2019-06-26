@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 """
@@ -43,7 +43,7 @@ class Wordlist:
 
             # Convert terms/words to a specific string form.
 
-            if unicode(word) in self.words:
+            if str(word) in self.words:
                 l.append(word)
 
         return l

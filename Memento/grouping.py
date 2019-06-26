@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 """
@@ -50,7 +50,7 @@ def group_names(terms):
 
     for term in terms:
         tag = isinstance(term, Term) and term.tag or None
-        word = unicode(term)
+        word = str(term)
 
         # Add title-cased words, incorporating any filler words.
 
@@ -101,12 +101,12 @@ def group_quantities(terms):
 
     "Group 'terms' into entities for quantities."
 
-    units = [u"años", u"días"]
+    units = ["años", "días"]
     l = []
     entity = []
 
     for term in terms:
-        word = unicode(term)
+        word = str(term)
 
         if word.isdigit():
             if entity:
@@ -135,7 +135,7 @@ def emit_entity(l, entity):
     "Add to 'l' the given 'entity'."
 
     if len(entity) > 1:
-        l.append(" ".join(map(unicode, entity)))
+        l.append(" ".join(map(str, entity)))
     else:
         l.append(entity[0])
 

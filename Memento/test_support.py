@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 """
@@ -33,11 +33,11 @@ def set_verbose():
         verbose = True
 
 def show(text, result, expected):
-    print result == expected and "Success" or "Failure",
+    print(result == expected and "Success" or "Failure", end=" ")
     if verbose:
-        print text,
-        print repr(result), repr(expected)
+        print(text, end=" ")
+        print(repr(result), repr(expected))
     else:
-        print
+        print()
 
 # vim: tabstop=4 expandtab shiftwidth=4
