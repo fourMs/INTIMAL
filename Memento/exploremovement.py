@@ -18,149 +18,66 @@ details.
 
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see <http://www.gnu.org/licenses/>.
+
+----
+
+Audio playback needs ffmpeg to play audio and pydub to be installed:
+
+python3 -m pip install pydub
+
+To install ffmpeg you can run "brew install ffmpeg" in the terminal on Mac OS X.
 """
 
-from os import listdir
-from os.path import isdir, join
-import codecs
-import random
-import sys
-import math #For sum of float
-import socket #UDP connection
-from struct import *
-import csv #Read/write csv file
-from collections import deque #Stack
+from collections import deque
+from explore import Explorer, Prompter, get_data, main
+from math import fsum
+from os.path import join
+from struct import unpack_from
 import select
+import socket
+import sys
 
-#Audio playback (need ffmpeg to play audio and install pydub (python3 -m pip install pydub))
-#For installing ffmpeg you can run "brew install ffmpeg" in the terminal
-#For installing pydub you can run "python3 -m pip install pydub"
+# Audio playback.
+
 from pydub import AudioSegment
 from pydub.playback import play
 
-encoding = "utf-8"
-
-#path to audiofile
-audiopath = "AudiosMemento/"
-
-def readfile(filename):
-
-    "Return the text in 'filename'."
-
-    f = open(filename, encoding=encoding)
-    try:
-        return f.read()
-    finally:
-        f.close()
-
-class Explorer:
+class AudioExplorer(Explorer):
 
     "An explorer of the generated data."
 
-    def __init__(self, datadir, out):
+    # Path to audio file.
 
-        "Initialise the explorer with the 'datadir' and 'out' stream."
+    audiopath = "AudiosMemento"
 
-        self.datadir = datadir
-        self.out = out
+    def play_fragment(self, identifier):
 
-        # Maintain a current fragment and step forward across related fragments.
+        "Play the audio for the fragment having the given 'identifier'."
 
-        self.fragment = None
-        self.step = None
-        self.left_rotation = None
-        self.right_rotation = None
+        # Obtain the filename and timing details from the identifier.
 
-        # Remember visited fragments.
+        split = identifier.split(":")
+        filename = split[0]
+        duration = split[1].split("-")
 
-        self.visited = []
+        start = float(duration[0])
+        end = float(duration[1])
 
-    def have_rotation(self):
-        return self.left_rotation is not None or self.right_rotation is not None
+        playfile = join(self.audiopath, filename + ".wav")
+        sound = AudioSegment.from_file(playfile, format="wav")
 
-    def have_step(self):
-        return self.step is not None
+        # Convert from seconds to milliseconds.
 
-    # Fragment selection.
+        splice = sound[start*1000:end*1000]
+        play(splice)
 
-    def get_fragments(self):
+    def play_visited(self):
 
-        "Return all the fragment identifiers."
+        "Play audio to indicate a visited fragment."
 
-        return listdir(self.datadir)
-
-    def select_fragment(self, identifier):
-
-        "Select the fragment with the given 'identifier'."
-
-        if identifier not in self.get_fragments():
-            return
-
-        # Reset stepping and rotation.
-
-        self.fragment = self.open_fragment(identifier)
-        self.step = None
-        self.left_rotation = None
-        self.right_rotation = None
-
-    def select_random_fragment(self):
-
-        "Select a random fragment."
-        unvisited = set(self.get_fragments()).difference(self.visited)
-        l = random.sample(unvisited, 1)
-        if l:
-            self.select_fragment(l[0])
-        
-        return self.fragment.identifier
-
-    # Fragment directory contents.
-
-    def open_fragment(self, identifier):
-
-        "Return a fragment object for the 'identifier'."
-
-        return Fragment(identifier, join(self.datadir, identifier))
-
-    # Convenience methods.
-
-    def get_rotation_fragment(self):
-
-        "Return the identifier of the current rotation fragment."
-
-        if self.left_rotation is not None:
-            sequence = "left"
-            i = self.left_rotation
-        elif self.right_rotation is not None:
-            sequence = "right"
-            i = self.right_rotation
-        else:
-            return self.fragment.identifier
-
-        related = self.fragment.get_relations(sequence)
-        return related[i].get_data("fragment")
-
-    def get_step_fragment(self):
-
-        "Return the identifier of the current step fragment."
-
-        if self.have_step():
-            related = self.fragment.get_relations("forward")
-            fragment = related[self.step]
-            return fragment.get_data("fragment")
-        else:
-            return self.fragment.identifier
-
-    # Output methods.
-
-    def show_fragments(self):
-
-        "Show all the fragment identifiers."
-
-        identifiers = self.get_fragments()
-        identifiers.sort()
-
-        for identifier in identifiers:
-            print(identifier, file=self.out)
+        playfile = join(self.audiopath, "ExcerptBrunaSoplo.wav")
+        sound = AudioSegment.from_file(playfile, format="wav")
+        play(sound)
 
     def show_fragment(self, identifier=None, view=False):
 
@@ -169,449 +86,147 @@ class Explorer:
         the current fragment.
         """
 
-        fragment = identifier and self.open_fragment(identifier) or self.fragment
+        identifier = identifier or self.fragment.identifier
 
-        if not view and fragment.identifier in self.visited:
-            print("VISITED!", file=self.out)
-            print(file=self.out)
-            return fragment.identifier, True
-        else:
-            print(fragment.identifier, file=self.out)
-            print(fragment.get_data("category"), file=self.out)
-            print(file=self.out)
-            print(fragment.get_data("text"), file=self.out)
-            print(file=self.out)
+        # If visited, play a special sound and choose another fragment.
 
-        if self.step is None:
-            related = fragment.get_relations("forward")
-            unvisited = set(map(lambda f: f.identifier, related)).difference(self.visited)
-            print("%d fragments ahead (%d unseen)." % (len(related), len(unvisited)), file=self.out)
-            print(file=self.out)
+        if not view and identifier in self.visited:
+            self.play_visited()
+            self.select_random_fragment() 
+
+        self.play_fragment(identifier)
 
         # Remember this fragment as having been visited.
 
         if not view:
             self.visited.append(fragment.identifier)
-        
-        return fragment.identifier, False
 
-    def show_viewed_fragment(self):
+class MotionPrompter(Prompter):
 
-        "Show the viewed fragment regardless of whether it has been visited."
+    "A control mechanism employing motion sensors."
 
-        identifier = self.get_rotation_fragment() or self.get_step_fragment()
+    def __init__(self, explorer):
+        self.explorer = explorer
+        self.init_socket()
 
-        self.show_fragment(identifier, view=True)
+        # Set the first values to use in derivation.
 
-    def show_similarity(self, fragment):
+        self.stack = deque(maxlen = 50)
+        self.prev = self.receive_values()
+        self.command = None
 
-        "Show similarity to the given related 'fragment'."
+    def empty_socket(self):
 
-        print("Measure:", fragment.get_data("measure"), file=self.out)
-        print("Similarity:", fragment.get_data("similarity"), file=self.out)
-        print(file=self.out)
+        "Remove data from the socket buffer."
 
-    # Navigation methods.
+        input = [self.sock]
+        while 1:
+            inputready, o, e = select.select(input,[],[], 0.0)
+            if not inputready: break
+            for s in inputready: s.recv(1)
 
-    def forward(self):
+    def init_socket(self):
 
-        """
-        Move forward from the current fragment, showing fragment details in the
-        sequence ahead. If the final fragment in the sequence is reached, it is
-        selected as the current fragment.
+        "Make a UDP socket for communication."
 
-        If a rotation fragment was being shown, it is selected as the current
-        fragment and provides the sequence of related fragments.
-        """
+        # If gethostbyname throws an error, comment out that line and use the one
+        # below instead.
 
-        # If rotating, select the currently-viewed fragment first.
+        #UDP_IP = "put your IP address here"
 
-        if self.have_rotation():
-            self.select_fragment(self.get_rotation_fragment())
+        UDP_IP = socket.gethostbyname(socket.gethostname())
+        UDP_PORT = 6000
 
-        # Step forward to the first or subsequent fragments. If reaching the
-        # limit, select the final fragment in the sequence and step forward from
-        # it.
+        print("\nReceiver IP: ", UDP_IP)
+        print("Port: ", UDP_PORT)
 
-        related = self.fragment.get_relations("forward")
+        # Create an Internet addressable UDP socket.
 
-        if related:
-            limit = len(related) - 1
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind((UDP_IP, UDP_PORT))
 
-            if self.step is None:
-                self.step = 0
-            elif self.step < limit:
-                self.step += 1
-            
-            print("Step #%d..." % self.step, file=self.out)
-            self.show_similarity(related[self.step])
+    def receive_values(self):
 
-            if self.step == limit:
-                self.select_fragment(self.get_step_fragment())
-                self.step = None
+        "Receive measurement values."
 
-        return self.show_fragment(self.get_step_fragment())
+        data = sock.recv(1024)
+        ax = float("%1.4f" % unpack_from('!f', data, 0))
+        ay = float("%1.4f" % unpack_from('!f', data, 4))
+        az = float("%1.4f" % unpack_from('!f', data, 8))
+        gyroY = float("%1.4f" % unpack_from('!f', data, 28))
 
-    def rotate(self, direction):
+        self.stack.append(gyroY)
+        return ax + ay + az
 
-        """
-        Rotate in the given 'direction' (negative to the left, positive to the
-        right) from the current fragment, showing fragment details in the
-        sequence oriented on the current fragment's category. If the end of the
-        sequence is reached, the sequence will be navigated from the opposite
-        end.
+    def wait(self):
 
-        If a step fragment was being shown, it is selected as the current
-        fragment and provides the sequence of related fragments.
-        """
+        "Wait for a command."
 
-        # If stepping forward, select the currently-viewed fragment first.
+        # Empty the socket so we do not compare data we got before audio
+        # playback and data received after.
 
-        if self.step is not None:
-            self.select_fragment(self.get_step_fragment())
+        self.empty_socket()
 
-        # If changing rotation direction, select the currently-viewed fragment.
+        # Loop, performing movements according to data from SensorUDP app.
 
-        elif self.left_rotation is not None and direction > 0 or \
-             self.right_rotation is not None and direction < 0:
+        self.command = None
 
-            self.select_fragment(self.get_rotation_fragment())
+        while not self.command:
+            accel_sum = self.receive_values()
+            gyro_sum = fsum(self.stack)
 
-        # Choose the sequence of fragments.
+            # The absolute value of the derivative to get jerk/rate of change in
+            # acceleration.
 
-        if direction < 0:
-            sequence = "left"
-            i = self.left_rotation
-        else:
-            sequence = "right"
-            i = self.right_rotation
+            if abs(accel_sum - self.prev) > 1:
+                print("step")
+                self.command = "forward"
 
-        # Cycle through the available fragments.
+            self.prev = accel_sum
 
-        related = self.fragment.get_relations(sequence)
+            # Check the sum of the stack of gyro values is above or below a
+            # certain threshold.
 
-        if related:
-            limit = len(related) - 1
+            if gyro_sum > 40:
+                print("rotation left")
+                self.command = "left"
+                self.stack.clear()
+                self.prev = self.receive_values()
 
-            if direction < 0:
-                if i is None:
-                    i = limit
-                elif i > 0:
-                    i -= 1
-                else:
-                    i = None
+            elif gyro_sum < -40:
+                print("rotation right")
+                self.command = "right"
+                self.stack.clear()
+                self.prev = self.receive_values()
 
-            elif direction > 0:
-                if i is None:
-                    i = 0
-                elif i < limit:
-                    i += 1
-                else:
-                    i = None
+    def welcome(self):
 
-        # Show similarity to the selected fragment.
+        "Choose a fragment to begin with."
 
-        if i is not None:
-            self.show_similarity(related[i])
+        print("""
+(0) If you do not have the "SensorUDP" app, download it from the "Play Store".
 
-        # Update the position in the sequence.
+(1) Turn on "Acceleration" and "Rotation" in the SensorUDP app and "SEND DATA"
+    to the IP and Port shown above. The computer and the mobile phone has
+    to be connected to the same WiFi network.
 
-        if direction < 0:
-            self.left_rotation = i
-        else:
-            self.right_rotation = i
+(2) Then select a fragment to start or press Enter/Return for a random fragment.
 
-        return self.show_fragment(self.get_rotation_fragment())
+(3) To quit, press "CONTROL + C".
+""")
 
-    def stop(self):
-
-        "Stop and select any step fragment as the current fragment."
-
-        if self.have_step():
-            self.select_fragment(self.get_step_fragment())
-        elif self.have_rotation():
-            self.select_fragment(self.get_rotation_fragment())
-
-        self.show_viewed_fragment()
-    
-    def playFile(self, fragment, visited, sock):
-        if visited:
-            playfile = audiopath + "ExcerptBrunaSoplo.wav"
-            sound = AudioSegment.from_file(playfile, format="wav")
-            play(sound)   
-            self.show_fragment(fragment)
-
-
-        split = fragment.split(":")
-        filename = split[0]
-        duration = split[1].split("-")
-
-        start = float(duration[0]) 
-        end = float(duration[1])
-
-        playfile = audiopath + filename + ".wav"
-        sound = AudioSegment.from_file(playfile, format="wav")
-
-        #Times 1000 to go from seconds to milliseconds
-        splice = sound[start*1000:end*1000]
-        play(splice)
-
-        #Empty the socket so we do not compare data we got before playback of audiofile and data recieved after
-        empty_socket(sock)       
-
-
-class Fragment:
-
-    "A fragment abstraction employing a directory."
-
-    def __init__(self, identifier, datadir):
-        self.identifier = identifier
-        self.datadir = datadir
-
-        # Initialise the fragment identifier from a file if appropriate.
-
-        if self.identifier is None:
-            self.identifier = self.get_data("fragment")
-
-    # Fragment directory contents.
-
-    def get_data(self, datatype):
-
-        "Return the textual content for the fragment of the given 'datatype'."
-
-        textfile = join(self.datadir, datatype)
-        return readfile(textfile)
-
-    def get_relations(self, kind):
-
-        "Return a collection of relations of the given 'kind'."
-
-        return Related(join(self.datadir, kind)) 
-
-class Related:
-
-    "Collections of related fragments."
-
-    def __init__(self, datadir):
-        self.datadir = datadir
-        self.length = isdir(self.datadir) and len(listdir(self.datadir)) or 0
-
-    def __getitem__(self, n):
-
-        "Return an object to access the related fragment in position 'n'."
-
-        if n >= len(self):
-            raise IndexError(n)
-
-        return Fragment(None, join(self.datadir, str(n)))
-
-    def __len__(self):
-
-        "Return the number of related fragments of this collection's kind."
-
-        return self.length
-
-    def __bool__(self):
-        return len(self) and True or False
-
-# Interface classes.
-
-class Prompter:
-
-    "A class responsible for prompting and obtaining input."
-
-    def __init__(self, out):
-
-        "Initialise the prompter with the given 'out' stream."
-
-        self.out = out
-
-    # Input methods.
-
-    def get_input(self, prompt):
-
-        "Prompt and return input."
-
-        print(prompt, end="", file=self.out)
-        s = input()
-        print(file=self.out)
-        return s
-
-# Interface functions.
-
-def backtrack(explorer, prompter):
-
-    "Remove recent history from the 'explorer'."
-
-    out = prompter.out
-    show_visited(explorer, prompter)
-
-    while True:
-        i = prompter.get_input("position> ")
-        if not i:
-            break
-
-        try:
-            i = int(i)
-            identifier = explorer.visited[i]
-            del explorer.visited[i:]
-            explorer.select_fragment(identifier)
-        except (IndexError, ValueError):
-            print("Bad position.", file=out)
-
-        if explorer.fragment:
-            break
-
-    explorer.show_fragment()
-
-def jump(explorer, prompter):
-
-    "Obtain a fragment identifier for the 'explorer'."
-
-    while True:
-        identifier = prompter.get_input("fragment> ")
-
-        if identifier:
-            explorer.select_fragment(identifier)
-        else:
-            explorer.select_random_fragment()
-
-        if explorer.fragment:
-            break
-
-    fragmentidentifier = explorer.show_fragment()
-    return fragmentidentifier
-
-def show_visited(explorer, prompter):
-
-    "Show visited fragments in the 'explorer'."
-
-    out = prompter.out
-
-    for i, identifier in enumerate(explorer.visited):
-        print("%s) %s" % (i, identifier), file=out)
-
-    print(file=out)
-
-def socketUDP(): 
-    #If gethostbyname throws an error, comment out that line and use the one belove instead
-    #UDP_IP = "put your IP adress here"
-
-    UDP_IP = socket.gethostbyname(socket.gethostname())
-    print("\nReceiver IP: ", UDP_IP)
-    UDP_PORT = 6000
-    float(UDP_PORT)
-    print("Port: ", UDP_PORT)   
-    sock = socket.socket(socket.AF_INET, # Internet
-                        socket.SOCK_DGRAM) # UDP
-    sock.bind((UDP_IP, UDP_PORT))
-    return sock 
-    
-
-def setPrevValue(que):
-    data = sock.recv(1024)
-    ax = float("%1.4f" %unpack_from ('!f', data, 0))
-    ay = float("%1.4f" %unpack_from ('!f', data, 4))
-    az = float("%1.4f" %unpack_from ('!f', data, 8))
-    gyroY = float("%1.4f" %unpack_from ('!f', data, 28))
-    que.append(gyroY)
-
-    return ax + ay + az   
-
-#Remove data from the socketbuffer
-def empty_socket(sock):
-    input = [sock]
-    while 1:
-        inputready, o, e = select.select(input,[],[], 0.0)
-        if len(inputready)==0: break
-        for s in inputready: s.recv(1)
-
-def description():
-    print("\n(1)First turn on \"Acceleration\" and \"Rotation\" in the SensorUDP app and \"SEND DATA\" to the IP and Port shown above. The computer and the mobile phone has to be connected to the same WiFi")
-    print("If you do not have the \"SensorUDP\" app, download it from \"Play Store\"\n")
-    print("(2)Then select a fragment to start or press Enter/Return for a random fragment.", file=out)
-    print("\n(3)To quit, press \"CONTROL + C\"\n")
-
-# Main program.
+        self.explorer.show_fragments()
+        self.jump()
 
 if __name__ == "__main__":
 
-    # Obtain the output directory.
+    # Initialise the interaction objects.
 
-    if len(sys.argv) < 2:
-        print("Need the output directory to explore.", file=sys.stderr)
-        sys.exit(1)
-
-    datadir = join(sys.argv[1], "data")
-
-    if not isdir(datadir):
-        print("Need the output directory containing a subdirectory called data.", file=sys.stderr)
-        sys.exit(1)
-
-    # Initialise the explorer.
-
+    datadir = get_data()
     out = sys.stdout
-    explorer = Explorer(datadir, out)
-    prompter = Prompter(out)
+    explorer = AudioExplorer(datadir, out)
+    prompter = MotionPrompter(explorer, out)
+    
+    main(explorer, prompter)
 
-    # Choose a fragment to begin with.
-    explorer.show_fragments()
-
-    #Set up a socket
-    sock = socketUDP()
-
-    #Describing how to interact
-    description()
-    fragment, visited = jump(explorer, prompter)
-
-   
-    #Set the max lenght of the stack que
-    que = deque(maxlen = 50)
-
-    #Set prev to be the first values to use in derivation
-    prev = setPrevValue(que)
-    explorer.playFile(fragment, visited, sock)
-
-    # Loop, performing movements according to data from SensorUDP app.
-    while True:
-        data = sock.recv(1024) # buffer size is 1024 bytes
-        ax = float("%1.4f" %unpack_from ('!f', data, 0))
-        ay = float("%1.4f" %unpack_from ('!f', data, 4))
-        az = float("%1.4f" %unpack_from ('!f', data, 8))
-        accel_sum = ax + ay + az
-
-        #The absolute value of the derivative to get jerk/rate of change in acceleration 
-        if(abs(accel_sum - prev) > 1):
-            print("step")
-            fragment, visited = explorer.forward()
-            if visited:
-                fragment = explorer.select_random_fragment()
-            explorer.playFile(fragment, visited, sock)
-            prev = setPrevValue(que)
-        else:
-            prev = accel_sum
-
-        gyroY = float("%1.4f" %unpack_from ('!f', data, 28))
-        que.append(gyroY)
-        gyro_sum = math.fsum(que)
-
-        #Check the sum of the stack of gyro values is above or belove a certain threshold.
-        if(gyro_sum > 40):
-            print(gyro_sum)
-            print("rotation left")  
-            fragment, visited = explorer.rotate(-1) 
-            if visited:
-                fragment = explorer.select_random_fragment() 
-            explorer.playFile(fragment, visited, sock)
-            que.clear()
-            prev = setPrevValue(que)
-        elif(gyro_sum < -40):
-            print(gyro_sum)
-            print("rotation right")
-            fragment, visited = explorer.rotate(1)
-            if visited:
-                fragment = explorer.select_random_fragment()
-            explorer.playFile(fragment, visited, sock)
-            que.clear()
-            prev = setPrevValue(que)
 # vim: tabstop=4 expandtab shiftwidth=4

@@ -134,64 +134,6 @@ class Explorer:
         else:
             return self.fragment.identifier
 
-    # Output methods.
-
-    def show_fragments(self):
-
-        "Show all the fragment identifiers."
-
-        identifiers = self.get_fragments()
-        identifiers.sort()
-
-        for identifier in identifiers:
-            print(identifier, file=self.out)
-
-    def show_fragment(self, identifier=None, view=False):
-
-        """
-        Show the given fragment details for the given 'identifier' or those of
-        the current fragment.
-        """
-
-        fragment = identifier and self.open_fragment(identifier) or self.fragment
-
-        if not view and fragment.identifier in self.visited:
-            print("VISITED!", file=self.out)
-            print(file=self.out)
-        else:
-            print(fragment.identifier, file=self.out)
-            print(fragment.get_data("category"), file=self.out)
-            print(file=self.out)
-            print(fragment.get_data("text"), file=self.out)
-            print(file=self.out)
-
-        if self.step is None:
-            related = fragment.get_relations("forward")
-            unvisited = set(map(lambda f: f.identifier, related)).difference(self.visited)
-            print("%d fragments ahead (%d unseen)." % (len(related), len(unvisited)), file=self.out)
-            print(file=self.out)
-
-        # Remember this fragment as having been visited.
-
-        if not view:
-            self.visited.append(fragment.identifier)
-
-    def show_viewed_fragment(self):
-
-        "Show the viewed fragment regardless of whether it has been visited."
-
-        identifier = self.get_rotation_fragment() or self.get_step_fragment()
-
-        self.show_fragment(identifier, view=True)
-
-    def show_similarity(self, fragment):
-
-        "Show similarity to the given related 'fragment'."
-
-        print("Measure:", fragment.get_data("measure"), file=self.out)
-        print("Similarity:", fragment.get_data("similarity"), file=self.out)
-        print(file=self.out)
-
     # Navigation methods.
 
     def forward(self):
@@ -315,6 +257,68 @@ class Explorer:
 
         self.show_viewed_fragment()
 
+class TextExplorer(Explorer):
+
+    "A textual explorer."
+
+    # Output methods.
+
+    def show_fragments(self):
+
+        "Show all the fragment identifiers."
+
+        identifiers = self.get_fragments()
+        identifiers.sort()
+
+        for identifier in identifiers:
+            print(identifier, file=self.out)
+
+    def show_fragment(self, identifier=None, view=False):
+
+        """
+        Show the given fragment details for the given 'identifier' or those of
+        the current fragment.
+        """
+
+        fragment = identifier and self.open_fragment(identifier) or self.fragment
+
+        if not view and fragment.identifier in self.visited:
+            print("VISITED!", file=self.out)
+            print(file=self.out)
+        else:
+            print(fragment.identifier, file=self.out)
+            print(fragment.get_data("category"), file=self.out)
+            print(file=self.out)
+            print(fragment.get_data("text"), file=self.out)
+            print(file=self.out)
+
+        if self.step is None:
+            related = fragment.get_relations("forward")
+            unvisited = set(map(lambda f: f.identifier, related)).difference(self.visited)
+            print("%d fragments ahead (%d unseen)." % (len(related), len(unvisited)), file=self.out)
+            print(file=self.out)
+
+        # Remember this fragment as having been visited.
+
+        if not view:
+            self.visited.append(fragment.identifier)
+
+    def show_viewed_fragment(self):
+
+        "Show the viewed fragment regardless of whether it has been visited."
+
+        identifier = self.get_rotation_fragment() or self.get_step_fragment()
+
+        self.show_fragment(identifier, view=True)
+
+    def show_similarity(self, fragment):
+
+        "Show similarity to the given related 'fragment'."
+
+        print("Measure:", fragment.get_data("measure"), file=self.out)
+        print("Similarity:", fragment.get_data("similarity"), file=self.out)
+        print(file=self.out)
+
 class Fragment:
 
     "A fragment abstraction employing a directory."
@@ -375,11 +379,65 @@ class Prompter:
 
     "A class responsible for prompting and obtaining input."
 
-    def __init__(self, out):
+    def jump(self):
 
-        "Initialise the prompter with the given 'out' stream."
+        "Obtain a fragment identifier for the explorer."
 
+        print("Select a fragment or press Enter/Return for a random fragment.", file=self.out)
+
+        while True:
+            identifier = self.get_input("fragment> ")
+
+            if identifier:
+                self.explorer.select_fragment(identifier)
+            else:
+                self.explorer.select_random_fragment()
+
+            if self.explorer.fragment:
+                break
+
+        self.explorer.show_fragment()
+
+    # Command inspection.
+
+    def have_backtrack(self):
+        return self.command in ("b", "back", "backtrack")
+
+    def have_forward(self):
+        return self.command in ("f", "forward")
+
+    def have_jump(self):
+        return self.command in ("j", "jump")
+
+    def have_left(self):
+        return self.command in ("l", "left")
+
+    def have_quit(self):
+        return self.command in ("q", "quit")
+
+    def have_right(self):
+        return self.command in ("r", "right")
+
+    def have_stop(self):
+        return self.command in ("s", "stop")
+
+    def have_text(self):
+        return self.command in ("t", "text")
+
+    def have_visited(self):
+        return self.command in ("v", "visited")
+
+class TextPrompter(Prompter):
+
+    "Textual interaction."
+
+    def __init__(self, explorer, out):
+
+        "Initialise the prompter with the given 'explorer' and 'out' stream."
+
+        self.explorer = explorer
         self.out = out
+        self.command = None
 
     # Input methods.
 
@@ -392,66 +450,70 @@ class Prompter:
         print(file=self.out)
         return s
 
-# Interface functions.
+    # Interface methods.
 
-def backtrack(explorer, prompter):
+    def backtrack(self):
 
-    "Remove recent history from the 'explorer'."
+        "Remove recent history from the explorer."
 
-    out = prompter.out
-    show_visited(explorer, prompter)
+        self.show_visited()
 
-    while True:
-        i = prompter.get_input("position> ")
-        if not i:
-            break
+        while True:
+            i = self.get_input("position> ")
+            if not i:
+                break
 
-        try:
-            i = int(i)
-            identifier = explorer.visited[i]
-            del explorer.visited[i:]
-            explorer.select_fragment(identifier)
-        except (IndexError, ValueError):
-            print("Bad position.", file=out)
+            try:
+                i = int(i)
+                identifier = self.explorer.visited[i]
+                del self.explorer.visited[i:]
+                self.explorer.select_fragment(identifier)
+            except (IndexError, ValueError):
+                print("Bad position.", file=self.out)
 
-        if explorer.fragment:
-            break
+            if self.explorer.fragment:
+                break
 
-    explorer.show_fragment()
+        self.explorer.show_fragment()
 
-def jump(explorer, prompter):
+    def bad_command(self):
 
-    "Obtain a fragment identifier for the 'explorer'."
+        "Show an error."
 
-    while True:
-        identifier = prompter.get_input("fragment> ")
+        print("Bad command.", file=out)
+        print(file=out)
 
-        if identifier:
-            explorer.select_fragment(identifier)
-        else:
-            explorer.select_random_fragment()
+    def show_visited(self):
 
-        if explorer.fragment:
-            break
+        "Show visited fragments in the explorer."
 
-    explorer.show_fragment()
+        for i, identifier in enumerate(self.explorer.visited):
+            print("%s) %s" % (i, identifier), file=self.out)
 
-def show_visited(explorer, prompter):
+        print(file=self.out)
 
-    "Show visited fragments in the 'explorer'."
+    def wait(self):
 
-    out = prompter.out
+        "Wait for a command."
 
-    for i, identifier in enumerate(explorer.visited):
-        print("%s) %s" % (i, identifier), file=out)
+        print("Which way? (%d fragments visited, %d different)" % \
+              (len(self.explorer.visited), len(set(self.explorer.visited))),
+              file=self.out)
+        print("(b)acktrack, (f)orward, (j)ump, (l)eft, (r)ight, (s)top, (t)ext, (v)isited, (q)uit",
+              file=self.out)
 
-    print(file=out)
+        self.command = self.get_input("> ")
 
-# Main program.
+    def welcome(self):
 
-if __name__ == "__main__":
+        "Choose a fragment to begin with."
 
-    # Obtain the output directory.
+        self.explorer.show_fragments()
+        self.jump()
+
+def get_data():
+
+    "Obtain the output directory."
 
     if len(sys.argv) < 2:
         print("Need the output directory to explore.", file=sys.stderr)
@@ -463,61 +525,62 @@ if __name__ == "__main__":
         print("Need the output directory containing a subdirectory called data.", file=sys.stderr)
         sys.exit(1)
 
-    # Initialise the explorer.
+    return datadir
 
-    out = sys.stdout
-    explorer = Explorer(datadir, out)
-    prompter = Prompter(out)
+# Main program.
 
-    # Choose a fragment to begin with.
+def main(explorer, prompter):
 
-    print("Select a fragment to start or press Enter/Return for a random fragment.", file=out)
-    explorer.show_fragments()
-    jump(explorer, prompter)
+    # Welcome and prompt the user.
+
+    prompter.welcome()
 
     # Loop, accepting commands, and performing movements.
 
     while True:
-        print("Which way? (%d fragments visited, %d different)" % \
-              (len(explorer.visited), len(set(explorer.visited))),
-              file=out)
-        print("(b)acktrack, (f)orward, (j)ump, (l)eft, (r)ight, (s)top, (t)ext, (v)isited, (q)uit",
-              file=out)
-
-        command = prompter.get_input("> ")
+        prompter.wait()
 
         # Movement commands.
 
-        if command in ("f", "forward"):
+        if prompter.have_forward():
             explorer.forward()
-        elif command in ("s", "stop"):
+        elif prompter.have_stop():
             explorer.stop()
-        elif command in ("l", "left"):
+        elif prompter.have_left():
             explorer.rotate(-1)
-        elif command in ("r", "right"):
+        elif prompter.have_right():
             explorer.rotate(1)
 
         # Navigation commands.
 
-        elif command in ("j", "jump"):
-            print("Select a fragment or press Enter/Return for a random fragment.", file=out)
-            jump(explorer, prompter)
-        elif command in ("v", "visited"):
-            show_visited(explorer, prompter)
-        elif command in ("b", "back", "backtrack"):
-            backtrack(explorer, prompter)
+        elif prompter.have_jump():
+            prompter.jump()
+        elif prompter.have_visited():
+            prompter.show_visited()
+        elif prompter.have_backtrack():
+            prompter.backtrack()
 
         # Informational commands.
 
-        elif command in ("t", "text"):
+        elif prompter.have_text():
             explorer.show_viewed_fragment()
 
         # Exit or unrecognised commands.
 
-        elif command in ("q", "quit"):
+        elif prompter.have_quit():
             break
         else:
-            print("Bad command.", file=out)
-            print(file=out)
+            prompter.bad_command()
+
+if __name__ == "__main__":
+
+    # Initialise the interaction objects.
+
+    datadir = get_data()
+    out = sys.stdout
+    explorer = TextExplorer(datadir, out)
+    prompter = TextPrompter(explorer, out)
+
+    main(explorer, prompter)
 
 # vim: tabstop=4 expandtab shiftwidth=4
