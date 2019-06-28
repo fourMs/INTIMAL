@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # -*- coding: utf-8
 
 """
@@ -22,7 +22,6 @@ this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from os import listdir
 from os.path import isdir, join
-from locale import getlocale, resetlocale, LC_CTYPE
 import codecs
 import random
 import sys
@@ -33,7 +32,7 @@ def readfile(filename):
 
     "Return the text in 'filename'."
 
-    f = codecs.open(filename, encoding=encoding)
+    f = open(filename, encoding=encoding)
     try:
         return f.read()
     finally:
@@ -93,7 +92,8 @@ class Explorer:
 
         "Select a random fragment."
 
-        l = random.sample(self.get_fragments(), 1)
+        unvisited = set(self.get_fragments()).difference(self.visited)
+        l = random.sample(unvisited, 1)
         if l:
             self.select_fragment(l[0])
 
@@ -144,7 +144,7 @@ class Explorer:
         identifiers.sort()
 
         for identifier in identifiers:
-            print >>self.out, identifier
+            print(identifier, file=self.out)
 
     def show_fragment(self, identifier=None, view=False):
 
@@ -156,20 +156,20 @@ class Explorer:
         fragment = identifier and self.open_fragment(identifier) or self.fragment
 
         if not view and fragment.identifier in self.visited:
-            print >>self.out, "VISITED!"
-            print >>self.out
+            print("VISITED!", file=self.out)
+            print(file=self.out)
         else:
-            print >>self.out, fragment.identifier
-            print >>self.out, fragment.get_data("category")
-            print >>self.out
-            print >>self.out, fragment.get_data("text")
-            print >>self.out
+            print(fragment.identifier, file=self.out)
+            print(fragment.get_data("category"), file=self.out)
+            print(file=self.out)
+            print(fragment.get_data("text"), file=self.out)
+            print(file=self.out)
 
         if self.step is None:
             related = fragment.get_relations("forward")
             unvisited = set(map(lambda f: f.identifier, related)).difference(self.visited)
-            print >>self.out, "%d fragments ahead (%d unseen)." % (len(related), len(unvisited))
-            print >>self.out
+            print("%d fragments ahead (%d unseen)." % (len(related), len(unvisited)), file=self.out)
+            print(file=self.out)
 
         # Remember this fragment as having been visited.
 
@@ -188,9 +188,9 @@ class Explorer:
 
         "Show similarity to the given related 'fragment'."
 
-        print >>self.out, "Measure:", fragment.get_data("measure")
-        print >>self.out, "Similarity:", fragment.get_data("similarity")
-        print >>self.out
+        print("Measure:", fragment.get_data("measure"), file=self.out)
+        print("Similarity:", fragment.get_data("similarity"), file=self.out)
+        print(file=self.out)
 
     # Navigation methods.
 
@@ -224,7 +224,7 @@ class Explorer:
             elif self.step < limit:
                 self.step += 1
             
-            print >>self.out, "Step #%d..." % self.step
+            print("Step #%d..." % self.step, file=self.out)
             self.show_similarity(related[self.step])
 
             if self.step == limit:
@@ -356,7 +356,7 @@ class Related:
         "Return an object to access the related fragment in position 'n'."
 
         if n >= len(self):
-            raise IndexError, n
+            raise IndexError(n)
 
         return Fragment(None, join(self.datadir, str(n)))
 
@@ -366,7 +366,7 @@ class Related:
 
         return self.length
 
-    def __nonzero__(self):
+    def __bool__(self):
         return len(self) and True or False
 
 # Interface classes.
@@ -375,15 +375,11 @@ class Prompter:
 
     "A class responsible for prompting and obtaining input."
 
-    def __init__(self, out, encoding):
+    def __init__(self, out):
 
-        """
-        Initialise the prompter with the given 'out' stream and input
-        'encoding'.
-        """
+        "Initialise the prompter with the given 'out' stream."
 
         self.out = out
-        self.encoding = encoding
 
     # Input methods.
 
@@ -391,10 +387,10 @@ class Prompter:
 
         "Prompt and return input."
 
-        print >>self.out, prompt,
-        s = raw_input()
-        print >>self.out
-        return unicode(s, self.encoding)
+        print(prompt, end="", file=self.out)
+        s = input()
+        print(file=self.out)
+        return s
 
 # Interface functions.
 
@@ -416,7 +412,7 @@ def backtrack(explorer, prompter):
             del explorer.visited[i:]
             explorer.select_fragment(identifier)
         except (IndexError, ValueError):
-            print >>out, "Bad position."
+            print("Bad position.", file=out)
 
         if explorer.fragment:
             break
@@ -447,52 +443,46 @@ def show_visited(explorer, prompter):
     out = prompter.out
 
     for i, identifier in enumerate(explorer.visited):
-        print >>out, "%s) %s" % (i, identifier)
+        print("%s) %s" % (i, identifier), file=out)
 
-    print >>out
+    print(file=out)
 
 # Main program.
 
 if __name__ == "__main__":
 
-    # Obtain locale details.
-
-    try:
-        resetlocale(LC_CTYPE)
-        _lang, console_encoding = getlocale(LC_CTYPE)
-    except ValueError:
-        console_encoding = "UTF-8"
-
     # Obtain the output directory.
 
     if len(sys.argv) < 2:
-        print >>sys.stderr, "Need the output directory to explore."
+        print("Need the output directory to explore.", file=sys.stderr)
         sys.exit(1)
 
     datadir = join(sys.argv[1], "data")
 
     if not isdir(datadir):
-        print >>sys.stderr, "Need the output directory containing a subdirectory called data."
+        print("Need the output directory containing a subdirectory called data.", file=sys.stderr)
         sys.exit(1)
 
     # Initialise the explorer.
 
-    out = codecs.getwriter(console_encoding)(sys.stdout)
+    out = sys.stdout
     explorer = Explorer(datadir, out)
-    prompter = Prompter(out, console_encoding)
+    prompter = Prompter(out)
 
     # Choose a fragment to begin with.
 
-    print >>out, "Select a fragment to start or press Enter/Return for a random fragment."
+    print("Select a fragment to start or press Enter/Return for a random fragment.", file=out)
     explorer.show_fragments()
     jump(explorer, prompter)
 
     # Loop, accepting commands, and performing movements.
 
     while True:
-        print >>out, "Which way? (%d fragments visited, %d different)" % \
-                     (len(explorer.visited), len(set(explorer.visited)))
-        print >>out, "(b)acktrack, (f)orward, (j)ump, (l)eft, (r)ight, (s)top, (t)ext, (v)isited, (q)uit"
+        print("Which way? (%d fragments visited, %d different)" % \
+              (len(explorer.visited), len(set(explorer.visited))),
+              file=out)
+        print("(b)acktrack, (f)orward, (j)ump, (l)eft, (r)ight, (s)top, (t)ext, (v)isited, (q)uit",
+              file=out)
 
         command = prompter.get_input("> ")
 
@@ -510,7 +500,7 @@ if __name__ == "__main__":
         # Navigation commands.
 
         elif command in ("j", "jump"):
-            print >>out, "Select a fragment or press Enter/Return for a random fragment."
+            print("Select a fragment or press Enter/Return for a random fragment.", file=out)
             jump(explorer, prompter)
         elif command in ("v", "visited"):
             show_visited(explorer, prompter)
@@ -527,7 +517,7 @@ if __name__ == "__main__":
         elif command in ("q", "quit"):
             break
         else:
-            print >>out, "Bad command."
-            print >>out
+            print("Bad command.", file=out)
+            print(file=out)
 
 # vim: tabstop=4 expandtab shiftwidth=4
