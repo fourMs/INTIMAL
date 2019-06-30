@@ -91,7 +91,7 @@ class AudioExplorer(Explorer):
         # If visited, play a special sound and choose another fragment.
 
         if not view and identifier in self.visited:
-            self.play_visited()
+            #self.play_visited()
             self.select_random_fragment() 
 
         self.play_fragment(identifier)
@@ -99,14 +99,18 @@ class AudioExplorer(Explorer):
         # Remember this fragment as having been visited.
 
         if not view:
-            self.visited.append(fragment.identifier)
+            self.visited.append(identifier)
+
+    def show_similarity(self, fragment):
+        pass
 
 class MotionPrompter(Prompter):
 
     "A control mechanism employing motion sensors."
 
-    def __init__(self, explorer):
+    def __init__(self, explorer, out):
         self.explorer = explorer
+        self.out = out
         self.init_socket()
 
         # Set the first values to use in derivation.
@@ -137,8 +141,8 @@ class MotionPrompter(Prompter):
         UDP_IP = socket.gethostbyname(socket.gethostname())
         UDP_PORT = 6000
 
-        print("\nReceiver IP: ", UDP_IP)
-        print("Port: ", UDP_PORT)
+        print("\nReceiver IP: ", UDP_IP, file=self.out)
+        print("Port: ", UDP_PORT, file=self.out)
 
         # Create an Internet addressable UDP socket.
 
@@ -149,7 +153,7 @@ class MotionPrompter(Prompter):
 
         "Receive measurement values."
 
-        data = sock.recv(1024)
+        data = self.sock.recv(1024)
         ax = float("%1.4f" % unpack_from('!f', data, 0))
         ay = float("%1.4f" % unpack_from('!f', data, 4))
         az = float("%1.4f" % unpack_from('!f', data, 8))
@@ -181,13 +185,12 @@ class MotionPrompter(Prompter):
             if abs(accel_sum - self.prev) > 1:
                 print("step")
                 self.command = "forward"
-
-            self.prev = accel_sum
+                self.prev = self.receive_values()
 
             # Check the sum of the stack of gyro values is above or below a
             # certain threshold.
 
-            if gyro_sum > 40:
+            elif gyro_sum > 40:
                 print("rotation left")
                 self.command = "left"
                 self.stack.clear()
@@ -198,6 +201,8 @@ class MotionPrompter(Prompter):
                 self.command = "right"
                 self.stack.clear()
                 self.prev = self.receive_values()
+            else:
+                self.prev = accel_sum
 
     def welcome(self):
 

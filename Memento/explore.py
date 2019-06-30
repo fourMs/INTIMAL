@@ -257,10 +257,6 @@ class Explorer:
 
         self.show_viewed_fragment()
 
-class TextExplorer(Explorer):
-
-    "A textual explorer."
-
     # Output methods.
 
     def show_fragments(self):
@@ -272,6 +268,12 @@ class TextExplorer(Explorer):
 
         for identifier in identifiers:
             print(identifier, file=self.out)
+
+class TextExplorer(Explorer):
+
+    "A textual explorer."
+
+    # Output methods.
 
     def show_fragment(self, identifier=None, view=False):
 
@@ -379,6 +381,17 @@ class Prompter:
 
     "A class responsible for prompting and obtaining input."
 
+    # Input methods.
+
+    def get_input(self, prompt):
+
+        "Prompt and return input."
+
+        print(prompt, end="", file=self.out)
+        s = input()
+        print(file=self.out)
+        return s
+
     def jump(self):
 
         "Obtain a fragment identifier for the explorer."
@@ -439,17 +452,6 @@ class TextPrompter(Prompter):
         self.out = out
         self.command = None
 
-    # Input methods.
-
-    def get_input(self, prompt):
-
-        "Prompt and return input."
-
-        print(prompt, end="", file=self.out)
-        s = input()
-        print(file=self.out)
-        return s
-
     # Interface methods.
 
     def backtrack(self):
@@ -480,8 +482,8 @@ class TextPrompter(Prompter):
 
         "Show an error."
 
-        print("Bad command.", file=out)
-        print(file=out)
+        print("Bad command.", file=self.out)
+        print(file=self.out)
 
     def show_visited(self):
 
