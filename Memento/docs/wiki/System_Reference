@@ -1,0 +1,433 @@
+= System Reference =
+
+<<TableOfContents(2,3)>>
+
+== Principal Classes ==
+
+The principal classes used for representing data are described below. They
+each inherit from the `Comparable` class in order to support comparisons
+between instances and ordering.
+
+=== Category ===
+
+ Source file:: `objects.py`
+
+Instances of the `Category` class encapsulate the details of categories to
+which fragments may be assigned. These details are as follows:
+
+ `parent`:: The parent category label.
+ `category`:: The specific category or subcategory label.
+
+Employing a class instead of a tuple or a combined string for the category
+information permits some flexibility in terms of how category values may be
+handled.
+
+######## A diagram showing the class's relationships.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph fragment {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  subgraph { rank=min; Comparable [href="#Comparable"]; }
+
+  Category [href="#Category"];
+
+  Category -> Comparable [arrowhead=empty];
+}
+}}}
+
+########
+
+Instances of `Category` inherit from `Comparable`.
+
+=== Comparable ===
+
+ Source file:: `utils.py`
+
+The `Comparable` class supports the special comparison methods needed to
+compare instances with each other. However, it delegates the actual
+comparison, converting the operands using any `to_operand` method provided by
+the class or any descendant classes, presenting these operands to the generic
+comparison operators.
+
+Thus, all classes inheriting from `Comparable` provide their own `to_operand`
+method returning the comparable form of their own instances. These comparable
+forms are instances of other types (strings, tuples, numbers, and so on) for
+which the means of comparison are already well established.
+
+Note that no real support is provided for comparing instances of different
+types or classes in this arrangement. Thus, it does not make sense to attempt
+to compare, say, connections with fragments.
+
+=== Connection ===
+
+ Source file:: `objects.py`
+
+Instances of the `Connection` class encapsulate details of relationships
+between fragments, where each connection involves precisely two fragments.
+Thus, the details of a connection instance are as follows:
+
+ `similarity`:: The computed similarity of two fragments.
+ `fragments`:: A collection of involved [[#Fragment|fragments]].
+
+Connection instances are created when performing comparisons between fragments
+in the `compare_fragments` function. The similarity is provided in the form of
+a combined term vector indicating the common terms between the two fragments
+and their combined weights. For example:
+
+{{{
+{"ganso" : 2.4, "pollo" : 3.25}
+}}}
+
+See the [[Data Processing]] document for more information on term vectors.
+
+######## A diagram showing the class's relationships.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph connection {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  subgraph { rank=min; Comparable [href="#Comparable"]; }
+
+  subgraph {
+    rank=same;
+    Connection [href="#Connection"];
+    Fragment [href="#Fragment"];
+  }
+
+  Connection -> Comparable [arrowhead=empty];
+
+  Connection -> Fragment;
+}
+}}}
+
+########
+
+Instances of `Connection` inherit from `Comparable` and reference `Fragment`
+instances.
+
+=== Fragment ===
+
+ Source file:: `objects.py`
+
+Instances of the `Fragment` class encapsulate the details of a textual
+fragment associated with part of a larger body of text, itself originating
+from an audio recording. The details of the fragment are as follows:
+
+ `source`:: The [[#Source|source]] or origin of the fragment.
+ `category`:: The [[#Category|category]] to which the fragment is assigned.
+ `words`:: The words or [[#Term|terms]] featured in the fragment.
+
+Since the words or terms of a fragment are provided upon instantiation as a
+collection of `Term` instances, a conventional representation of a single text
+string is not automatically defined for a fragment. Such a representation is
+defined later using the `commit_text` method.
+
+Of importance in establishing [[#Connection|connections]] between fragments is
+the definition of term vectors for fragments. These can be generated using the
+`get_term_vector` method and, after any scaling, made permanent using the
+`set_term_vector` method.
+
+######## A diagram showing the class's relationships.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph fragment {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  subgraph { rank=min; Comparable [href="#Comparable"]; }
+
+  subgraph {
+    rank=same;
+    Fragment [href="#Fragment"];
+    Category [href="#Category"];
+    Source [href="#Source"];
+    Term [href="#Term"];
+  }
+
+  Fragment -> Comparable [arrowhead=empty];
+
+  Fragment -> Category;
+  Fragment -> Source;
+  Fragment -> Term;
+}
+}}}
+
+########
+
+Instances of `Fragment` inherit from `Comparable` and reference `Category`,
+`Source` and `Term` instances.
+
+=== Source ===
+
+ Source file:: `objects.py`
+
+Instances of the `Source` class describe the origins of [[#Fragment|
+fragments]]. The following details are retained by each instance:
+
+ `filename`:: The name of the file providing the fragment.
+ `start`:: The start time of the fragment in the larger body of text.
+ `end`:: The end time of the fragment in the larger body of text.
+
+Start and end times are held as floating point values.
+
+######## A diagram showing the class's relationships.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph source {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  subgraph { rank=min; Comparable [href="#Comparable"]; }
+
+  Source [href="#Source"];
+
+  Source -> Comparable [arrowhead=empty];
+}
+}}}
+
+########
+
+Instances of `Source` inherit from `Comparable`.
+
+=== Term ===
+
+ Source file:: `objects.py`
+
+Instances of the `Term` class represent words or groups of words in a larger
+body of text. Although string instances could be used for such purposes,
+additional information can be usefully associated with terms to facilitate
+processing. Thus, the following details are retained by `Term` instances:
+
+ `word`:: The actual word appearing in the text.
+ `tag`:: Any part-of-speech tag associated with the word.
+ `normalised`:: The normalised form (lemma) associated with the word.
+
+The introduction of part-of-speech tags and normalised forms is done by the
+part-of-speech tagging and stemming activities. By tagging words, their role
+in sentences can be identified, and certain kinds of words (nouns, verbs,
+adjectives) can be preserved whilst others (articles, pronouns, prepositions)
+are discarded. By employing a normalised form for words, the presence of the
+same fundamental word can be more easily determined in fragments.
+
+######## A diagram showing the class's relationships.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph term {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  subgraph { rank=min; Comparable [href="#Comparable"]; }
+
+  Term [href="#Term"];
+
+  Term -> Comparable [arrowhead=empty];
+}
+}}}
+
+########
+
+Instances of `Term` inherit from `Comparable`.
+
+== Explorer Classes ==
+
+The [[Data Exploration]] programs employ classes for the navigation of the
+data and for handling interaction with the user.
+
+=== Explorer ===
+
+ Source file:: `explore.py`
+
+The `Explorer` class provides a basis for navigating [[Output Data|exported
+structured data]], with subclasses of `Explorer` providing specific mechanisms
+and interfaces. The following details are employed when initialising an
+instance of this class:
+
+ `datadir`:: The location of an [[Output Data|output data]] directory.
+ `out`:: An output stream (such as `sys.stdout`) used to communicate
+         navigational information.
+
+An instance of this class maintains the following state:
+
+ `fragment`::       The currently selected fragment.
+ `step`::           The number of steps taken in the forward direction through
+                    related fragments.
+ `left_rotation`::  The amount of rotation taken leftwards through related
+                    fragments.
+ `right_rotation`:: The amount of rotation taken rightwards through related
+                    fragments.
+
+The currently selected `fragment` is used to indicate a fragment that has been
+selected as the basis of subsequent navigation. Choosing to stop on a fragment
+or changing the direction of rotation causes a fragment to be selected as the
+current fragment. Stepping forward across related fragments to the final one
+defined will also cause this final fragment to be selected as the current
+fragment.
+
+Augmenting the current fragment are details of the number of steps taken
+forward through fragments related to the current fragment (`step`), and any
+amount of rotation performed in leftward or rightward directions
+(`left_rotation` and `right_rotation`). These details permit exploration of
+the related fragments defined in the output data for the current fragment.
+
+`Explorer` instances are controlled using the following principal operations:
+
+ `forward`:: Move forward, stepping across related fragments.
+ `rotate`::  Rotate in the indicated direction (a negative number signifying
+             left, a positive number signifying right).
+ `stop`::    Stop and select the currently viewed related fragment as the
+             current fragment.
+
+######## A diagram showing the class's relationships.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph explorer {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  subgraph { rank=min; Explorer; }
+
+  AudioExplorer [href="#AudioExplorer"];
+  TextExplorer [href="#TextExplorer"];
+
+  AudioExplorer -> Explorer [arrowhead=empty];
+  TextExplorer -> Explorer [arrowhead=empty];
+}
+}}}
+
+########
+
+`AudioExplorer` and `TextExplorer` both inherit from `Explorer`.
+
+=== Prompter ===
+
+ Source file:: `explore.py`
+
+The `Prompter` class provides the basis for interaction between a user and the
+[[#Explorer|explorer]] mechanism used to navigate the [[Output Data|output
+data]].
+
+######## A diagram showing the class's relationships.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph prompter {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  subgraph { rank=min; Prompter; }
+
+  MotionPrompter [href="#MotionPrompter"];
+  TextPrompter [href="#TextPrompter"];
+
+  subgraph {
+    rank=max;
+    RestrictedTextPrompter [href="#RestrictedTextPrompter"];
+  }
+
+  MotionPrompter -> Prompter [arrowhead=empty];
+  TextPrompter -> Prompter [arrowhead=empty];
+  RestrictedTextPrompter -> TextPrompter [arrowhead=empty];
+}
+}}}
+
+########
+
+`MotionPrompter`, `TextPrompter` and `RestrictedTextPrompter` all inherit from
+`Prompter`.
+
+=== MotionTester ===
+
+ Source file:: `test_movement.py`
+
+Separate to the other explorer-related classes, an instance of the
+`MotionTester` class acts as a producer and a conduit for simulated sensor
+data requested by an accompanying `RestrictedTextPrompter` instance. To
+achieve this, it takes the role of an explorer instance, supporting the
+`forward` and `rotate` operations, translating them into network messages
+understood by the `MotionPrompter` class.
+
+With a `MotionPrompter` instance listening for suitable network messages,
+those sent by the `MotionTester` can be used to drive the `MotionPrompter` and
+thus the explorer instance to which it is connected (such as an instance of
+`AudioExplorer`).
+
+######## A diagram showing the class's relationships.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph motiontester {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  RestrictedTextPrompter [href="#RestrictedTextPrompter"];
+  MotionTester [href="#MotionTester"];
+  MotionPrompter [href="#MotionTester"];
+  AudioExplorer [href="#MotionTester"];
+
+  RestrictedTextPrompter -> MotionTester;
+  MotionTester -> MotionPrompter [arrowhead=none,style=dashed];
+  MotionPrompter -> AudioExplorer;
+}
+}}}
+
+########
+
+`MotionTester` effectively combines with `MotionPrompter` to allow a
+`RestrictedTextPrompter` to drive an `AudioExplorer` or other explorer
+instance.
+
+== Peripheral and Utility Classes ==
+
+=== CountingDict ===
+
+ Source file:: `utils.py`
+
+A `CountingDict` instance is merely a dictionary that maintains a count for
+each key defined for the dictionary. It can be considered as a set whose
+members each have a count or total associated with them.
+
+######## A diagram showing the class's relationships.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph countingdict {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  subgraph { rank=min; defaultdict; }
+
+  CountingDict [href="#CountingDict"];
+
+  CountingDict -> defaultdict [arrowhead=empty];
+}
+}}}
+
+########
+
+`CountingDict` inherits from `defaultdict` (found in the Python standard
+library).
+
+=== Output ===
+
+=== POSFilter ===
+
+=== Wordlist ===
+
