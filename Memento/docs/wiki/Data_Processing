@@ -11,6 +11,8 @@ obtained, each of which defines a region of text corresponding to a period of
 audio. Each of these fragments may also have category information associated
 with it.
 
+== Fragment Processing ==
+
 A number of processing steps are undertaken with the populated fragments:
 
  * The removal of fragments having no corresponding text
