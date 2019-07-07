@@ -1,8 +1,340 @@
 = System Reference =
 
+This document aims to describe the processes and abstractions featured in the
+software system to a sufficient level of detail to facilitate understanding
+and future work.
+
 <<TableOfContents(2,3)>>
 
-== Principal Classes ==
+== Programs and Modules ==
+
+The following programs are provided in this system:
+
+|| '''Program'''        || '''Purpose'''                                    ||
+|| `build.py`           || [[#Building the Database|Builds the database]]   ||
+|| `explore.py`         || [[Data Exploration|Explores exported data]]      ||
+|| `exploremovement.py` || Explores data using motion sensor inputs         ||
+|| `export.py`          || [[#Exporting the Data|Selects and exports data]] ||
+|| `test_movement.py`   || Permits testing of `exploremovement.py`          ||
+
+The following modules are provided in this system:
+
+|| '''Module'''   || '''Purpose'''                                          ||
+|| `analysis`     || Provides text/linguistic analysis functions            ||
+|| `graph`        || Writes graph output for the Graphviz tool              ||
+|| `grouping`     || Permits the grouping of words into compound terms      ||
+|| `inputs`       || Input data handling                                    ||
+|| `objects`      || Common data processing abstractions                    ||
+|| `outputs`      || Output data handling                                   ||
+|| `related`      || Selection of related fragments                         ||
+|| `serialised`   || Serialised/stored data handling                        ||
+|| `stats`        || Statistics production                                  ||
+|| `stopwords`    || Word selection and filtering                           ||
+|| `test_support` || Support for [[Testing|testing]]                        ||
+|| `text`         || Elementary text processing support                     ||
+|| `utils`        || Common utilities                                       ||
+|| `vectors`      || Term vector computation                                ||
+|| `wordlist`     || Dictionary-based selection and filtering               ||
+
+Module filenames end with `.py` but are shown above in their program source
+code form.
+
+== Program Flow ==
+
+The general flow of execution when the different programs are run is described
+below. As noted in the [[Getting Started]] document, there are three main
+activities:
+
+ 1. [[Getting Started#Building the Database|Building the database]] to be used
+    for further processing.
+ 1. [[Getting Started#Selecting and Exporting Data|Selecting and exporting
+    data]] for review and further use.
+ 1. [[Data Exploration|Exploring the exported data]].
+
+=== Building the Database ===
+
+The `build.py` program contains a number of principal functions that perform
+the general processing workflow. These are described in more detail below.
+
+{{{{#!table
+
+######## A diagram showing the build activities.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph build {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  filenames [shape=folder,style=filled,fillcolor=cyan];
+  config [shape=folder,style=filled,fillcolor=cyan];
+  out [shape=folder,style=filled,fillcolor=cyan];
+  fragments [shape=folder,style=filled,fillcolor=cyan];
+  connections [shape=folder,style=filled,fillcolor=cyan];
+
+  filenames -> process_input_data;
+  config -> process_input_data;
+  process_input_data -> fragments;
+  process_input_data -> out;
+
+  fragments -> process_fragment_data;
+  config -> process_fragment_data;
+  process_fragment_data -> connections;
+  process_fragment_data -> out;
+
+  out -> emit_basic_output;
+  out -> emit_verbose_output;
+}
+}}}
+
+########
+
+||<^>
+
+Here, the `filenames` indicate the locations of input data to be consumed by
+the program. Together with `config` - the configuration of the program
+influenced by the command options presented to the program - the `fragments`
+and `connections` are produced by running the `process_input_data` and
+`process_fragment_data` functions in turn.
+
+The `out` object is also populated by these functions, collecting fragment and
+connection information together with other details about the input data. This
+object is employed by the `emit_basic_output` function to produce the
+essential data for further processing and by the `emit_verbose_output`
+function to produce data for inspection and review.
+
+}}}}
+
+The `process_input_data` function is concerned with obtaining the input data,
+reading and identifying fragments encoded within it, and performing initial
+processing on the fragment data.
+
+######## A diagram showing input data processing.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph process_input_data {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  fragments [shape=folder,style=filled,fillcolor=cyan];
+
+  get_fragments_from_files -> fragments;
+  fragments -> process_fragments -> process_fragment_tokens;
+
+  process_fragments -> normalise_accents;
+  process_fragments -> remove_punctuation_from_words;
+  process_fragments -> group_words;
+  process_fragments -> filter_words;
+
+  process_fragment_tokens -> stem_word;
+  process_fragment_tokens -> lower_word;
+}
+}}}
+
+########
+
+The `process_fragment_data` function is concerned with making it possible and
+efficient to compare fragments and to build connections.
+
+######## A diagram showing the fragment data processing.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph process_fragment_data {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  fragments [shape=folder,style=filled,fillcolor=cyan];
+  fragment_terms [shape=folder,style=filled,fillcolor=cyan];
+  common_terms [shape=folder,style=filled,fillcolor=cyan];
+  connections [shape=folder,style=filled,fillcolor=cyan];
+
+  fragments -> process_term_vectors -> fragments;
+  fragments -> get_fragment_terms -> fragment_terms;
+  fragment_terms -> get_common_terms -> common_terms;
+
+  fragments -> compare_fragments;
+  common_terms -> compare_fragments;
+
+  compare_fragments -> connections;
+}
+}}}
+
+########
+
+The `compare_fragments` function is worth exploring in more detail.
+
+{{{{#!table
+
+######## A diagram showing the fragment comparison activity.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph process_fragment_data {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  fragments [shape=folder,style=filled,fillcolor=cyan];
+  pair [shape=folder,style=filled,fillcolor=cyan];
+  vectors [shape=folder,style=filled,fillcolor=cyan];
+  similarity [shape=folder,style=filled,fillcolor=cyan];
+  connection [shape=folder,style=filled,fillcolor=cyan];
+
+  fragments -> get_fragment_pairs -> pair;
+  pair -> get_fragment_similarity -> get_term_vectors -> vectors;
+  vectors -> combine_term_vectors -> similarity;
+  similarity -> connection;
+  pair -> connection;
+}
+}}}
+
+########
+
+||<^>
+
+The `fragments` should already retain term vector information (initialised
+previously by the `process_term_vectors` function). The `get_fragment_pairs`
+function finds pairs of fragments for comparison, and these pairs are
+presented to the `get_fragment_similarity` function which employs the
+`get_term_vectors` function to obtain a collection of the term vectors for the
+pair of fragments.
+
+The term vectors for the pair are then combined using the
+`combine_term_vectors` function (provided in the `vectors` module), producing
+a combined similarity for the pair. The similarity and pair details are then
+used to instantiate a [[#Connection|connection]] relating the two fragments.
+
+}}}}
+
+The `emit_basic_output` and `emit_verbose_output` functions are concerned with
+writing the processed data out to the [[Output Data|output data]] directory.
+
+=== Exporting the Data ===
+
+The `export.py` program contains several functions for accessing the prepared
+database, selecting data, and exporting this data as output. These functions
+are described below.
+
+{{{{#!table
+
+######## A diagram showing the build activities.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph export {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  config [shape=folder,style=filled,fillcolor=cyan];
+  out [shape=folder,style=filled,fillcolor=cyan];
+  fragments [shape=folder,style=filled,fillcolor=cyan];
+  connections [shape=folder,style=filled,fillcolor=cyan];
+
+  restore_fragments -> get_serialised_fragments -> fragments;
+  restore_fragments -> out;
+
+  fragments -> restore_connections;
+  config -> restore_connections;
+  restore_connections -> connections -> out;
+
+  fragments -> process_wordlist;
+  process_wordlist -> fragments;
+  process_wordlist -> out;
+
+  fragments -> process_statistics;
+  process_statistics -> out;
+
+  connections -> process_relations;
+  config -> process_relations;
+  process_relations -> out;
+
+  fragments -> process_accessibility;
+  process_accessibility -> out;
+
+  out -> emit_filtered_output;
+  out -> emit_relation_output;
+  out -> emit_statistics_output;
+  out -> emit_graph_output;
+}
+}}}
+
+########
+
+||<^>
+
+First of all, the `restore_fragments` function reads the stored fragments
+using the `get_serialised_fragments` function (defined in the `serialised`
+module). These fragments are recorded in the `out` [[#Output|repository
+object]].
+
+The terms in the stored fragments may be filtered according to a word list.
+The `process_wordlist` function performs this task, and the fragments are
+updated as a consequence.
+
+The fragments are then used to recreate the connections using the
+`restore_connections` function described in more detail below. The
+connections are also recorded in the `out` object for convenience.
+
+The `process_relations` function performs the selection of related fragments
+for export according to the [[Getting Started#Related Fragment Selection|
+selection criteria]].
+
+Additional statistical information can be generated using the
+`process_statistics` function.
+
+}}}}
+
+The `restore_connections` function is worth exploring in more detail:
+
+{{{{#!table
+
+######## A diagram showing the build activities.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph export {
+  graph [splines=ortho];
+  node [shape=box,fontsize="13.0",fontname="Helvetica"];
+
+  fragments [shape=folder,style=filled,fillcolor=cyan];
+  connections [shape=folder,style=filled,fillcolor=cyan];
+
+  fragments -> process_term_vectors -> fragments;
+
+  fragments -> get_serialised_connections -> connections;
+  connections -> recompute_connections -> connections;
+}
+}}}
+
+########
+
+||<^>
+
+The `restore_connections` function takes the fragments as input, employing the
+`get_serialised_connections` function to read the stored connection details
+and to produce [[#Connection|connection objects]].
+
+For the connections to be restored, sufficient information must be defined for
+each fragment, and the term vectors are computed again using the
+`process_term_vectors` function, since such information is not stored for
+fragments by the build activity.
+
+The `recompute_connections` function is then used to recompute the similarity
+information for each connection, since such information is also not stored by
+the build activity. It may also be the case that word filtering changes the
+term vectors, meaning that if any similarity information were stored, it would
+be obsolete due to such changes.
+
+}}}}
+
+== Principal Abstractions ==
 
 The principal classes used for representing data are described below. They
 each inherit from the `Comparable` class in order to support comparisons
@@ -27,7 +359,7 @@ handled.
 {{{#!graphviz
 #format svg
 #transform notugly
-digraph fragment {
+digraph category {
   graph [splines=ortho];
   node [shape=box,fontsize="13.0",fontname="Helvetica"];
 
@@ -375,6 +707,7 @@ thus the explorer instance to which it is connected (such as an instance of
 digraph motiontester {
   graph [splines=ortho];
   node [shape=box,fontsize="13.0",fontname="Helvetica"];
+  rankdir=LR;
 
   RestrictedTextPrompter [href="#RestrictedTextPrompter"];
   MotionTester [href="#MotionTester"];
@@ -427,7 +760,42 @@ library).
 
 === Output ===
 
+ Source file:: `outputs.py`
+
+The `Output` class is instantiated to provide a repository for output
+artefacts, employing a designated output directory within which these
+artefacts may eventually be written. The following details are used to
+initialise instances of this class:
+
+ `outdir`:: The output directory employed by the instance.
+
+Instances of `Output` are employed in the different `emit` functions of the
+`build.py` and `export.py` programs, as well as in the `outputs` module.
+
 === POSFilter ===
+
+ Source file:: `stopwords.py`
+
+The `POSFilter` class can be instantiated to provide a means of selecting or
+preserving terms having a particular part-of-speech (POS) tag in a collecion
+of terms. It may be instantiated using the following details:
+
+ `tags`:: A collection of strings corresponding to tag symbols.
+
+If `tags` is omitted (or given as `None`), a default collection of generally
+helpful tags is employed for filtering by the `filter_words` method.
 
 === Wordlist ===
 
+ Source file:: `wordlist.py`
+
+The `Wordlist` class can be instantiated to provide a means of selecting or
+preserving specific words in a collection of terms. It may be instantiated
+using the following details:
+
+ `words`:: A collection of words to preserve.
+
+The `get_wordlist_from_file` function also found in the `wordlist` module can
+be used to create a `Wordlist` instance populated with the words found in the
+file (one word per line). The `filter_words` method will then filter out all
+terms in a collection not found in the list of words.
