@@ -1,12 +1,49 @@
 = Getting Started =
 
-<<TableOfContents(2,3)>>
-
 To be able to use this software, appropriate data is required along with the
 means to run the software. See the [[Required Data]] and [[Required Software]]
 documents for more details.
 
-To actually run the software, commands of the following form should work:
+<<TableOfContents(2,3)>>
+
+== Summary of Operation ==
+
+The following diagram describes the operation of the software and the
+different processing steps involved:
+
+######## A diagram showing the processing steps.
+
+{{{#!graphviz
+#format svg
+#transform notugly
+digraph summary {
+  node [shape=ellipse,fontsize="13.0",fontname="Helvetica"];
+  graph [fontsize="13.0",fontname="Helvetica"];
+  rankdir=LR;
+
+  input [shape=folder,label="Input data",href="../Required_Data"];
+  build [label="build.py"];
+
+  subgraph cluster_output {
+    rank=same;
+    label="Output data";
+    processed [shape=folder,label="Processed data",
+               href="../Output_Data#Basic_Information"];
+    data [shape=folder,label="Selected data",
+          href="../Output_Data#Structured_Data"];
+  }
+
+  export [label="export.py"];
+  explore [label="explore.py",href="../Data_Exploration"];
+
+  input -> build -> processed -> export -> data -> explore;
+}
+}}}
+
+########
+
+To actually run the software, commands of the following form should work
+within the `Memento` directory:
 
 {{{
 ./build.py OUTPUT DATA/*.xml
@@ -18,6 +55,8 @@ data is specified as residing in the `DATA` directory, with this directory
 needing to be initialised by the user before running the above command.
 
 The form of the output data is described in the [[Output Data]] document.
+Exported data produced by the `export.py` program can be explored as described
+in the [[Data Exploration]] document.
 
 == Building the Database ==
 
@@ -53,9 +92,9 @@ for processing. For example:
 Hostland Host_Land
 }}}
 
-It may be easier to fix inconsistencies in the categories used directly in the
-source data. The `category_fragments.txt` file in the [[Output Data|output
-data]] may be helpful in this regard.
+It may be easier to fix inconsistencies directly in the source data. The
+`category_fragments.txt` file in the [[Output Data|output data]] may be
+helpful in this regard.
 
 === Term Selection ===
 
