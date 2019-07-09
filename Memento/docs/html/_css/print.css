@@ -1,0 +1,13 @@
+html {
+    font-family: Times, serif;
+    font-size: 12pt;
+}
+
+body {
+    margin: 1.5cm;
+}
+
+a, a:visited {
+    color: black;
+    text-decoration: none;
+}

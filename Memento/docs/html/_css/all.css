@@ -1,0 +1,75 @@
+html {
+    background-color: white;
+    color: black;
+    font-family: sans-serif;
+    font-size: 1em;
+}
+
+body {
+    margin: 0 5em;
+    padding: 0;
+    border: 0;
+}
+
+a, img {
+    border: 0;
+}
+
+/* List formatting. */
+
+dl, ol, ul {
+    padding: 0 1em;
+    margin: 0 0.5em;
+}
+
+li p {
+    margin: 0.1em 0;
+}
+
+dt {
+    margin-top: 0.25em;
+    font-weight: bold;
+}
+
+dd {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+dd p {
+    margin: 0.1em 0;
+}
+
+/* Table formatting. */
+   
+table {
+    margin: 0.5em 0 0 0.5em;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 0.25em 0.5em 0.25em 0.5em;
+    border: 1pt solid #ADB9CC;
+}
+
+/* Preformatted text. */
+
+pre {
+    border: 1pt solid #AEBDCC;
+    background-color: #F3F5F7;
+    padding: 5pt;
+    font-family: courier, monospace;
+    white-space: pre;
+}
+
+/* Monospace inline text frequently looks smaller than the surrounding text. */
+
+tt {
+    font-size: 120%;
+}
+
+/* Embedded objects. */
+
+svg, object {
+    margin: 1em 0;
+}

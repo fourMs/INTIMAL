@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Required Software</title>
+<link rel="stylesheet" type="text/css" charset="utf-8" media="all" href="../_css/all-toc.css" />
+<link rel="stylesheet" type="text/css" charset="utf-8" media="screen" href="../_css/screen.css" />
+<link rel="stylesheet" type="text/css" charset="utf-8" media="all" href="../_css/all.css" />
+<link rel="stylesheet" type="text/css" charset="utf-8" media="print" href="../_css/print.css" />
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+</head>
+<body>
+<span class='type-moin'><h1 id='Required_Software'>Required Software</h1><p>The software is written in the <a href="https://www.python.org/">Python programming
+language</a>, tested with Python 2.7, and makes use of a number of additional
+packages or libraries. These prerequisites are presented below in their own
+distinct sections.
+</p><h2 id='Operating_Environment'>Operating Environment</h2><p>The programs provided are meant to be run from a command-line environment,
+making use of the basic operating system facilities to communicate with the
+operator and to accept operator-specified parameters, such as the location of
+files to be processed.
+</p><p>For convenient use of the programs, a Unix-like environment is recommended
+(GNU/Linux, Mac OS X, and so on). The software will work on Windows, but
+running it using the command prompt is not as convenient as it is on the
+Unix-like platforms.
+</p><h2 id='A_Note_about_Python_Packaging'>A Note about Python Packaging</h2><p>Some operating system distributions do not provide the <tt>pip</tt> utility either as
+a module or as a standalone program. See the
+<a href="https://packaging.python.org/tutorials/installing-packages/">Installing
+Packages</a> section of the <a href="https://packaging.python.org/">Python Packaging
+User Guide</a> for advice about setting up <tt>pip</tt>:
+</p><p><a href="https://packaging.python.org/tutorials/installing-packages/
+#ensure-you-can-run-pip-from-the-command-line">Ensure you can run pip from the
+command line</a>
+</p><h2 id='Prerequisites'>Prerequisites</h2><p>The software prerequisites are described below.
+</p><h3 id='Python_2.7'>Python 2.7</h3><p>Source: <a href="https://www.python.org/">https://www.python.org/</a>
+</p><p>Typically, operating system distributions provide Python 2.7 as standard or as
+an installable package. To check if you have Python 2.7 available on your
+system, open a command prompt and type the following:
+</p><pre class='level-3 type-opaque'>
+python2.7
+</pre><p>If the output from the command indicates Python 2.7, you may proceed to
+install other prerequisites. (Use the Ctrl-D key combination to exit Python.)
+</p><p>If Python 2.7 does not seem to be installed, consult your operating system
+documentation for the details of installing a suitable package.
+</p><h3 id='spaCy'>spaCy</h3><p>Source: <a href="https://spacy.io/">https://spacy.io/</a>
+</p><p>Required components:
+</p><ul><li>spaCy (the package itself)
+</li><li>es (Spanish data model)
+
+</li></ul><p>Installing the software and data can be done using Python packaging tools:
+</p><pre class='level-3 type-opaque'>
+python -m pip install -U --user spacy
+python -m spacy download es --user
+</pre><p>In the above, the <tt>--user</tt> option indicates that the software will be
+installed for a given system user, as opposed to needing additional privileges
+to install it for many users.
+</p></span>
+</body>
+</html>

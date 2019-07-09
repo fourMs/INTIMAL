@@ -1,0 +1,12 @@
+body {
+    font-family: Helvetica, Verdana, Arial, sans-serif;
+    color: #111;
+}
+
+a:link, a:visited { color: #00b5f1; text-decoration: none; }
+a:link:hover, a:link:active, a:link:focus,
+a:visited:hover, a:visited:active, a:visited:focus { text-decoration: underline; }
+
+h1 { font-size: 2em; }
+h2 { font-size: 1.6em; }
+h3 { font-size: 1.3em; }

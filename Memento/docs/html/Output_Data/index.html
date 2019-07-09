@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Output Data</title>
+<link rel="stylesheet" type="text/css" charset="utf-8" media="all" href="../_css/all-toc.css" />
+<link rel="stylesheet" type="text/css" charset="utf-8" media="screen" href="../_css/screen.css" />
+<link rel="stylesheet" type="text/css" charset="utf-8" media="all" href="../_css/all.css" />
+<link rel="stylesheet" type="text/css" charset="utf-8" media="print" href="../_css/print.css" />
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+</head>
+<body>
+<span class='type-moin'><h1 id='Output_Data'>Output Data</h1><p>When the software is run on suitable <a href="../Required_Data/index.html">input data</a>, two kinds
+of output data products are generated in the output directory:
+</p><ul><li>Reports, providing an overview of the nature of the data
+</li><li>Structured data, for use by other programs
+
+</li></ul><p>These products are a consequence of the modelling and <a href="../Data_Processing/index.html">
+processing</a> of the input data.
+</p><h2 id='Basic_Information'>Basic Information</h2><p>The following basic information files are generated:
+</p><table><tr><td> <strong>File</strong>                     </td><td> <strong>Description</strong>                        </td></tr><tr><td> <tt>connections.txt</tt>              </td><td> connections of pairs of fragments        </td></tr><tr><td> <tt>fragments.txt</tt>                </td><td> details of each textual fragment         </td></tr><tr><td> <tt>words.txt</tt>                    </td><td> all known words in their original form   </td></tr></table><h2 id='Reports'>Reports</h2><p>The following report files are generated:
+</p><table><tr><td> <strong>File</strong>                     </td><td> <strong>Description</strong>                        </td></tr><tr><td> <tt>category_fragments.txt</tt>       </td><td> fragments associated with each category  </td></tr><tr><td> <tt>related.txt</tt>                  </td><td> fragments and those most closely related </td></tr><tr><td> <tt>related_by_category.txt</tt>      </td><td> related fragments in the same category   </td></tr><tr><td> <tt>term_categories.txt</tt>          </td><td> the categories associated with each term </td></tr><tr><td> <tt>term_fragments.txt</tt>           </td><td> the fragments associated with each term  </td></tr><tr><td> <tt>term_frequencies.txt</tt>         </td><td> term frequencies across all fragments    </td></tr><tr><td> <tt>term_doc_frequencies.txt</tt>     </td><td> term document frequencies                </td></tr><tr><td> <tt>term_inv_doc_frequencies.txt</tt> </td><td> term inverse document frequencies        </td></tr><tr><td> <tt>terms.txt</tt>                    </td><td> the terms found in each category         </td></tr></table><h2 id='Structured_Data'>Structured Data</h2><p>Although the reports aim to be informative, they are not intended to be
+machine-readable. Consequently, a <tt>data</tt> directory within the output directory
+is populated with structured data for interpretation by other programs.
+</p><p>Within the <tt>data</tt> directory are a number of other directories, each bearing a
+fragment identifier for all processed fragments. The general form of this
+directory hierarchy is as follows:
+</p><pre class='level-3 type-opaque'>
+&lt;output directory&gt;
+  data
+    &lt;fragment identifier&gt;
+      text
+      &lt;related fragment selector&gt;
+        &lt;related fragment index&gt;
+          fragment
+          measure
+          similarity
+        ...
+      ...
+    ...
+</pre><p>Each fragment-specific subdirectory of <tt>data</tt> (denoted using <tt>&lt;fragment
+identifier&gt;</tt> above) contains the following:
+</p><table><tr><td> <strong>File</strong>      </td><td> <strong>Description</strong>                                       </td></tr><tr><td> <tt>text</tt>          </td><td> A file containing the original fragment text            </td></tr></table><p>In addition, depending on the options specified when producing the output
+data, the following directories (denoted using <tt>&lt;related fragment selector&gt;</tt>)
+will appear alongside <tt>text</tt>:
+</p><table><tr><td> <strong>Directory</strong> </td><td> <strong>Description</strong>                                       </td></tr><tr><td> <tt>any</tt>           </td><td rowspan='4'> Directories containing related fragment details     </td></tr><tr><td> <tt>forward</tt>       </td></tr><tr><td> <tt>left</tt>          </td></tr><tr><td> <tt>right</tt>         </td></tr></table><p>These directories each contain directories (denoted using <tt>&lt;related fragment
+index&gt;</tt>) labelled with fragment index numbers, starting from 0, indicating the
+most closely related fragments in descending order of similarity to the
+fragment identified by the parent directory. In each of these directories are
+the following files:
+</p><table><tr><td> <strong>File</strong>      </td><td> <strong>Description</strong>                                       </td></tr><tr><td> <tt>fragment</tt>      </td><td> A file containing the related fragment identifier       </td></tr><tr><td> <tt>measure</tt>       </td><td> A file containing the overall similarity measure        </td></tr><tr><td> <tt>similarity</tt>    </td><td> A file containing fragment similarity details           </td></tr></table><p>Thus, to identify the most closely related left-rotation fragment of an
+identified fragment, the following file within the output directory would be
+read:
+</p><pre class='level-3 type-opaque'>
+data/&lt;fragment&gt;/left/0/fragment
+</pre><p>The contents of this file would then be used to identify a directory within
+the <tt>data</tt> directory containing the details of the related fragment.
+</p></span>
+</body>
+</html>

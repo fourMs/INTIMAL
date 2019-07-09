@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Getting Started</title>
+<link rel="stylesheet" type="text/css" charset="utf-8" media="all" href="../_css/all-toc.css" />
+<link rel="stylesheet" type="text/css" charset="utf-8" media="screen" href="../_css/screen.css" />
+<link rel="stylesheet" type="text/css" charset="utf-8" media="all" href="../_css/all.css" />
+<link rel="stylesheet" type="text/css" charset="utf-8" media="print" href="../_css/print.css" />
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+</head>
+<body>
+<span class='type-moin'><h1 id='Getting_Started'>Getting Started</h1><p>To be able to use this software, appropriate data is required along with the
+means to run the software. See the <a href="../Required_Data/index.html">Required Data</a> and <a href="../Required_Software/index.html">Required Software</a>
+documents for more details.
+</p><div class='macro TableOfContents'><ol style="list-style-type: decimal"><li><a href="#Summary_of_Operation">Summary of Operation</a>
+</li><li><a href="#Building_the_Database">Building the Database</a>
+<ol style="list-style-type: decimal"><li><a href="#Category_Normalisation">Category Normalisation</a>
+</li><li><a href="#Term_Selection">Term Selection</a>
+</li></ol></li><li><a href="#Selecting_and_Exporting_Data">Selecting and Exporting Data</a>
+<ol style="list-style-type: decimal"><li><a href="#Category_Weights">Category Weights</a>
+</li><li><a href="#Related_Fragment_Selection">Related Fragment Selection</a>
+</li><li><a href="#Statistics_Generation">Statistics Generation</a>
+</li><li><a href="#Term_Presences_and_Weights">Term Presences and Weights</a>
+</li><li><a href="#Term.2FWord_List_Selection">Term/Word List Selection</a>
+</li></ol></li></ol></div><h2 id='Summary_of_Operation'>Summary of Operation</h2><p>The following diagram describes the operation of the software and the
+different processing steps involved:
+</p><span class='level-3 type-graphviz'><svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" height="152pt" width="482pt" contentStyleType="text/css" version="1.1" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" viewBox="0.00 0.00 482.40 152.00" contentScriptType="text/ecmascript"><defs><linearGradient y1="0%" x2="0%" x1="0%" y2="0%" id="white"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop></linearGradient><linearGradient y1="0%" x2="0%" x1="0%" y2="0%" id="black"><stop style="stop-color:rgb(0,0,0);stop-opacity:1" offset="0%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="aquamarine"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(127,255,212);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="azure"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(240,255,255);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="blue"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(0,0,255);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="blueviolet"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(138,43,226);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="brown"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(165,42,42);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="cadetblue"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(95,158,160);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="chocolate"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(210,105,30);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="cornflowerblue"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(100,149,237);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="crimson"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(220,20,60);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="cyan"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(0,255,255);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="darkgreen"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(0,100,0);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="darkorange"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(255,140,0);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="gold"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(255,215,0);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="gray"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(192,192,192);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="greenyellow"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(173,255,47);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="green"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(0,255,0);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="grey"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(192,192,192);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="hotpink"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(255,105,180);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="indianred"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(205,92,92);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="indigo"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(75,0,130);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="lavender"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(230,230,250);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="lightblue"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(173,216,230);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="lightgray"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(211,211,211);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="lightgrey"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(211,211,211);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="magenta"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(255,0,255);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="maroon"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(176,48,96);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="mediumblue"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(0,0,205);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="mediumpurple"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(147,112,219);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="orange"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(255,165,0);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="pink"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(255,192,203);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="purple"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(160,32,240);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="red"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(255,0,0);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="steelblue"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(70,130,180);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="violet"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(238,130,238);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="yellow"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(255,255,0);stop-opacity:1" offset="100%"></stop></linearGradient><linearGradient y1="0%" x2="100%" x1="0%" y2="100%" id="none"><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="0%"></stop><stop style="stop-color:rgb(255,255,255);stop-opacity:1" offset="100%"></stop></linearGradient></defs>
+<g transform="scale(1 1) rotate(0) translate(4 148)" id="graph0" class="graph"><polygon stroke="none" points="-4,4 -4,-148 478.396,-148 478.396,4 -4,4" fill="white"></polygon><title content="structured text">summary</title><g id="clust1" class="cluster"><polygon stroke="black" points="220.591,-8 220.591,-136 346.591,-136 346.591,-8 220.591,-8" style="fill: black; stroke: none; fill-opacity:0.3" transform="translate(3,3)" fill="none"></polygon><polygon stroke="black" points="220.591,-8 220.591,-136 346.591,-136 346.591,-8 220.591,-8" style="fill: url(#none);stroke: black;" fill="none"></polygon><text y="-121.6" x="283.591" font-size="13.00" font-family="Helvetica,sans-Serif" text-anchor="middle">Output data</text></g><g id="node1" class="node"><g id="a_node1"><a xlink:actuate="onRequest" xlink:title="Input data" xlink:href="../Required_Data/index.html" xlink:show="replace" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink"><polygon stroke="black" points="77,-106 74,-110 53,-110 50,-106 0,-106 0,-70 77,-70 77,-106" style="fill: black; stroke: none; fill-opacity:0.3" transform="translate(3,3)" fill="none"></polygon><polygon stroke="black" points="77,-106 74,-110 53,-110 50,-106 0,-106 0,-70 77,-70 77,-106" style="fill: url(#none);stroke: black;" fill="none"></polygon><text y="-84.6" x="38.5" font-size="13.00" font-family="Helvetica,sans-Serif" text-anchor="middle">Input data</text></a></g></g><g id="node2" class="node"><ellipse style="fill: black; stroke: none; fill-opacity:0.3" cy="-88" rx="39.5922" ry="18" transform="translate(3,3)" stroke="black" cx="152.796" fill="none"></ellipse><ellipse style="fill: url(#none);stroke: black;" cy="-88" rx="39.5922" ry="18" stroke="black" cx="152.796" fill="none"></ellipse><text y="-84.6" x="152.796" font-size="13.00" font-family="Helvetica,sans-Serif" text-anchor="middle">build.py</text></g><g id="edge1" class="edge"><polygon stroke="black" points="102.848,-91.5001 112.848,-88 102.847,-84.5001 102.848,-91.5001" style="fill: black; stroke: none; fill-opacity:0.3" transform="translate(3,3)" fill="black"></polygon><path stroke="black" style="fill: none; stroke: black; stroke-opacity:0.3" d="M77.2052,-88C85.359,-88 94.0965,-88 102.617,-88" transform="translate(3,3)" fill="none"></path><polygon stroke="black" points="102.848,-91.5001 112.848,-88 102.847,-84.5001 102.848,-91.5001" style="fill: url(#black);stroke: black;" fill="black"></polygon><path stroke="black" d="M77.2052,-88C85.359,-88 94.0965,-88 102.617,-88" fill="none"></path></g><g id="node3" class="node"><g id="a_node3"><a xlink:actuate="onRequest" xlink:title="Processed data" xlink:href="../Output_Data/index.html#Basic_Information" xlink:show="replace" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink"><polygon stroke="black" points="338.591,-106 335.591,-110 314.591,-110 311.591,-106 228.591,-106 228.591,-70 338.591,-70 338.591,-106" style="fill: black; stroke: none; fill-opacity:0.3" transform="translate(3,3)" fill="none"></polygon><polygon stroke="black" points="338.591,-106 335.591,-110 314.591,-110 311.591,-106 228.591,-106 228.591,-70 338.591,-70 338.591,-106" style="fill: url(#none);stroke: black;" fill="none"></polygon><text y="-84.6" x="283.591" font-size="13.00" font-family="Helvetica,sans-Serif" text-anchor="middle">Processed data</text></a></g></g><g id="edge2" class="edge"><polygon stroke="black" points="218.524,-91.5001 228.524,-88 218.524,-84.5001 218.524,-91.5001" style="fill: black; stroke: none; fill-opacity:0.3" transform="translate(3,3)" fill="black"></polygon><path stroke="black" style="fill: none; stroke: black; stroke-opacity:0.3" d="M192.788,-88C200.877,-88 209.602,-88 218.325,-88" transform="translate(3,3)" fill="none"></path><polygon stroke="black" points="218.524,-91.5001 228.524,-88 218.524,-84.5001 218.524,-91.5001" style="fill: url(#black);stroke: black;" fill="black"></polygon><path stroke="black" d="M192.788,-88C200.877,-88 209.602,-88 218.325,-88" fill="none"></path></g><g id="node5" class="node"><ellipse style="fill: black; stroke: none; fill-opacity:0.3" cy="-88" rx="45.4614" ry="18" transform="translate(3,3)" stroke="black" cx="424.494" fill="none"></ellipse><ellipse style="fill: url(#none);stroke: black;" cy="-88" rx="45.4614" ry="18" stroke="black" cx="424.494" fill="none"></ellipse><text y="-84.6" x="424.494" font-size="13.00" font-family="Helvetica,sans-Serif" text-anchor="middle">export.py</text></g><g id="edge3" class="edge"><polygon stroke="black" points="368.747,-91.5001 378.747,-88 368.746,-84.5001 368.747,-91.5001" style="fill: black; stroke: none; fill-opacity:0.3" transform="translate(3,3)" fill="black"></polygon><path stroke="black" style="fill: none; stroke: black; stroke-opacity:0.3" d="M338.692,-88C348.529,-88 358.799,-88 368.658,-88" transform="translate(3,3)" fill="none"></path><polygon stroke="black" points="368.747,-91.5001 378.747,-88 368.746,-84.5001 368.747,-91.5001" style="fill: url(#black);stroke: black;" fill="black"></polygon><path stroke="black" d="M338.692,-88C348.529,-88 358.799,-88 368.658,-88" fill="none"></path></g><g id="node4" class="node"><g id="a_node4"><a xlink:actuate="onRequest" xlink:title="Selected data" xlink:href="../Output_Data/index.html#Structured_Data" xlink:show="replace" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink"><polygon stroke="black" points="333.091,-52 330.091,-56 309.091,-56 306.091,-52 234.091,-52 234.091,-16 333.091,-16 333.091,-52" style="fill: black; stroke: none; fill-opacity:0.3" transform="translate(3,3)" fill="none"></polygon><polygon stroke="black" points="333.091,-52 330.091,-56 309.091,-56 306.091,-52 234.091,-52 234.091,-16 333.091,-16 333.091,-52" style="fill: url(#none);stroke: black;" fill="none"></polygon><text y="-30.6" x="283.591" font-size="13.00" font-family="Helvetica,sans-Serif" text-anchor="middle">Selected data</text></a></g></g><g id="node6" class="node"><g id="a_node6"><a xlink:actuate="onRequest" xlink:title="explore.py" xlink:href="../Data_Exploration/index.html" xlink:show="replace" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink"><ellipse style="fill: black; stroke: none; fill-opacity:0.3" cy="-34" rx="49.805" ry="18" transform="translate(3,3)" stroke="black" cx="424.494" fill="none"></ellipse><ellipse style="fill: url(#none);stroke: black;" cy="-34" rx="49.805" ry="18" stroke="black" cx="424.494" fill="none"></ellipse><text y="-30.6" x="424.494" font-size="13.00" font-family="Helvetica,sans-Serif" text-anchor="middle">explore.py</text></a></g></g><g id="edge5" class="edge"><polygon stroke="black" points="364.235,-37.5001 374.235,-34 364.235,-30.5001 364.235,-37.5001" style="fill: black; stroke: none; fill-opacity:0.3" transform="translate(3,3)" fill="black"></polygon><path stroke="black" style="fill: none; stroke: black; stroke-opacity:0.3" d="M333.173,-34C343.147,-34 353.755,-34 364.062,-34" transform="translate(3,3)" fill="none"></path><polygon stroke="black" points="364.235,-37.5001 374.235,-34 364.235,-30.5001 364.235,-37.5001" style="fill: url(#black);stroke: black;" fill="black"></polygon><path stroke="black" d="M333.173,-34C343.147,-34 353.755,-34 364.062,-34" fill="none"></path></g><g id="edge4" class="edge"><polygon stroke="black" points="341.819,-52.4928 331.23,-52.1314 339.282,-59.0171 341.819,-52.4928" style="fill: black; stroke: none; fill-opacity:0.3" transform="translate(3,3)" fill="black"></polygon><path stroke="black" style="fill: none; stroke: black; stroke-opacity:0.3" d="M391.219,-75.4527C376.178,-69.6055 357.839,-62.4759 340.64,-55.7895" transform="translate(3,3)" fill="none"></path><polygon stroke="black" points="341.819,-52.4928 331.23,-52.1314 339.282,-59.0171 341.819,-52.4928" style="fill: url(#black);stroke: black;" fill="black"></polygon><path stroke="black" d="M391.219,-75.4527C376.178,-69.6055 357.839,-62.4759 340.64,-55.7895" fill="none"></path></g></g>
+</svg></span><p>To actually run the software, commands of the following form should work
+within the <tt>Memento</tt> directory:
+</p><pre class='level-3 type-opaque'>
+./build.py OUTPUT DATA/*.xml
+./export.py --select all OUTPUT
+</pre><p>Here, a directory for output data is supplied as <tt>OUTPUT</tt>. Meanwhile, input
+data is specified as residing in the <tt>DATA</tt> directory, with this directory
+needing to be initialised by the user before running the above command.
+</p><p>The form of the output data is described in the <a href="../Output_Data/index.html">Output Data</a> document.
+Exported data produced by the <tt>export.py</tt> program can be explored as described
+in the <a href="../Data_Exploration/index.html">Data Exploration</a> document.
+</p><h2 id='Building_the_Database'>Building the Database</h2><p>The <tt>build.py</tt> program is used to build a database of fragment and connection
+information that can be processed further using the <tt>export.py</tt> program.
+Running the program with the <tt>--help</tt> option provides usage instructions:
+</p><pre class='level-3 type-opaque'>
+./build.py --help
+</pre><p>The most useful options are those controlling category information and term
+selection.
+</p><h3 id='Category_Normalisation'>Category Normalisation</h3><p>By specifying a category map file using the <tt>--category-map</tt> option, the
+category details found in the input data can be normalised to eliminate
+inconsistencies. A file, <tt>categories.txt</tt>, is provided to assist this task
+with the data used in the development of this software. Thus, a command of the
+following form should be used instead with that particular data:
+</p><pre class='level-3 type-opaque'>
+./build.py --category-map categories.txt OUTPUT DATA/*.xml
+</pre><p>A category map file should define on each line a space-separated pair of
+category labels, with the first label being the form of a category in the
+input data, and with the second label being the desired form of the category
+for processing. For example:
+</p><pre class='level-3 type-opaque'>
+Hostland Host_Land
+</pre><p>It may be easier to fix inconsistencies directly in the source data. The
+<tt>category_fragments.txt</tt> file in the <a href="../Output_Data/index.html">output data</a> may be
+helpful in this regard.
+</p><h3 id='Term_Selection'>Term Selection</h3><p>By specifying a file containing part-of-speech tags using the <tt>--pos-tags</tt>
+option, different kinds of words can be selected as terms. A file, <tt>pos.txt</tt>,
+is provided to illustrate the composition of such a file and can be used as
+follows:
+</p><pre class='level-3 type-opaque'>
+./build.py --pos-tags pos.txt OUTPUT DATA/*.xml
+</pre><p>By default, adjectives (<tt>ADJ</tt>), common nouns (<tt>NOUN</tt>) and proper nouns
+(<tt>PROPN</tt>) are selected, and the <tt>pos.txt</tt> file merely selects the same kinds
+of words explicitly. To do so, the file contains one tag (or kind of word) per
+line as follows:
+</p><pre class='level-3 type-opaque'>
+ADJ
+NOUN
+PNOUN
+</pre><h2 id='Selecting_and_Exporting_Data'>Selecting and Exporting Data</h2><p>The <tt>export.py</tt> program is used to indicate how data is to be selected from
+the database constructed using the <tt>build.py</tt> program, and it then exports
+this data to the specified output directory.
+</p><p>Running the program with the <tt>--help</tt> option provides usage instructions:
+</p><pre class='level-3 type-opaque'>
+./export.py --help
+</pre><p>A number of options are available for influencing the generated output data.
+</p><h3 id='Category_Weights'>Category Weights</h3><p>The computation of similarities between fragments can be configured to take
+the frequency of categories into account. Where many fragments belong to a
+particular category, this category and thus these fragments can be assigned a
+weight that is less than the fragments belonging to a less common category.
+</p><p>To employ this adjustment, the following would be used (together with some
+selection criteria):
+</p><pre class='level-3 type-opaque'>
+./export.py --category-weights --select any OUTPUT
+</pre><h3 id='Related_Fragment_Selection'>Related Fragment Selection</h3><p>The most significant output product of the <tt>export.py</tt> program is data
+describing fragment relationships, these having been established by comparing
+fragments and defining connections between them on the basis of some form of
+similarity. Fragment relationship information is produced as a collection of
+fragments related to a primary fragment sorted in descending order of
+similarity.
+</p><h4 id='Collection_Size'>Collection Size</h4><p>The number of fragments in each related fragment collection can be defined
+using the <tt>--num-fragments</tt> option. Each primary fragment taken together with
+the fragments most closely related to form a collection may then not exceed
+the indicated size.
+</p><p>For example, to indicate that each fragment may not have more than six related
+fragments in the output data:
+</p><pre class='level-3 type-opaque'>
+./export.py --num-fragments 7 --select any OUTPUT
+</pre><p>Here, six related fragments plus the primary fragment gives seven fragments in
+total.
+</p><h4 id='Selection_Functions'>Selection Functions</h4><p>To select and generate fragment relationships for connections, the <tt>--select</tt>
+option is used together with the name of a selection function. This function
+imposes constraints on the fragments presented as being the closest related
+fragments to the given primary fragment.
+</p><p>All such functions are mentioned in the help text but include the following:
+</p><ul><li><tt>any</tt> - selects fragments without any constraints
+
+</li><li><tt>forward</tt> - selects fragments having a distinct participant from others
+   in the collection
+
+</li><li><tt>left</tt> - selects fragments having the same participant as others in the
+   collection
+
+</li><li><tt>right</tt> - selects fragments having the same category but a distinct
+   subcategory from others in the collection
+
+</li></ul><p>To generate separate related fragment collections for "left" and "right", the
+following command could be used:
+</p><pre class='level-3 type-opaque'>
+./export.py --select left --select right OUTPUT
+</pre><p>Selection functions can be combined, so that if fragments were to be selected
+as part of a collection provided that they have a distinct subcategory <em>and</em>
+a distinct participant from the other fragments in the collection, the
+following command might be used:
+</p><pre class='level-3 type-opaque'>
+./export.py --select forward,right OUTPUT
+</pre><p>Other functions could be defined and used to generate new kinds of collections
+or for combination with functions already being used to generate collections.
+</p><p>To generate collections for all of the individual functions, the following
+would be used:
+</p><pre class='level-3 type-opaque'>
+./export.py --select all OUTPUT
+</pre><p>Here, <tt>all</tt> is a special value indicating all functions.
+</p><h3 id='Statistics_Generation'>Statistics Generation</h3><p>The <tt>export.py</tt> program can be asked to produce statistical output as
+described in the <a href="../Output_Data/index.html">Output Data</a> document. To do so, the <tt>--stats</tt> option can
+be used. For example:
+</p><pre class='level-3 type-opaque'>
+./export.py --stats OUTPUT
+</pre><p>This option can be used alone to only generate statistics or it can be used
+alongside other options.
+</p><h3 id='Term_Presences_and_Weights'>Term Presences and Weights</h3><p>The computation of similiarities between fragments can be configured to take
+into account the frequency of terms within fragments or to employ the mere
+presence of terms instead. The <tt>--term-presence-only</tt> option can be specified
+to override the default frequency-based behaviour and to treat terms in
+fragments as having a frequency or weight of one regardless of the actual term
+frequency:
+</p><pre class='level-3 type-opaque'>
+./export.py --term-presence-only --select any OUTPUT
+</pre><p>See the <a href="../Data_Processing/index.html">Data Processing</a> document for more information about the
+computation of fragment similarity.
+</p><h3 id='Term.2FWord_List_Selection'>Term/Word List Selection</h3><p>By default, the software relies only on part-of-speech tagging to identify
+usable words or terms in the input text, this being controlled in the
+<tt>build.py</tt> program by the <tt>--pos-tags</tt> option.
+</p><p>However, the <tt>--word-list</tt> option can be used with the <tt>export.py</tt> program to
+indicate a specific list of words to be selected as terms, with all other
+words to be filtered out. This can be specified as in the following example:
+</p><pre class='level-3 type-opaque'>
+./export.py --word-list words.txt --select any OUTPUT
+</pre><p>With a specified word list, the comparisons of fragments will employ only the
+terms in the list if they are present: all other terms will be ignored.
+</p><p>A word list file consists of a single word or term per line and employs the
+specific form of words, not root (or normalised) forms. Consequently,
+variations of root forms such as verb conjugations, noun plurals, different
+adjective forms depending on word gender, and so on, must appear in the word
+list if those specific forms are to be recognised.
+</p></span>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Required Data</title>
+<link rel="stylesheet" type="text/css" charset="utf-8" media="all" href="../_css/all-toc.css" />
+<link rel="stylesheet" type="text/css" charset="utf-8" media="screen" href="../_css/screen.css" />
+<link rel="stylesheet" type="text/css" charset="utf-8" media="all" href="../_css/all.css" />
+<link rel="stylesheet" type="text/css" charset="utf-8" media="print" href="../_css/print.css" />
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+</head>
+<body>
+<span class='type-moin'><h1 id='Required_Data'>Required Data</h1><p>A collection of XML files describing audio transcripts are required to produce
+output data using this software. These files must employ filenames of the
+following general form:
+</p><pre class='level-3 type-opaque'>
+&lt;prefix&gt;_&lt;datatype&gt;.xml
+</pre><p>Here, <tt>&lt;prefix&gt;</tt> is a descriptive label perhaps indicating something about the
+original audio recording. Meanwhile, <tt>&lt;datatype&gt;</tt> must contain one of the
+supported data types, which are the following:
+</p><ul><li>Text
+</li><li>Tiers
+
+</li></ul><p>Related files must share the same filename prefix. For example:
+</p><ul><li><tt>A1_AllText.xml</tt>
+</li><li><tt>A1_AllTiers.xml</tt>
+
+</li></ul><p>Here, a prefix of <tt>A1</tt> indicates that the files describe the same recording.
+Meanwhile, the first filename includes <tt>Text</tt> and therefore provides textual
+information, whereas the second filename includes <tt>Tiers</tt> and therefore
+provides "tier" information. These kinds of information and the accepted
+format are described below.
+</p><h2 id='XML_Data_Formats'>XML Data Formats</h2><p>One kind of XML file features "tier" information and provides hierarchical
+category information applied to periods of audio in the following form:
+</p><pre class='level-3 type-opaque'>
+&lt;TIERS&gt;
+  &lt;TIER columns="Parent"&gt;
+    &lt;span start="1.234" end="12.345"&gt;&lt;v&gt;Child&lt;/v&gt;&lt;/span&gt;
+</pre><p>Here, a period starting at 1.234 and ending at 12.345 is annotated with the
+hierarchical category "Parent/Child".
+</p><p>The other kind of XML file features "text" information and provides textual
+information corresponding to periods of audio, effectively supplying subtitles
+for the audio content. It has the following form:
+</p><pre class='level-3 type-opaque'>
+&lt;TIERS&gt;
+  &lt;TIER columns="Parent"&gt;
+    &lt;span start="2.500" end="2.840"&gt;&lt;v&gt;the&lt;/v&gt;&lt;/span&gt;
+    &lt;span start="2.840" end="3.450"&gt;&lt;v&gt;first&lt;/v&gt;&lt;/span&gt;
+    &lt;span start="3.450" end="4.000"&gt;&lt;v&gt;day&lt;/v&gt;&lt;/span&gt;
+</pre><p>Here, three periods, the first of which starting at 2.500 and the last of
+which ending at 4.000 provide the words "the first day".
+</p></span>
+</body>
+</html>
