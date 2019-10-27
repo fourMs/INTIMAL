@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Breathing sensor bluetooth connection and OSC</title>
+        <meta charset="UTF-8">
+        <meta name="description" content="Javascript code for Intimal project, MCT NTNU May 2019.
+        This script connects to SweetZpot breathing sensors using web bluetooth and packs the datavalues as OSC messages.
+        The OSC messages are sent using osc-web on localhost port 3334."> 
+        <meta name="author" content="Eigil Aandahl">
+
+        <script src="http://127.0.0.1:8081/socket.io/socket.io.js"></script>
+        
+        <script src="sketchBluetooth.js"></script>
+        
+</head>
+
+
+<body>
+    <h1>Breathing sensors to OSC</h1>
+    <!-- Use this kind of .emit function to send OSC messages -->
+    <!--<button onclick="socket.emit('message', '/foobar');">Send OSC message</button>-->
+    <button type="button" id="button1">Start Sensor</button>
+    <button type="button" id="button2">Stop All</button>
+    <p>Use 'Start Sensor' for each sensor to pair and start notifications.</br> They should be listed when scanning for devices. If not, they might need a new battery.</p>
+    <p>Remember to turn on bluetooth. </br> Remember to start osc-web in the terminal using 'cd osc-web' and 'node bridge.js'</p>
+    <p>This page needs to be opened in Google Chrome and have the file 'sketchBluetooth.js' in the same folder.</p>
+
+</br><p>The Max patch should receive the data on port 3334. Remember to add the IP-addresses for the other venues to transmit the data with VPN.</p>
+
+    <script>
+        // Copied from osc-web example web-side by Automata / Wilson Vieira. https://github.com/automata/osc-web
+        var socket = io.connect('http://localhost:8081');
+        console.log('oi');
+        socket.on('connect', function() {
+             // sends to socket.io server the host/port of oscServer
+             // and oscClient
+             socket.emit('config',
+                 {
+                     server: {
+                         port: 3333,
+                         host: '127.0.0.1'
+                     },
+                     client: {
+                         port: 3334,
+                         host: '127.0.0.1'
+                     }
+                 }
+             );
+         });
+     
+         socket.on('message', function(obj) {
+             var status = document.getElementById("status");
+             status.innerHTML = obj[0];
+             console.log(obj);
+         });
+     </script>
+          <script>
+            document.querySelector("#button1").addEventListener('click', onButtonClick);
+            document.querySelector("#button2").addEventListener('click', onStopButtonClick);
+        </script>
+
+
+
+</body>
+
+
+</html>
