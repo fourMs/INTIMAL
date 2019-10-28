@@ -1,4 +1,5 @@
-# Introduction
+Introduction
+============
 
 This is a software distribution for processing textual fragments prepared from
 audio recording transcripts, comparing the fragments for similarity and
@@ -9,7 +10,8 @@ More information can be found in the docs directory in this distribution.
  * For reading in a text editor, see docs/wiki/Introduction
  * For reading in a Web browser, see docs/html/index.html
 
-## A Note about the Documentation
+A Note about the Documentation
+------------------------------
 
 The original content in docs/wiki aims to be readable as plain text under most
 circumstances, but the intention is that this content be translated to HTML
