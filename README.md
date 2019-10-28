@@ -1,5 +1,5 @@
 # INTIMAL
-INTIMAL project
+
 INTIMAL is a physical-virtual "embodied" system for relational listening, to be used within the practice of networked and telematic sonic performance. INTIMAL explores sense of place and sense of presence in the context of human migration.
 
 INTIMAL has released two modules in GitHub:
