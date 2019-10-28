@@ -11,7 +11,7 @@ RESPIRO, a live, telematic transmission of breathing signals, which are locally 
 
 ## Contributors 
 
-It has been developed and implemented by RITMO Researchers, Research Assistants and students from the Masters in Music, Communication, and Technology, UiO and NTNU:
+It has been developed and implemented by [RITMO](http://www.uio.no/ritmo) researchers, research assistants and students from the Masters in [Music, Communication, and Technology](http://www.uio.no/mct-master), UiO and NTNU:
 
 - Paul Boddie
 - Çagri Erdem
