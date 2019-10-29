@@ -1,3 +1,6 @@
+Sonification Patch
+=======
+
 This is a patch that sends and receives data from FLOW™ breathing sensors (<https://www.sweetzpot.com/flow>), locally and in-between distant locations (venues), and sonifies live the data.
 
 This sonificationpatch folder contains the Max/MSP patch and required abstractions.
