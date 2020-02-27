@@ -5,6 +5,7 @@
 Text/linguistic analysis.
 
 Copyright (C) 2018, 2019 University of Oslo
+Copyright (C) 2020 Paul Boddie <paul@boddie.org.uk>
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -110,11 +111,16 @@ def complete_result(t):
 
 # Fragment processing.
 
-def process_fragment_tokens(fragments, ops):
+def process_fragment_tokens(fragments, ops, lang="es"):
 
-    "Process the 'fragments' using the given 'ops'."
+    """
+    Process the 'fragments' using the given 'ops'. If 'lang' is specified, it
+    indicates the language to be used to interpret the tokens.
+    """
 
     for fragment in fragments:
-        fragment.words = process_tokens(fragment.get_text(), [init_result] + ops + [complete_result])
+        fragment.words = process_tokens(fragment.get_text(),
+                                        [init_result] + ops + [complete_result],
+                                        lang)
 
 # vim: tabstop=4 expandtab shiftwidth=4

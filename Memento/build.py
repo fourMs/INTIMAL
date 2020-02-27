@@ -5,6 +5,7 @@
 Building of a processed data set for further processing.
 
 Copyright (C) 2018, 2019 University of Oslo
+Copyright (C) 2020 Paul Boddie <paul@boddie.org.uk>
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -65,11 +66,12 @@ from text import normalise_accents, remove_punctuation_from_words
 
 # The input data processing workflow.
 
-def process_input_data(filenames, config, out):
+def process_input_data(filenames, config, out, lang):
 
     """
     Process data from 'filenames', using 'config' to adjust the processing,
-    registering output data with 'out'.
+    registering output data with 'out'. The specified 'lang' indicates the
+    language for interpreting the input tokens.
     """
 
     fragments = get_fragments_from_files(filenames)
@@ -104,7 +106,7 @@ def process_input_data(filenames, config, out):
     # Part-of-speech tagging.
     # Normalisation involving stemming and lower-casing of words.
 
-    process_fragment_tokens(fragments, [stem_word, lower_word])
+    process_fragment_tokens(fragments, [stem_word, lower_word], lang)
 
     # Grouping of words into terms.
     # Filtering of stop words by selecting certain kinds of words (for example,
@@ -202,6 +204,9 @@ Input file processing options:
                         Change categories according to the mapping defined in
                         the indicated file
 
+--lang <language code>  Indicate the language for interpretation of the input
+                        text (default is "es")
+
 --pos-tags <filename>   Preserve only words with the part-of-speech tags found
                         in the indicated file
 
@@ -234,6 +239,7 @@ if __name__ == "__main__":
 
     config["all_fragments"] = get_flag("--all-fragments")
     config["category_map"] = get_map_from_file(get_option("--category-map"))
+    config["lang"] = get_option("--lang", missing="es")
     config["posfilter"] = POSFilter(get_list_from_file(get_option("--pos-tags")))
 
     verbose_output = get_flag("--verbose")
@@ -251,6 +257,12 @@ if __name__ == "__main__":
         print(helptext, file=sys.stderr)
         sys.exit(1)
 
+    # Test for a language.
+
+    if not config["lang"]:
+        print(helptext, file=sys.stderr)
+        sys.exit(1)
+
     # Derive filenames for output files.
 
     out = outputs.Output(outdir)
@@ -258,7 +270,7 @@ if __name__ == "__main__":
 
     # Process input data.
 
-    fragments = process_input_data(filenames, config, out)
+    fragments = process_input_data(filenames, config, out, lang)
     connections = process_fragment_data(fragments, config, out)
 
     # Emit basic output to serialise the processed data.

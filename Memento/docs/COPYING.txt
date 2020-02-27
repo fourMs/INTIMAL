@@ -2,6 +2,7 @@ Licence Agreement
 -----------------
 
 Copyright (C) 2018, 2019 University of Oslo
+Copyright (C) 2020 Paul Boddie <paul@boddie.org.uk>
 
 Original author: Paul Boddie <paul.boddie@imv.uio.no>
 
