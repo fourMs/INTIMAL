@@ -1,7 +1,7 @@
 = Required Software =
 
 The software is written in the [[https://www.python.org/|Python programming
-language]], tested with Python 2.7, and makes use of a number of additional
+language]], tested with Python 3.7, and makes use of a number of additional
 packages or libraries. These prerequisites are presented below in their own
 distinct sections.
 
@@ -33,23 +33,30 @@ command line]]
 
 The software prerequisites are described below.
 
-=== Python 2.7 ===
+=== Python 3 ===
 
 Source: [[https://www.python.org/]]
 
-Typically, operating system distributions provide Python 2.7 as standard or as
-an installable package. To check if you have Python 2.7 available on your
+Typically, operating system distributions provide Python 3 as standard or as
+an installable package. To check if you have Python 3 available on your
 system, open a command prompt and type the following:
 
 {{{
-python2.7
+python
 }}}
 
-If the output from the command indicates Python 2.7, you may proceed to
-install other prerequisites. (Use the Ctrl-D key combination to exit Python.)
+If the output from the command indicates Python 3, you may proceed to install
+other prerequisites. (Use the Ctrl-D key combination to exit Python.) If it
+indicates Python 2, try the following command instead:
 
-If Python 2.7 does not seem to be installed, consult your operating system
-documentation for the details of installing a suitable package.
+{{{
+python3
+}}}
+
+If Python 3 does not seem to be installed, consult your operating system
+documentation for the details of installing a suitable package. In this
+document, `python3` is used to launch Python programs and to avoid confusion
+involving any Python 2 installation.
 
 === spaCy ===
 
@@ -63,8 +70,8 @@ Required components:
 Installing the software and data can be done using Python packaging tools:
 
 {{{
-python -m pip install -U --user spacy
-python -m spacy download es --user
+python3 -m pip install -U --user spacy
+python3 -m spacy download es --user
 }}}
 
 In the above, the `--user` option indicates that the software will be
