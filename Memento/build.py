@@ -270,7 +270,7 @@ if __name__ == "__main__":
 
     # Process input data.
 
-    fragments = process_input_data(filenames, config, out, lang)
+    fragments = process_input_data(filenames, config, out, config["lang"])
     connections = process_fragment_data(fragments, config, out)
 
     # Emit basic output to serialise the processed data.
