@@ -128,7 +128,7 @@ def get_distinct_participant(fragment, fragments):
 def get_distinct_subcategory(fragment, fragments):
 
     """
-    For 'fragment', returning a true value if its subcategory is not already
+    For 'fragment', return a true value if its subcategory is not already
     represented in 'fragments', all of which share the same parent category,
     returning a false value otherwise.
     """
