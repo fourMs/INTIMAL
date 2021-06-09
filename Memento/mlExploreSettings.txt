@@ -1,0 +1,29 @@
+# This file contains tunable parameters for the class FeatureBox
+# in the file mlExplore.py. Any lines starting with '#' is not
+# read by the program. The program has two different
+# functionalities: step detection and rotation detection.
+# The first functionality has four different ways of detecting
+# a step:
+#
+#    Accel is acceleration magnitude.
+#    Jerk is rate of change in acceleration magnitude
+#    Area is the sum of all accelerations
+#    Rotation is the rotation magnitude.
+#
+# Whenever Accel is on a peak, the detector checks whether the
+# values for Accel, Jerk, Area and Rotation are within the
+# tolerances. If they are, the peak is registered as a step.
+#
+# Step detector tolerances:
+#             Accel    Jerk      Area   Rotation
+minimumStep   0.05     0	 0	0 
+maximumStep   120      120	 120	120 
+#
+# The rotation detector works by checking whether the rate of
+# rotation around the Y axis is larger than the tolerances.
+# If the rotation rate larger than the Left column or smaller
+# than the Right column, rotation is reported as being detected. 
+#
+# Rotation tolerances:
+#                Left    Right
+minimumRotation  3	 -3
